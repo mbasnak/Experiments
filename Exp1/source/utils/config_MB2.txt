@@ -1,0 +1,41 @@
+%% This is my current config file (20180907)
+
+
+%% input files %%
+mask_fn 	./Mask_mel.jpg
+output_fn 	./MB_output.dat
+%% template_fn 	./Template_MB.jpg
+load_template   0
+
+%% camera parameters %%
+do_config       0
+fisheye         0
+cam_input       1
+cam_index       0
+vfov            4.5
+
+%% playback/display options %%
+frame_skip      0
+frame_step      1
+do_display      1
+no_prompts      0
+fps             -1
+do_led_display  0
+
+%% search behavior %%
+do_search       0
+use_ball_colour 0
+quality_factor  10
+nlopt_ftol      1e-4
+nlopt_max_eval  300
+error_thresh    10000
+thresh_win      .25
+thresh_ratio    2
+max_bad_frames  5
+
+%% output options
+do_update	1
+save_video	0
+do_socket_out   0
+output_position 1
+pgr_camera 1
