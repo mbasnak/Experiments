@@ -76,3 +76,5 @@ Uncertainty/SummaryFromAnna.pdf
 *.png
 *.mat
 Exp1/source/panels/Pattern_longstripe2px_light_360.mat
+*.dat
+*.svg
