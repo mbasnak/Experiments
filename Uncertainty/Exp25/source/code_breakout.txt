@@ -1,0 +1,28 @@
+Code - contrast change experiment
+
+1) Pre-processing code
+-ROI selector: GUI to select PB ROIs for posterior analysis
+-ROI analysis: pre-processing code to take the registered images and obtain the intensity of the imaging channels from the ROIs selected in the previous step
+-PB data analysis: pre-processing code to compute the df/f, obtain the bump's phase, and the behavioral variables in relevant units, as well as computing the offset.
+-run_pre_analysis: function to automatically run the previous two codes on all the sessions of a given fly
+
+2) Offset stabilizer block analysis
+-offset_stabilizer_block: code to analyze the offset stabilizer session of a given fly
+-run_offset_stabilizer_block_analysis: code to run the previous analysis on all the flies of the dataset
+
+3) Closed loop block analysis
+-closed_loop_analysis: code to analyze the closed loop session of a given fly
+-run_closed_loop_analysis: code to analyze the closed-loop session of all flies in the dataset (this is currently not working... it gets stuck with fly 2 for some reason).
+-closed_loop_group_analysis: code to analyze the group results for the closed-loop session. 
+-bump_stability: code to analyze the effect of bump magnitude on bump stability, and comparing it to a laser power control
+
+4) Open loop block analysis
+-open_loop_analysis: code to analyze the open loop session of a given fly
+-run_open_loop_analysis: code to run the previous analysis on all the flies of the dataset.
+-open_loop_group_analysis: code to analyze the group results for the open loop sessions.
+
+5) Cue weights model
+-offset_verifyier_block: code to analyze the last sessions and obtain the verifying offset.
+-run_offset_verifier_block_analysis: code to run the previous analysis on all the flies of the dataset.
+-inclusion_criterion: code that compares the reference offset and the verifier offset to decide if they are close enough to keep this animal.
+-plot_model: code to plot the results of the model where we compare beta internal and beta visual

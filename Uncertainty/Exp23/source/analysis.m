@@ -22,9 +22,19 @@ set(gca,'xticklabel',{[]});
 title('Fly 1 (60D05-6f), darkness');
 
 subplot(3,1,2)
-plot(DARKdata.data.time, rad2deg(DARKdata.data.panel_angle))
+%stimulus position
+stim = rad2deg(DARKdata.data.panel_angle);
+changeStim = [0,diff(stim)];
+stimToPlot = smooth(stim);
+stimToPlot(changeStim>40) = NaN;
+plot(DARKdata.data.time, stimToPlot,'lineWidth',1.5)
 hold on
-plot(DARKdata.data.time, rad2deg(DARKdata.data.phase),'color',[0.3 0.8 0.4])
+%Phase
+phase = rad2deg(DARKdata.data.phase);
+changePhase = [0,diff(phase)];
+phaseToPlot = smooth(phase);
+phaseToPlot(changePhase>40) = NaN;
+plot(DARKdata.data.time,phaseToPlot,'color',[0.3 0.8 0.4],'lineWidth',1.5)
 xline(DARKdata.data.time(StartDark),'lineWidth',3,'color','r')
 xline(DARKdata.data.time(EndDark),'lineWidth',3,'color','r')
 ylim([-180 180]);
@@ -34,7 +44,12 @@ ylabel('Deg');
 legend('Fly heading', 'EPG phase');
 
 subplot(3,1,3)
-plot(DARKdata.data.time,rad2deg(DARKdata.data.offset),'k.')
+%Offset
+offset = rad2deg(DARKdata.data.offset);
+changeOffset = [0,diff(offset)];
+offsetToPlot = smooth(offset);
+offsetToPlot(changeOffset > 40) = NaN;
+plot(DARKdata.data.time,offsetToPlot,'k','lineWidth',1.5)
 hold on
 xline(DARKdata.data.time(StartDark),'lineWidth',3,'color','r')
 xline(DARKdata.data.time(EndDark),'lineWidth',3,'color','r')
@@ -67,11 +82,21 @@ set(gca,'xticklabel',{[]});
 title('Fly 2 (60D05-7f), darkness');
 
 subplot(3,1,2)
-plot(DARKdata.data.time, rad2deg(DARKdata.data.panel_angle))
+%stimulus position
+stim = rad2deg(DARKdata.data.panel_angle);
+changeStim = [0,diff(stim)];
+stimToPlot = smooth(stim);
+stimToPlot(changeStim>40) = NaN;
+plot(DARKdata.data.time, stimToPlot,'lineWidth',1.5)
 hold on
-plot(DARKdata.data.time, rad2deg(DARKdata.data.phase),'color',[0.3 0.8 0.4])
-xline(DARKdata.data.time(StartDark),'lineWidth',3,'color','r');
-xline(DARKdata.data.time(EndDark),'lineWidth',3,'color','r');
+%Phase
+phase = rad2deg(DARKdata.data.phase);
+changePhase = [0,diff(phase)];
+phaseToPlot = smooth(phase);
+phaseToPlot(changePhase>40) = NaN;
+plot(DARKdata.data.time,phaseToPlot,'color',[0.3 0.8 0.4],'lineWidth',1.5)
+xline(DARKdata.data.time(StartDark),'lineWidth',3,'color','r')
+xline(DARKdata.data.time(EndDark),'lineWidth',3,'color','r')
 ylim([-180 180]);
 xlim([0 DARKdata.data.time(end)]);
 set(gca,'xticklabel',{[]})
@@ -79,10 +104,15 @@ ylabel('Deg');
 legend('Fly heading', 'EPG phase');
 
 subplot(3,1,3)
-plot(DARKdata.data.time,rad2deg(DARKdata.data.offset),'k.')
+%Offset
+offset = rad2deg(DARKdata.data.offset);
+changeOffset = [0,diff(offset)];
+offsetToPlot = smooth(offset);
+offsetToPlot(changeOffset > 40) = NaN;
+plot(DARKdata.data.time,offsetToPlot,'k','lineWidth',1.5)
 hold on
-xline(DARKdata.data.time(StartDark),'lineWidth',3,'color','r');
-xline(DARKdata.data.time(EndDark),'lineWidth',3,'color','r');
+xline(DARKdata.data.time(StartDark),'lineWidth',3,'color','r')
+xline(DARKdata.data.time(EndDark),'lineWidth',3,'color','r')
 ylim([-180 180]);
 xlim([0 DARKdata.data.time(end)]);
 xlabel('Time (s)');
@@ -112,11 +142,21 @@ set(gca,'xticklabel',{[]});
 title('Fly 3 (60D05-7f), darkness');
 
 subplot(3,1,2)
-plot(DARKdata.data.time, rad2deg(DARKdata.data.panel_angle))
+%stimulus position
+stim = rad2deg(DARKdata.data.panel_angle);
+changeStim = [0,diff(stim)];
+stimToPlot = smooth(stim);
+stimToPlot(changeStim>40) = NaN;
+plot(DARKdata.data.time, stimToPlot,'lineWidth',1.5)
 hold on
-plot(DARKdata.data.time, rad2deg(DARKdata.data.phase),'color',[0.3 0.8 0.4])
-xline(DARKdata.data.time(StartDark),'lineWidth',3,'color','r');
-xline(DARKdata.data.time(EndDark),'lineWidth',3,'color','r');
+%Phase
+phase = rad2deg(DARKdata.data.phase);
+changePhase = [0,diff(phase)];
+phaseToPlot = smooth(phase);
+phaseToPlot(changePhase>40) = NaN;
+plot(DARKdata.data.time,phaseToPlot,'color',[0.3 0.8 0.4],'lineWidth',1.5)
+xline(DARKdata.data.time(StartDark),'lineWidth',3,'color','r')
+xline(DARKdata.data.time(EndDark),'lineWidth',3,'color','r')
 ylim([-180 180]);
 xlim([0 DARKdata.data.time(end)]);
 set(gca,'xticklabel',{[]})
@@ -124,10 +164,15 @@ ylabel('Deg');
 legend('Fly heading', 'EPG phase');
 
 subplot(3,1,3)
-plot(DARKdata.data.time,rad2deg(DARKdata.data.offset),'k.')
+%Offset
+offset = rad2deg(DARKdata.data.offset);
+changeOffset = [0,diff(offset)];
+offsetToPlot = smooth(offset);
+offsetToPlot(changeOffset > 40) = NaN;
+plot(DARKdata.data.time,offsetToPlot,'k','lineWidth',1.5)
 hold on
-xline(DARKdata.data.time(StartDark),'lineWidth',3,'color','r');
-xline(DARKdata.data.time(EndDark),'lineWidth',3,'color','r');
+xline(DARKdata.data.time(StartDark),'lineWidth',3,'color','r')
+xline(DARKdata.data.time(EndDark),'lineWidth',3,'color','r')
 ylim([-180 180]);
 xlim([0 DARKdata.data.time(end)]);
 xlabel('Time (s)');
@@ -368,7 +413,7 @@ end
 xlabel('Time (s)');
 suptitle('Change in bump magnitude');
 
-saveas(gcf,'Z:\Wilson Lab\Mel\Lab_meetings\meetingWithJanAndAnna\plots\BumpMagnitudeInTimeCloseUp.png')
+%saveas(gcf,'Z:\Wilson Lab\Mel\Lab_meetings\meetingWithJanAndAnna\plots\BumpMagnitudeInTimeCloseUp.png')
 
 %%  Bump width at half max in each case
 
@@ -422,7 +467,7 @@ legend('Fly 1', 'Fly 2', 'Fly 3');
 title('Median bump width at half max across states');
 ylabel('Bump width at half max')
 
-saveas(gcf,'Z:\Wilson Lab\Mel\Lab_meetings\meetingWithJanAndAnna\plots\WidthHalfMax.png')
+%saveas(gcf,'Z:\Wilson Lab\Mel\Lab_meetings\meetingWithJanAndAnna\plots\WidthHalfMax.png')
 
 %%  Bump angular speed distribution (and median?) in each case - I should
 %compare with the fly's angular speed distribution to see that differences

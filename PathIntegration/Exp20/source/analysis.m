@@ -92,16 +92,16 @@ for i = 1:length(tripData)
     plot(tripData{i}(:,4))
     title(['Trip # ',num2str(i)]);
 end
-suptitle('Changes in panel x dimension during the trips');
+%suptitle('Changes in panel x dimension during the trips');
 
-%Plot the x panel bouts of the trip bouts: they should all look oblique
-figure('Position',[100 200 1400 800]),
+%Plot the x panel bouts of the turn bouts: they should all look oblique
+figure%('Position',[100 200 1400 800]),
 for i = 1:length(turnData)
     subplot(5,ceil(length(turnData)/5),i)
     plot(turnData{i}(:,4))
     title(['Turn # ',num2str(i)]);
 end
-suptitle('Changes in panel x dimension during the turns');
+%suptitle('Changes in panel x dimension during the turns');
 
 %Remove single spurious turns or trials
 for i = 1:length(tripData)
@@ -122,22 +122,22 @@ turnData = turnData(~cellfun('isempty',turnData));
 
 
 %Plot the x panel bouts of the trip bouts: they should all look flat
-figure('Position',[100 200 1400 800]),
+figure%('Position',[100 200 1400 800]),
 for i = 1:length(tripData)
     subplot(5,ceil(length(tripData)/5),i)
     plot(tripData{i}(:,4))
     title(['Trip # ',num2str(i)]);
 end
-suptitle('Changes in panel x dimension during the trips');
+%suptitle('Changes in panel x dimension during the trips');
 
 %Plot the x panel bouts of the trip bouts: they should all look oblique
-figure('Position',[100 200 1400 800]),
+figure%('Position',[100 200 1400 800]),
 for i = 1:length(turnData)
     subplot(5,ceil(length(turnData)/5),i)
     plot(turnData{i}(:,4))
     title(['Turn # ',num2str(i)]);
 end
-suptitle('Changes in panel x dimension during the turns');
+%suptitle('Changes in panel x dimension during the turns');
 %% Separate the full data into trips and smooth it
 
 sizeBall = 9;
@@ -199,7 +199,7 @@ ax.XTick = [1 2];
 ax.XTickLabel={'Probe Trials','Opto Trials'};
 title('Distribution of trial duration');ylabel('Trial duration (s)');
 
-saveas(gcf,[pathName(1:end-5),'plots\TrialDurVsTrialNum_sid_',sid,'.png'])
+%saveas(gcf,[pathName(1:end-5),'plots\TrialDurVsTrialNum_sid_',sid,'.png'])
 
 
 %% Remove outlier that have a really big variance in the xVel, because it probably indicates an artifact
@@ -290,9 +290,9 @@ xticks([1 2 3])
 xticklabels({'1','2','3'})
 xlim([0 4]);
 
-suptitle('Forward velocity around the pulse');
+%suptitle('Forward velocity around the pulse');
 
-saveas(gcf,[pathName(1:end-5),'plots\VelAroundPulseOpto_sid_',sid,'.png'])
+%saveas(gcf,[pathName(1:end-5),'plots\VelAroundPulseOpto_sid_',sid,'.png'])
 
 
 %% Plotting velocity as a function of distance travelled
@@ -364,7 +364,7 @@ ax1 = subplot(2,2,1);
 [opT] = boundedline(distance,optoLeftMeans,optoLeftError,'-ro','alpha');
 hold on
 [prT] = boundedline(distance,probeLeftMeans,probeLeftError,'-ko','alpha');
-xline(distance(rewardDimension),'lineWidth',2,'color','b');
+%xline(distance(rewardDimension),'lineWidth',2,'color','b');
 ylabel('Forward velocity (mm/s)');
 title('Left trips')
 
@@ -372,14 +372,14 @@ ax2 = subplot(2,2,2);
 [opT] = boundedline(distance,flip(optoRightMeans),flip(optoRightError),'-ro','alpha');
 hold on
 [prT] = boundedline(distance,flip(probeRightMeans),flip(probeRightError),'-ko','alpha');
-xline(distance(end)-distance(rewardDimension),'lineWidth',2,'color','b');
+%xline(distance(end)-distance(rewardDimension),'lineWidth',2,'color','b');
 title('Right trips')
 
 ax3 = subplot(2,2,3);
 [opT] = boundedline(distance,optoLeftAngMeans,optoLeftAngError,'-ro','alpha');
 hold on
 [prT] = boundedline(distance,probeLeftAngMeans,probeLeftAngError,'-ko','alpha');
-xline(distance(rewardDimension),'lineWidth',2,'color','b');
+%xline(distance(rewardDimension),'lineWidth',2,'color','b');
 ylabel('Angular speed (deg/s)');
  xlabel('Distance travelled (mm)');
 
@@ -387,7 +387,7 @@ ax4 = subplot(2,2,4);
 [opT] = boundedline(distance,flip(optoRightAngMeans),flip(optoRightAngError),'-ro','alpha');
 hold on
 [prT] = boundedline(distance,flip(probeRightAngMeans),flip(probeRightAngError),'-ko','alpha');
-xline(distance(end)-distance(rewardDimension),'lineWidth',2,'color','b');
+%xline(distance(end)-distance(rewardDimension),'lineWidth',2,'color','b');
 xlabel('Distance travelled (mm)');
 
 %get the min and max velocities to set the axes limits
@@ -409,7 +409,7 @@ maxAngVel = max(maxAngVels);
 ylimits2 = ([0,maxAngVel+10]);
 ylim(ax3,ylimits2); ylim(ax4,ylimits2);
 
-saveas(gcf,[pathName(1:end-5),'plots\MeanVelvsPanels_sid_',sid,'.png'])
+%saveas(gcf,[pathName(1:end-5),'plots\MeanVelvsPanels_sid_',sid,'.png'])
 
 %% Compare to shifted control
 
@@ -423,7 +423,7 @@ shiftedControl(distance,stepMeans,WorkingProbeLeft,rewardDimension,0,1)
 subplot(2,2,4)
 shiftedControl(distance,stepMeans,WorkingProbeRight,rewardDimension,0,0)
 
-saveas(gcf,[pathName(1:end-5),'plots\ShiftedControl_sid_',sid,'.png'])
+%saveas(gcf,[pathName(1:end-5),'plots\ShiftedControl_sid_',sid,'.png'])
 
 %% Forward velocity in individual trials
 

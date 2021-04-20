@@ -1,4 +1,5 @@
 
+clear all; close all;
 %% Group bump analyses
 
 % files = dir('Z:\Wilson Lab\Mel\FlyOnTheBall\data\Experiment17\three_patterns\useful trials\*\*.mat');
@@ -13,6 +14,7 @@
 % Data.panel_angle = [];
 % Data.ang_vel = [];
 % Data.for_vel = [];
+% Data.flyPosRad = [];
 % 
 % %load data from each fly in a loop
 % for i = 1:length(files)
@@ -29,20 +31,34 @@
 %     Data(i).dff_matrix = data.data.dff_matrix;
 % %save phase
 %     Data(i).phase_value = data.data.phase;
-% %save panel angle
+% %save panel angle I THINK THIS ONE IS CURRENTLY INCORRECT
 %     Data(i).panel_angle = data.data.panel_angle;
 % %save angular velocity
 %     Data(i).ang_vel = data.data.vel_yaw_ds;
 % %save forwards velocity
 %     Data(i).for_vel = data.data.vel_for_ds;
+% %save fly angular position
+%     Data(i).flyPosRad = data.data.flyPosRad;
 % 
 % end
+% %remove extra data from fly 4
+% Data(4).offset = Data(4).offset(1,1:5510);
+% Data(4).dff_matrix = Data(4).dff_matrix(:,1:5510);
+% Data(4).phase_value = Data(4).phase_value(:,1:5510);
+% Data(4).time = Data(4).time(1:5510,:);
+% Data(4).panel_angle = Data(4).panel_angle(:,1:5510);
+% Data(4).ang_vel = Data(4).ang_vel(:,1:5510);
+% Data(4).for_vel = Data(4).for_vel(:,1:5510);
+% Data(4).flyPosRad = Data(4).flyPosRad(1:5510,:);
+% Data(4).singleBar = Data(4).singleBar(Data(4).singleBar<5510);
+% Data(4).ambiguous = Data(4).ambiguous(Data(4).ambiguous<5510);
+% Data(4).darkness = Data(4).darkness(Data(4).darkness<5510);
 % 
 % save('Z:\Wilson Lab\Mel\FlyOnTheBall\data\Experiment17\three_patterns\useful trials\allData.mat','Data');
 
 
 %load group data
-load('Z:\Wilson Lab\Mel\FlyOnTheBall\data\Experiment17\three_patterns\useful trials\allData.mat');
+load('C:\Users\Melanie\Dropbox (HMS)\UncertaintyProject\ThreePatternExp\data\allData.mat');
 
 
 %% variation of offset distribution per state
@@ -374,3 +390,77 @@ xlim([0 3]);
 xticklabels({'Standing','Walking'})
 legend('vertical bar','horizontal bar', 'panels off')
 
+%% von Mises fit
+
+%We will next perform a von Mises fit for find the bump magnitude and width
+%at half max
+
+clear all; close all
+
+leftPB = [1,2,3,4,5,6,7,8];
+rightPB = [10,11,12,13,14,15,16,9];
+
+load('C:\Users\Melanie\Dropbox (HMS)\UncertaintyProject\ThreePatternExp\data\allData.mat');
+
+for fly = 1:length(Data)
+    combined_full_dff{fly} = (Data(fly).dff_matrix(leftPB,:) + Data(fly).dff_matrix(rightPB,:))/2;
+    half_width{fly} = zeros(1,length(combined_full_dff{fly}));
+    bump_mag{fly} = zeros(1,length(combined_full_dff{fly}));
+
+    for timepoint = 1:length(combined_full_dff{fly})    
+        extendedData = interp1([1:8],combined_full_dff{fly}(:,timepoint),linspace(1,8,1000));
+        angles = linspace(0,2*pi,length(extendedData));
+        [vonMises, rescaledVonMises] = fitTuningCurveToVonMises(extendedData, angles);
+        bump_mag{fly}(timepoint) = max(rescaledVonMises);
+        fitData = circ_vmpdf(linspace(-pi,pi,100),0,max(rescaledVonMises));
+        halfMax = (min(fitData) + max(fitData)) / 2;
+        index1 = find(fitData >= halfMax, 1, 'first');
+        index2 = find(fitData >= halfMax, 1, 'last');
+        half_width{fly}(timepoint) = index2-index1 + 1;
+    
+    end
+
+end
+
+%Get and plot the median values
+BumpMag = {};
+HalfWidth = {};
+
+for fly = 1:length(bump_mag)
+    BumpMag{fly,1} = bump_mag{fly}(Data(fly).singleBar);
+    BumpMag{fly,2} = bump_mag{fly}(Data(fly).ambiguous);
+    BumpMag{fly,3} = bump_mag{fly}(Data(fly).darkness); 
+    
+    HalfWidth{fly,1} = half_width{fly}(Data(fly).singleBar);
+    HalfWidth{fly,2} = half_width{fly}(Data(fly).ambiguous);
+    HalfWidth{fly,3} = half_width{fly}(Data(fly).darkness); 
+    
+end
+
+medianBumpMag = cellfun(@median,BumpMag);
+medianHalfWidth = cellfun(@median,HalfWidth);
+
+figure('Position',[100 300 1400 600]),
+subplot(1,2,1)
+plot(medianBumpMag','-o')
+xlim([0 4]);
+xticks([1 2 3]); 
+xticklabels({'vertical bar' ,'horizontal bar', 'panels off'});
+ylabel('Median bump magnitude')
+legend({'fly1','fly2','fly3','fly4','fly5'});
+
+subplot(1,2,2)
+plot(medianHalfWidth','-o')
+ylabel('Median bump half width');
+xlim([0 4]); 
+xticks([1 2 3]);
+xticklabels({'vertical bar' ,'horizontal bar', 'panels off'});
+legend({'fly1','fly2','fly3','fly4','fly5'});
+
+
+bump_mag = bump_mag';
+half_width = half_width';
+bump_mag = [bump_mag{1,1},bump_mag{2,1},bump_mag{3,1},bump_mag{4,1},bump_mag{5,1}];
+half_width = [half_width{1,1},half_width{2,1},half_width{3,1},half_width{4,1},half_width{5,1}];
+
+save('C:\Users\Melanie\Dropbox (HMS)\UncertaintyProject\ThreePatternExp\data\fitData.mat','bump_mag','half_width')

@@ -1,0 +1,17 @@
+Code breakout - Gain change experiment
+
+1) Pre-processing code
+-ROI selector: GUI to select PB ROIs for posterior analysis
+-ROI analysis: pre-processing code to take the registered images and obtain the intensity of the imaging channels from the ROIs selected in the previous step
+-PB data analysis: pre-processing code to compute the df/f, obtain the bump's phase, and the behavioral variables in relevant units, as well as computing the offset.
+-run_pre_analysis: function to automatically run the previous two codes on all the sessions of a given fly
+
+2) Offset stabilizer block analysis
+-offset_stabilizer_block: code to analyze the offset stabilizer session of a given fly
+-run_offset_stabilizer_block_analysis: code to run the previous analysis on all the flies of the dataset
+
+3) Gain change analysis
+-gain_change_analysis: code to analyze the gain change session.
+-run_gain_change_analysis: code to run the previous analysis on all the flies of the dataset.
+-gain_change_group_analysis: code to analyze the group results for the gain change block.
+-empty_trial_comparison: code to compare the compass error under inverted gain with that during the empty trial.

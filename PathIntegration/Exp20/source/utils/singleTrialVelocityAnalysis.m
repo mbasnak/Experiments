@@ -3,7 +3,7 @@ function [smoothed] = singleTrialVelocityAnalysis(data, sampleRate)
 % give back the velocity in degrees.
 
 % It takes the rawData (data) and the sample rate (sampleRate) as inputs
-% and gives back a struct names "smoothed" with the 3 final velocities for
+% and gives back a struct named "smoothed" with the 3 final velocities for
 % x, y and angular velocity.
 
 

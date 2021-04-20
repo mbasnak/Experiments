@@ -25,7 +25,7 @@ for i = 1:length(folders)
                 set(gca,'XTickLabel',[]);
 
                 subplot(3,1,2)
-                plot(data.time,rad2deg(data.flyPosRad))
+                plot(data.time,-rad2deg(data.flyPosRad))
                 hold on
                 plot(data.time,-rad2deg(data.phase))
                 legend('fly heading', 'EPG phase');

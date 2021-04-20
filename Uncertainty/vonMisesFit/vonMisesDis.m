@@ -42,7 +42,10 @@ set(gca,'XTickLabel',[]);
 
 %% Let's combine the two halves of the PB averaging DF/F as Tots suggested, and plot that same timepoint
 
-combined_dff = (cropped_dff_matrix(1:8,:) + cropped_dff_matrix(9:16,:))/2;
+leftPB = [1,2,3,4,5,6,7,8];
+rightPB = [10,11,12,13,14,15,16,9];
+
+combined_dff = (cropped_dff_matrix(leftPB,:) + cropped_dff_matrix(rightPB,:))/2;
 exampleData2 = interp1([1:8],combined_dff(:,4),linspace(1,8,1000));
 
 figure,
@@ -89,7 +92,7 @@ title('Example data for one frame');
 
 %% Use all thew data from the fly to see the fit
 
-combined_full_dff = (dff_matrix(1:8,:) + dff_matrix(9:16,:))/2;
+combined_full_dff = (dff_matrix(leftPB,:) + dff_matrix(rightPB,:))/2;
 
 half_width = zeros(1,length(combined_full_dff));
 bump_mag = zeros(1,length(combined_full_dff));
@@ -154,10 +157,13 @@ saveas(gcf,'Z:\Wilson Lab\Mel\Experiments\Uncertainty\vonMisesFit\fitError.png')
 
 clear all; close all
 
+leftPB = [1,2,3,4,5,6,7,8];
+rightPB = [10,11,12,13,14,15,16,9];
+
 load('Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp23\data\allDarkData.mat');
 
 for fly = 1:length(Data)
-    combined_full_dff{fly} = (Data(fly).dff_matrix(1:8,:) + Data(fly).dff_matrix(9:16,:))/2;
+    combined_full_dff{fly} = (Data(fly).dff_matrix(leftPB,:) + Data(fly).dff_matrix(rightPB,:))/2;
     half_width{fly} = zeros(1,length(combined_full_dff{fly}));
     bump_mag{fly} = zeros(1,length(combined_full_dff{fly}));
 
@@ -409,3 +415,79 @@ xticklabels({'certain' ,'uncertain', 'certain'});
 legend({'fly1','fly2','fly3'});
 
 %I get the same results using this function...
+
+%% Using Yvette's function
+
+
+clear all; close all
+
+leftPB = [1,2,3,4,5,6,7,8];
+rightPB = [10,11,12,13,14,15,16,9];
+
+load('Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp23\data\allDarkData.mat');
+
+for fly = 1:length(Data)
+    combined_full_dff{fly} = (Data(fly).dff_matrix(leftPB,:) + Data(fly).dff_matrix(rightPB,:))/2;
+    half_width{fly} = zeros(1,length(combined_full_dff{fly}));
+    bump_mag{fly} = zeros(1,length(combined_full_dff{fly}));
+
+    for timepoint = 1:length(combined_full_dff{fly})    
+        extendedData = interp1([1:8],combined_full_dff{fly}(:,timepoint),linspace(1,8,1000));
+        angles = linspace(0,2*pi,length(extendedData));
+        [vonMises, rescaledVonMises] = fitTuningCurveToVonMises(extendedData, angles);
+        bump_mag{fly}(timepoint) = max(rescaledVonMises);
+        fitData = circ_vmpdf(linspace(-pi,pi,100),0,max(rescaledVonMises));
+        halfMax = (min(fitData) + max(fitData)) / 2;
+        index1 = find(fitData >= halfMax, 1, 'first');
+        index2 = find(fitData >= halfMax, 1, 'last');
+        half_width{fly}(timepoint) = index2-index1 + 1;
+    
+    end
+
+end
+
+%Get and plot the median values
+StartDark = Data(1).StartDarkness;
+EndDark = Data(1).EndDarkness;
+
+BumpMag = {};
+HalfWidth = {};
+
+for fly = 1:length(bump_mag)
+    BumpMag{fly,1} = bump_mag{fly}(1:StartDark);
+    BumpMag{fly,2} = bump_mag{fly}(StartDark + 1:EndDark);
+    BumpMag{fly,3} = bump_mag{fly}(EndDark:end); 
+    
+    HalfWidth{fly,1} = half_width{fly}(1:StartDark);
+    HalfWidth{fly,2} = half_width{fly}(StartDark + 1:EndDark);
+    HalfWidth{fly,3} = half_width{fly}(EndDark:end); 
+    
+end
+
+medianBumpMag = cellfun(@median,BumpMag);
+medianHalfWidth = cellfun(@median,HalfWidth);
+
+figure('Position',[100 300 1400 600]),
+subplot(1,2,1)
+plot(medianBumpMag,'-o')
+xlim([0 4]);
+xticks([1 2 3]); 
+xticklabels({'certain' ,'uncertain', 'certain'});
+ylabel('Median bump magnitude')
+legend({'fly1','fly2','fly3'});
+
+subplot(1,2,2)
+plot(medianHalfWidth','-o')
+ylabel('Median bump half width');
+xlim([0 4]); ylim([15 30]);
+xticks([1 2 3]);
+xticklabels({'certain' ,'uncertain', 'certain'});
+legend({'fly1','fly2','fly3'});
+
+bump_mag = bump_mag';
+half_width = half_width';
+bump_mag = [bump_mag{1,1},bump_mag{2,1},bump_mag{3,1}];
+half_width = [half_width{1,1},half_width{2,1},half_width{3,1}];
+
+save('C:\Users\Melanie\Dropbox (HMS)\UncertaintyProject\JennyPanelsOffExp\data\fitData.mat','bump_mag','half_width')
+saveas(gcf,'Z:\Wilson Lab\Mel\Experiments\Uncertainty\vonMisesFit\allFliesYvetteFit.png');

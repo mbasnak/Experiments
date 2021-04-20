@@ -1,0 +1,16 @@
+Notes 20200807
+
+Fly 1 (w+/w;Gr43aLexA/+;LexAOpChrTdt/+, 4 day old, starved for 46 h)
+
+She's missing one leg segment but is walking surprisingly well.
+I turned on the enclosure heater.
+I positioned her at 4:05 pm.
+I run a 50 trip, reward at 50, inbound outbound hallway with 360 deg loops.
+The exposure in the proboscis camera is too high I think because the image is very bright.
+FicTrac failed, so I started over...
+The fly extends her proboscis when I shine red light at her.
+I ran it again.
+The matlab code finished way earlier, around trip number 43, which makes me think something is wrong...
+
+Fly 1 (w+/w;+;Gr43aLexA/LexAOpChrTdt, 4 day old, starved for 47 h)
+The same thing happened with matlab where it finished before trip 43, so I think something weird is happening with the voltage that I need to check.
