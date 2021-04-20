@@ -23,9 +23,21 @@ PathIntegration/Exp17/data/
 PathIntegration/Exp18/data/
 PathIntegration/Exp19/data/
 PathIntegration/Exp20/data/
-PathIntegration/Exp21/data/
+PathIntegration/Exp21/
+PathIntegration/Exp26/data/
+PathIntegration/Exp27/data/
+PathIntegration/Exp29/
 Uncertainty/Exp23/data/
 Uncertainty/Exp24/data/
+Uncertainty/Exp25/data/
+Uncertainty/Exp25/Bleedthrough/data/
+Uncertainty/Exp25/data/
+Uncertainty/Exp28/data/
+Uncertainty/Exp30/data/
+Uncertainty/Exp31/data/
+Uncertainty/Exp32/data/
+Uncertainty/Laser_power_control/data/
+Uncertainty/DataToShare/
 
 
 #Ignore plots
@@ -56,6 +68,7 @@ Uncertainty/Exp23/globalPlots/
 Uncertainty/Exp24/globalPlots/
 
 
+
 #Aditional things to ignore
 
 Exp3/Experiment3-piloting/
@@ -70,6 +83,12 @@ Exp11/pilot/
 Exp14/piloting/
 PathIntegration/Exp16/pilots/
 Uncertainty/SummaryFromAnna.pdf
+Uncertainty/pilot-graded-certainty/
+Uncertainty/Exp25/bar_contrast_tests/
+Uncertainty/Exp25/FicTracCalibration/
+Uncertainty/vonMisesFit/
+PathIntegration/originalHallwayVersions/
+PathIntegration/PathIntegrationSummaries/
 *.docx
 *.doc
 *.pdf
