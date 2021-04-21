@@ -1,12 +1,13 @@
 %function to compute the width at half max of the bump at a specific
 %timepoint
 
-%OUTPUT = with at half max value at a specific timepoint
-%INPUTS
+%OUTPUT = with at half max value for each timepoint in the dataset
+%INPUT 
     %data = dff data in EB coordinates
-    %timepoint = point in time at which we're evaluating the half width
 
-function [half_max_width] = compute_bump_width(data,timepoint)
+function [half_max_width] = compute_bump_width(data)
+
+for timepoint = 1:length(data)
     
     %Linearly interpolate the data in 'EB coordinates' to have 1000 datapoints instead of 8
     interp_ex_data = interp1([1:8],data(:,timepoint),[1:7/1000:8]);
@@ -26,10 +27,11 @@ function [half_max_width] = compute_bump_width(data,timepoint)
     I1 = min(two_indexes);
     I2 = max(two_indexes);
     if (all(two_indexes>I_interp) | all(two_indexes<I_interp))
-        half_max_w = I1+1000-I2;  
+        half_max_w = I1+1000-I2;
     else
         half_max_w = I2-I1;
-    end  
+    end
     %Convert to EB coordinates
-    half_max_width = half_max_w*8/1001;     
+    half_max_width(timepoint) = half_max_w*8/1001;
+end
 end
