@@ -145,7 +145,7 @@ for y = 1:numel(mdl_heading.CoefficientNames)
     fprintf('Contrast position %i: %s\n', y, char(mdl_heading.CoefficientNames{y}));
 end
 bonfCorrection = 1;
-[pVal F df1 df2] = coefTest(mdl_heading, [0  1 -1]);   pVal = min(1,pVal*bonfCorrection);           fprintf('Planned comparison low conrast vs high contrast,  F(%i, %i)=%0.2f,\t p=%0.7f (contrast 0  1 -1)\n', df1, df2, F, pVal);
+[pVal F df1 df2] = coefTest(mdl_heading, [0  1 -1]);pVal = min(1,pVal*bonfCorrection); fprintf('Planned comparison low conrast vs high contrast,  F(%i, %i)=%0.2f,\t p=%0.7f (contrast 0  1 -1)\n', df1, df2, F, pVal);
 
 
 %% Get and plot mean heading variation per fly and in total
@@ -228,42 +228,60 @@ saveas(gcf,[path,'\globalPlots\mean_closed_loop_heading_var.png']);
 %% Compute model for bump magnitude
 
 %Combine the tables into one
-allModelData = array2table(zeros(0,5),'VariableNames', {'ContrastLevel','TotalMovement','ZscoredTotalMovement','Time','BumpMagnitude'});
+allModelData = array2table(zeros(0,12),'VariableNames', {'ContrastLevel','ForVelocity','ZscoredForVel','SideSpeed','ZscoredSideSpeed','YawSpeed','ZscoredYawSpeed','TotalMovement','ZscoredTotalMovement','Time','BumpMagnitude','BumpWidth'});
 Fly = [];
 for fly = 1:length(data)
     Fly = [Fly,repelem(fly,length(data(fly).modelTable.ContrastLevel))];
     allModelData = [allModelData;data(fly).modelTable]; 
 end
-%add fly id as a categorical variable
+%Add fly id as a categorical variable
 allModelData = addvars(allModelData,nominal(Fly'));
-allModelData.Properties.VariableNames{'Var6'} = 'Fly';
+allModelData.Properties.VariableNames{'Var13'} = 'Fly';
 
+%Change contrast level as a categorical variable
+allModelData.ContrastLevel = nominal(allModelData.ContrastLevel);
 
-%with contrast level as a categorical variable
-allModelDataCat = allModelData;
-allModelDataCat.ContrastLevel = nominal(allModelDataCat.ContrastLevel);
+%Fit different models
+mdl_BM{1} = fitlme(allModelData,'BumpMagnitude~ContrastLevel+TotalMovement+(1|Fly)');
+mdl_BM{2} = fitlme(allModelData,'BumpMagnitude~ContrastLevel+ForVelocity+SideSpeed+YawSpeed+(1|Fly)');
+mdl_BM{3} = fitlme(allModelData,'BumpMagnitude~ContrastLevel+ForVelocity+SideSpeed+YawSpeed+Time+(1|Fly)');
+%zscored data
+mdl_BM{4} = fitlme(allModelData,'BumpMagnitude~ContrastLevel+ZscoredTotalMovement+(1|Fly)');
+mdl_BM{5} = fitlme(allModelData,'BumpMagnitude~ContrastLevel+ZscoredForVel+ZscoredSideSpeed+ZscoredYawSpeed+(1|Fly)');
+mdl_BM{6} = fitlme(allModelData,'BumpMagnitude~ContrastLevel+ZscoredForVel+ZscoredSideSpeed+ZscoredYawSpeed+Time+(1|Fly)');
 
-mdl_BM3 = fitlme(allModelDataCat,'BumpMagnitude~ContrastLevel+TotalMovement+Time+(1|Fly)');
-
-%using zscored mvt data
-%1) per fly
-mdl_BM4 = fitlme(allModelDataCat,'BumpMagnitude~ContrastLevel+ZscoredTotalMovement+Time+(1|Fly)');
-%it's exactly the same, how is that possible?
-
-%2) across flies
-zscored_mvt_across = zscore(allModelData.TotalMovement);
-allModelDataCat = addvars(allModelDataCat,zscored_mvt_across,'NewVariableNames','ZscoredMovementAcrossFlies');
-
-mdl_BM5 = fitlme(allModelDataCat,'BumpMagnitude~ContrastLevel+ZscoredMovementAcrossFlies+Time+(1|Fly)');
-
-%removing the time as variable
-mdl_BM6 = fitlme(allModelDataCat,'BumpMagnitude~ContrastLevel+ZscoredTotalMovement+(1|Fly)')
-%add post-hoc comparison between low and high contrast
-for y = 1:numel(mdl_BM6.CoefficientNames)
-    fprintf('Contrast position %i: %s\n', y, char(mdl_BM6.CoefficientNames{y}));
+%Plot model comparison
+figure,
+%Plot R squared
+subplot(1,2,1)
+for model = 1:length(mdl_BM)
+   Rsquared(model) = mdl_BM{1,model}.Rsquared.Adjusted; 
 end
-bonfCorrection = 1;
-[pVal F df1 df2] = coefTest(mdl_BM6, [0  1 -1 0]);   pVal = min(1,pVal*bonfCorrection);           fprintf('Planned comparison low conrast vs high contrast,  F(%i, %i)=%0.2f,\t p=%0.7f (contrast 0  1 -1)\n', df1, df2, F, pVal);
+plot(Rsquared,'-ko')
+xlabel('Model #');ylim([0 1]);
+xlim([1 length(mdl_BM)]);
+ylabel('Proportion of variance explained');
+title('R squared');
+
+%Plot fit statistics
+subplot(1,2,2)
+for model = 1:length(mdl_BM)
+   AIC(model) = mdl_BM{1,model}.ModelCriterion.AIC; 
+end
+plot(AIC,'-ko')
+xlabel('Model #');
+xlim([1 length(mdl_BM)]);
+title('AIC');
+ylabel('AIC');
+
+suptitle('Model comparison for bump magnitude');
+
+%Add post-hoc comparison between low and high contrast
+% for y = 1:numel(mdl_BM2.CoefficientNames)
+%     fprintf('Contrast position %i: %s\n', y, char(mdl_BM2.CoefficientNames{y}));
+% end
+% bonfCorrection = 1;
+% [pVal F df1 df2] = coefTest(mdl_BM2, [0  1 -1 0]);   pVal = min(1,pVal*bonfCorrection);           fprintf('Planned comparison low conrast vs high contrast,  F(%i, %i)=%0.2f,\t p=%0.7f (contrast 0  1 -1)\n', df1, df2, F, pVal);
 
 
 %% Get and plot mean bump magnitude
@@ -272,75 +290,63 @@ figure('Position',[200 200 1000 800]),
 %Get mean offset var by contrast per fly
 mean_bump_data_per_fly = varfun(@mean,allSummaryData,'InputVariables','mean_bump_mag',...
        'GroupingVariables',{'contrast','Fly'});
-mean_bump_data_per_fly = addvars(mean_bump_data_per_fly,contrastLevel');
-mean_bump_data_per_fly.Properties.VariableNames{'Var5'} = 'contrastLevel';
 %Plot
-%plot(mean_bump_data_per_fly.contrastLevel,mean_bump_data_per_fly.mean_mean_bump_mag,'o','color',[0.6 0.6 0.6],'MarkerFaceColor',[0.6 0.6 0.6])
-%change the code above to be able to get lines per fly
 AllFlies = [];
 for fly = 1:length(data)
     bump_data{fly} = [mean_bump_data_per_fly.mean_mean_bump_mag(fly),mean_bump_data_per_fly.mean_mean_bump_mag(fly+2*length(data)),mean_bump_data_per_fly.mean_mean_bump_mag(fly+length(data))];
     AllFlies = [AllFlies;bump_data{fly}];
 end
 plot(1:3,AllFlies','-o','color',[0.6 0.6 0.6],'MarkerFaceColor',[0.6 0.6 0.6])
-
-%Get mean offset var by contrast in total
-mean_bump_data = varfun(@mean,allSummaryData,'InputVariables','mean_bump_mag',...
-       'GroupingVariables',{'contrast'});
 hold on
-mean_bump_data = addvars(mean_bump_data,contrastLevel2');
-mean_bump_data.Properties.VariableNames{'Var4'} = 'contrastLevel';
-%plot(mean_bump_data.contrastLevel,mean_bump_data.mean_mean_bump_mag,'ko','LineWidth',2,'MarkerFaceColor','k','MarkerSize',8)
 errorbar(1:3,mean(AllFlies),std(AllFlies)/sqrt(length(allFlies)),'-ko','LineWidth',2,'MarkerFaceColor','k','MarkerSize',8)
 
-%add significance 
-for contrast = 2
-   if (mdl_BM6.Coefficients.pValue(contrast)<0.05 & mdl_BM6.Coefficients.pValue(contrast)>=0.01)
-      text(contrast-0.58,1,'*','fontsize',26);
-   elseif (mdl_BM6.Coefficients.pValue(contrast)<0.01 & mdl_BM6.Coefficients.pValue(contrast)>=0.001)
-       text(contrast-0.58,1,'**','fontsize',26);
-   elseif mdl_BM6.Coefficients.pValue(contrast)<0.001
-       text(contrast-0.58,1,'***','fontsize',26);
-   else
-      text(contrast-0.58,1,'ns');
-   end
-end
-for contrast = 3
-   if (mdl_BM6.Coefficients.pValue(contrast)<0.05 & mdl_BM6.Coefficients.pValue(contrast)>=0.01)
-      text(contrast-1.1,1.2,'*','fontsize',26);
-   elseif (mdl_BM6.Coefficients.pValue(contrast)<0.01 & mdl_BM6.Coefficients.pValue(contrast)>=0.001)
-       text(contrast-1.1,1.2,'**','fontsize',26);
-   elseif mdl_BM6.Coefficients.pValue(contrast)<0.001
-       text(contrast-1.1,1.2,'***','fontsize',26);
-   else
-      text(contrast-1.1,1.2,'ns');
-   end
-end
-for contrast = 2
-   if (pVal<0.05 & pVal>=0.01)
-      text(contrast+0.43,1.1,'*','fontsize',26);
-   elseif (pVal<0.01 & pVal>=0.001)
-       text(contrast+0.43,1.1,'**','fontsize',26);
-   elseif pVal<0.001
-       text(contrast+0.43,1.1,'***','fontsize',26);
-   elseif (pVal>0.05 & pVal<0.1)
-       text(contrast+0.39,1.11,['p = ',num2str(round(pVal,2))],'fontsize',12);
-   else
-      text(contrast+0.48,1.1,'ns','fontsize',16);
-   end
-end
-
-%add line between asterisks
-%contrasts 1 and 2
-line([1 1.4],[1.01 1.01],'color','k');
-line([1.66 2],[1.01 1.01],'color','k');
-%contrasts 2 and 3
-line([2 2.35],[1.1 1.1],'color','k');
-line([2.7 3],[1.1 1.1],'color','k');
-%contrasts 1 and 3
-line([1 1.88],[1.21 1.21],'color','k');
-line([2.15 3],[1.21 1.21],'color','k');
-
+% %add significance 
+% for contrast = 2
+%    if (mdl_BM6.Coefficients.pValue(contrast)<0.05 & mdl_BM6.Coefficients.pValue(contrast)>=0.01)
+%       text(contrast-0.58,1,'*','fontsize',26);
+%    elseif (mdl_BM6.Coefficients.pValue(contrast)<0.01 & mdl_BM6.Coefficients.pValue(contrast)>=0.001)
+%        text(contrast-0.58,1,'**','fontsize',26);
+%    elseif mdl_BM6.Coefficients.pValue(contrast)<0.001
+%        text(contrast-0.58,1,'***','fontsize',26);
+%    else
+%       text(contrast-0.58,1,'ns');
+%    end
+% end
+% for contrast = 3
+%    if (mdl_BM6.Coefficients.pValue(contrast)<0.05 & mdl_BM6.Coefficients.pValue(contrast)>=0.01)
+%       text(contrast-1.1,1.2,'*','fontsize',26);
+%    elseif (mdl_BM6.Coefficients.pValue(contrast)<0.01 & mdl_BM6.Coefficients.pValue(contrast)>=0.001)
+%        text(contrast-1.1,1.2,'**','fontsize',26);
+%    elseif mdl_BM6.Coefficients.pValue(contrast)<0.001
+%        text(contrast-1.1,1.2,'***','fontsize',26);
+%    else
+%       text(contrast-1.1,1.2,'ns');
+%    end
+% end
+% for contrast = 2
+%    if (pVal<0.05 & pVal>=0.01)
+%       text(contrast+0.43,1.1,'*','fontsize',26);
+%    elseif (pVal<0.01 & pVal>=0.001)
+%        text(contrast+0.43,1.1,'**','fontsize',26);
+%    elseif pVal<0.001
+%        text(contrast+0.43,1.1,'***','fontsize',26);
+%    elseif (pVal>0.05 & pVal<0.1)
+%        text(contrast+0.39,1.11,['p = ',num2str(round(pVal,2))],'fontsize',12);
+%    else
+%       text(contrast+0.48,1.1,'ns','fontsize',16);
+%    end
+% end
+% 
+% %add line between asterisks
+% %contrasts 1 and 2
+% line([1 1.4],[1.01 1.01],'color','k');
+% line([1.66 2],[1.01 1.01],'color','k');
+% %contrasts 2 and 3
+% line([2 2.35],[1.1 1.1],'color','k');
+% line([2.7 3],[1.1 1.1],'color','k');
+% %contrasts 1 and 3
+% line([1 1.88],[1.21 1.21],'color','k');
+% line([2.15 3],[1.21 1.21],'color','k');
 
 xlim([0 4]);
 xticks(1:3);
@@ -357,43 +363,53 @@ saveas(gcf,[path,'\globalPlots\mean_closed_loop_bump_mag.png']);
 
 %% Compute model for bump width at half max
 
-%combine the tables into one
-allModelDataHW = array2table(zeros(0,5),'VariableNames', {'ContrastLevel','TotalMovement','ZscoredTotalMovement','Time','BumpWidth'});
-Fly = [];
-for fly = 1:length(data)
-    Fly = [Fly,repelem(fly,length(data(fly).modelTable_HW.ContrastLevel))];
-    allModelDataHW = [allModelDataHW;data(fly).modelTable_HW]; 
+%Fit different models
+%Fit different models
+mdl_HW{1} = fitlme(allModelData,'BumpWidth~ContrastLevel+(1|Fly)');
+mdl_HW{2} = fitlme(allModelData,'BumpWidth~ContrastLevel+TotalMovement+(1|Fly)');
+mdl_HW{3} = fitlme(allModelData,'BumpWidth~ContrastLevel+ForVelocity+SideSpeed+YawSpeed+(1|Fly)');
+mdl_HW{4} = fitlme(allModelData,'BumpWidth~ContrastLevel+ForVelocity+SideSpeed+YawSpeed+Time+(1|Fly)');
+%zscored data
+mdl_HW{5} = fitlme(allModelData,'BumpWidth~ContrastLevel+(1|Fly)');
+mdl_HW{6} = fitlme(allModelData,'BumpWidth~ContrastLevel+ZscoredTotalMovement+(1|Fly)');
+mdl_HW{7} = fitlme(allModelData,'BumpWidth~ContrastLevel+ZscoredForVel+ZscoredSideSpeed+ZscoredYawSpeed+(1|Fly)');
+mdl_HW{8} = fitlme(allModelData,'BumpWidth~ContrastLevel+ZscoredForVel+ZscoredSideSpeed+ZscoredYawSpeed+Time+(1|Fly)');
+
+%Plot model comparison
+figure,
+%Plot R squared
+subplot(1,2,1)
+for model = 1:length(mdl_HW)
+   Rsquared(model) = mdl_HW{1,model}.Rsquared.Adjusted; 
 end
-allModelDataHW = addvars(allModelDataHW,Fly');
-allModelDataHW.Properties.VariableNames{'Var6'} = 'Fly';
+plot(Rsquared,'-ko')
+xlabel('Model #');ylim([0 1]);
+xlim([1 length(mdl_HW)]);
+ylabel('Proportion of variance explained');
+title('R squared');
 
-%fit mixed linear model using fly number as a random variable
-mdl_HW = fitlme(allModelDataHW,'BumpWidth~ContrastLevel+TotalMovement+Time+(1|Fly)');
-
-%force the intercept to be 0
-mdl_HW2 = fitlme(allModelDataHW,'BumpWidth~-1+ContrastLevel+TotalMovement+Time+(1|Fly)');
-
-%with contrast level as a categorical variable
-allModelDataHWCat = allModelDataHW;
-allModelDataHWCat.ContrastLevel = nominal(allModelDataHWCat.ContrastLevel);
-
-mdl_HW3 = fitlme(allModelDataHWCat,'BumpWidth~ContrastLevel+TotalMovement+Time+(1|Fly)');
-
-%using zscored time data
-%1) per fly
-mdl_HW4 = fitlme(allModelDataHWCat,'BumpWidth~ContrastLevel+ZscoredTotalMovement+Time+(1|Fly)');
-
-%2) across flies
-zscored_mvt_across = zscore(allModelDataHW.TotalMovement);
-allModelDataHWCat = addvars(allModelDataHWCat,zscored_mvt_across,'NewVariableNames','ZscoredMovementAcrossFlies');
-
-mdl_HW5 = fitlme(allModelDataHWCat,'BumpWidth~ContrastLevel+ZscoredMovementAcrossFlies+(1|Fly)')
-%add post-hoc comparison between low and high contrast
-for y = 1:numel(mdl_HW5.CoefficientNames)
-    fprintf('Contrast position %i: %s\n', y, char(mdl_HW5.CoefficientNames{y}));
+%Plot fit statistics
+subplot(1,2,2)
+for model = 1:length(mdl_HW)
+   AIC(model) = mdl_HW{1,model}.ModelCriterion.AIC; 
 end
-bonfCorrection = 1;
-[pVal F df1 df2] = coefTest(mdl_HW5, [0  1 -1 0]);   pVal = min(1,pVal*bonfCorrection);           fprintf('Planned comparison low conrast vs high contrast,  F(%i, %i)=%0.2f,\t p=%0.7f (contrast 0  1 -1)\n', df1, df2, F, pVal);
+plot(AIC,'-ko')
+xlabel('Model #');
+xlim([1 length(mdl_HW)]);
+title('AIC');
+ylabel('AIC');
+
+suptitle('Model comparison for bump width');
+
+%save figure
+saveas(gcf,[path,'\globalPlots\mean_closed_loop_bump_mag.png']);
+
+% %add post-hoc comparison between low and high contrast
+% for y = 1:numel(mdl_HW5.CoefficientNames)
+%     fprintf('Contrast position %i: %s\n', y, char(mdl_HW5.CoefficientNames{y}));
+% end
+% bonfCorrection = 1;
+% [pVal F df1 df2] = coefTest(mdl_HW5, [0  1 -1 0]);   pVal = min(1,pVal*bonfCorrection);           fprintf('Planned comparison low conrast vs high contrast,  F(%i, %i)=%0.2f,\t p=%0.7f (contrast 0  1 -1)\n', df1, df2, F, pVal);
 
 
 %% Get and plot mean bump width at half max
@@ -401,8 +417,6 @@ bonfCorrection = 1;
 figure('Position',[200 200 1000 800]),
 mean_hw_per_fly = varfun(@mean,allSummaryData,'InputVariables','mean_half_width',...
        'GroupingVariables',{'contrast','Fly'});
-mean_hw_per_fly = addvars(mean_hw_per_fly,contrastLevel');
-mean_hw_per_fly.Properties.VariableNames{'Var5'} = 'contrastLevel';
 %Plot
 AllFliesHW = [];
 for fly = 1:length(data)
@@ -410,62 +424,56 @@ for fly = 1:length(data)
     AllFliesHW = [AllFliesHW;hw_bump_data{fly}];
 end
 plot(1:3,AllFliesHW','-o','color',[0.6 0.6 0.6],'MarkerFaceColor',[0.6 0.6 0.6])
-
-%Get mean offset var by contrast in total
-mean_hw = varfun(@mean,allSummaryData,'InputVariables','mean_half_width',...
-       'GroupingVariables',{'contrast'});
 hold on
-mean_hw = addvars(mean_hw,contrastLevel2');
-mean_hw.Properties.VariableNames{'Var4'} = 'contrastLevel';
 errorbar(1:3,mean(AllFliesHW),std(AllFliesHW)/sqrt(length(AllFliesHW)),'-ko','LineWidth',2,'MarkerFaceColor','k','MarkerSize',8)
 
-%add significance 
-for contrast = 2
-   if (mdl_HW5.Coefficients.pValue(contrast)<0.05 & mdl_HW5.Coefficients.pValue(contrast)>=0.01)
-      text(contrast-0.58,3.5,'*','fontsize',26);
-   elseif (mdl_HW5.Coefficients.pValue(contrast)<0.01 & mdl_HW5.Coefficients.pValue(contrast)>=0.001)
-       text(contrast-0.58,3.5,'**','fontsize',26);
-   elseif mdl_HW5.Coefficients.pValue(contrast)<0.001
-       text(contrast-0.58,3.5,'***','fontsize',26);
-   else
-      text(contrast-0.58,3.5,'ns');
-   end
-end
-for contrast = 3
-   if (mdl_HW5.Coefficients.pValue(contrast)<0.05 & mdl_HW5.Coefficients.pValue(contrast)>=0.01)
-      text(contrast-1.1,3.9,'*','fontsize',26);
-   elseif (mdl_HW5.Coefficients.pValue(contrast)<0.01 & mdl_HW5.Coefficients.pValue(contrast)>=0.001)
-       text(contrast-1.1,3.9,'**','fontsize',26);
-   elseif mdl_HW5.Coefficients.pValue(contrast)<0.001
-       text(contrast-1.1,3.9,'***','fontsize',26);
-   else
-      text(contrast-1.1,3.9,'ns');
-   end
-end
-for contrast = 2
-   if (pVal<0.05 & pVal>=0.01)
-      text(contrast+0.43,3.4,'*','fontsize',26);
-   elseif (pVal<0.01 & pVal>=0.001)
-       text(contrast+0.43,3.4,'**','fontsize',26);
-   elseif pVal<0.001
-       text(contrast+0.43,3.4,'***','fontsize',26);
-   elseif (pVal>0.05 & pVal<0.1)
-       text(contrast+0.39,3.4,['p = ',num2str(round(pVal,2))],'fontsize',12);
-   else
-      text(contrast+0.48,3.4,'ns','fontsize',16);
-   end
-end
-
-%add line between asterisks
-%contrasts 1 and 2
-line([1 1.4],[3.52 3.52],'color','k');
-line([1.66 2],[3.52 3.52],'color','k');
-%contrasts 2 and 3
-line([2 2.4],[3.42 3.42],'color','k');
-line([2.66 3],[3.42 3.42],'color','k');
-%contrasts 1 and 3
-line([1 1.88],[3.92 3.92],'color','k');
-line([2.15 3],[3.92 3.92],'color','k');
+% %add significance 
+% for contrast = 2
+%    if (mdl_HW5.Coefficients.pValue(contrast)<0.05 & mdl_HW5.Coefficients.pValue(contrast)>=0.01)
+%       text(contrast-0.58,3.5,'*','fontsize',26);
+%    elseif (mdl_HW5.Coefficients.pValue(contrast)<0.01 & mdl_HW5.Coefficients.pValue(contrast)>=0.001)
+%        text(contrast-0.58,3.5,'**','fontsize',26);
+%    elseif mdl_HW5.Coefficients.pValue(contrast)<0.001
+%        text(contrast-0.58,3.5,'***','fontsize',26);
+%    else
+%       text(contrast-0.58,3.5,'ns');
+%    end
+% end
+% for contrast = 3
+%    if (mdl_HW5.Coefficients.pValue(contrast)<0.05 & mdl_HW5.Coefficients.pValue(contrast)>=0.01)
+%       text(contrast-1.1,3.9,'*','fontsize',26);
+%    elseif (mdl_HW5.Coefficients.pValue(contrast)<0.01 & mdl_HW5.Coefficients.pValue(contrast)>=0.001)
+%        text(contrast-1.1,3.9,'**','fontsize',26);
+%    elseif mdl_HW5.Coefficients.pValue(contrast)<0.001
+%        text(contrast-1.1,3.9,'***','fontsize',26);
+%    else
+%       text(contrast-1.1,3.9,'ns');
+%    end
+% end
+% for contrast = 2
+%    if (pVal<0.05 & pVal>=0.01)
+%       text(contrast+0.43,3.4,'*','fontsize',26);
+%    elseif (pVal<0.01 & pVal>=0.001)
+%        text(contrast+0.43,3.4,'**','fontsize',26);
+%    elseif pVal<0.001
+%        text(contrast+0.43,3.4,'***','fontsize',26);
+%    elseif (pVal>0.05 & pVal<0.1)
+%        text(contrast+0.39,3.4,['p = ',num2str(round(pVal,2))],'fontsize',12);
+%    else
+%       text(contrast+0.48,3.4,'ns','fontsize',16);
+%    end
+% end
+% 
+% %add line between asterisks
+% %contrasts 1 and 2
+% line([1 1.4],[3.52 3.52],'color','k');
+% line([1.66 2],[3.52 3.52],'color','k');
+% %contrasts 2 and 3
+% line([2 2.4],[3.42 3.42],'color','k');
+% line([2.66 3],[3.42 3.42],'color','k');
+% %contrasts 1 and 3
+% line([1 1.88],[3.92 3.92],'color','k');
+% line([2.15 3],[3.92 3.92],'color','k');
 
 xlim([0 4]);
 xticks(1:3);
@@ -480,11 +488,10 @@ saveas(gcf,[path,'\globalPlots\mean_closed_loop_half_width.png']);
 
 %% Get and plot total movement per contrast
 
-
 figure('Position',[100 100 1400 800]),
 
 subplot(1,2,1)
-mean_total_mvt_per_fly = varfun(@mean,allModelDataCat,'InputVariables','TotalMovement',...
+mean_total_mvt_per_fly = varfun(@mean,allModelData,'InputVariables','TotalMovement',...
        'GroupingVariables',{'ContrastLevel','Fly'});
 AllFliesTM = [];
 for fly = 1:length(data)
@@ -492,25 +499,19 @@ for fly = 1:length(data)
     AllFliesTM = [AllFliesTM;total_mvt_data{fly}];
 end
 plot(1:3,AllFliesTM','-o','color',[0.6 0.6 0.6],'MarkerFaceColor',[0.6 0.6 0.6])
-
-%Get mean offset var by contrast in total
-mean_tm = varfun(@mean,allModelDataCat,'InputVariables','TotalMovement',...
-       'GroupingVariables',{'ContrastLevel'});
 hold on
-mean_tm = addvars(mean_tm,contrastLevel2');
-mean_tm.Properties.VariableNames{'Var4'} = 'contrastLevel';
 errorbar(1:3,mean(AllFliesTM),std(AllFliesTM)/sqrt(length(AllFliesTM)),'-ko','LineWidth',2,'MarkerFaceColor','k','MarkerSize',8)
 xlim([0 4]);
 xticks(1:3);
 xticklabels({'Darkness','Low contrast','High contrast'});
 a = get(gca,'XTickLabel');  
 set(gca,'XTickLabel',a,'fontsize',12,'FontWeight','bold')
-ylabel('total movement (deg/s)','FontSize',12);
+ylabel('Total movement (deg/s)','FontSize',12);
 ylim([0 max(mean_total_mvt_per_fly.mean_TotalMovement)+10]);
 
 subplot(1,2,2)
 %zscored movement
-mean_ztotal_mvt_per_fly = varfun(@mean,allModelDataCat,'InputVariables','ZscoredTotalMovement',...
+mean_ztotal_mvt_per_fly = varfun(@mean,allModelData,'InputVariables','ZscoredTotalMovement',...
        'GroupingVariables',{'ContrastLevel','Fly'});
 AllFlieszTM = [];
 for fly = 1:length(data)
@@ -518,20 +519,14 @@ for fly = 1:length(data)
     AllFlieszTM = [AllFlieszTM;ztotal_mvt_data{fly}];
 end
 plot(1:3,AllFlieszTM','-o','color',[0.6 0.6 0.6],'MarkerFaceColor',[0.6 0.6 0.6])
-
-%Get mean offset var by contrast in total
-mean_ztm = varfun(@mean,allModelDataCat,'InputVariables','ZscoredTotalMovement',...
-       'GroupingVariables',{'ContrastLevel'});
 hold on
-mean_ztm = addvars(mean_ztm,contrastLevel2');
-mean_ztm.Properties.VariableNames{'Var4'} = 'contrastLevel';
 errorbar(1:3,mean(AllFlieszTM),std(AllFlieszTM)/sqrt(length(AllFlieszTM)),'-ko','LineWidth',2,'MarkerFaceColor','k','MarkerSize',8)
 xlim([0 4]);
 xticks(1:3);
 xticklabels({'Darkness','Low contrast','High contrast'});
 a = get(gca,'XTickLabel');  
 set(gca,'XTickLabel',a,'fontsize',12,'FontWeight','bold')
-ylabel('zscored total movement (deg/s)','FontSize',12);
+ylabel('Zscored total movement (deg/s)','FontSize',12);
 ylim([min(mean_ztotal_mvt_per_fly.mean_ZscoredTotalMovement)-1 max(mean_ztotal_mvt_per_fly.mean_ZscoredTotalMovement)+1]);
 
 %save figure
