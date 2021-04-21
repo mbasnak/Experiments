@@ -85,6 +85,7 @@ end
 if (contains(path, '20201020_60D05_7f') & ~contains(path,'fly2'))
     Intensities = Intensities(1:5);
 end
+
 %% Plot the activity heatmap, phase and heading positions, and offset in time
 
 %Define the number of columns in the subplots depending on the fly (the one
@@ -312,7 +313,7 @@ figure('Position',[200 200 1600 600]),
 %Plot EPG activity
 subplot(2,1,1)
 imagesc(flip(data.dff_matrix))
-colormap(gray)
+colormap(flipud(gray))
 hold on
 %add the changes in stim
 for change = 1:length(changeContrast)
@@ -393,14 +394,14 @@ saveas(gcf,[path,'plots\closedLoopMeanBM.png']);
 
 %% Analyze bump width at half max per block
 
-% Compute bump width at half maximum (using aux function)
+%Compute bump width at half maximum (using aux function)
 half_max_width = compute_bump_width(data.mean_dff_EB); 
 
 for block = 1:length(blockLimits)
    width_half_max{block} = half_max_width(blockLimits{block}(1):blockLimits{block}(2)); 
 end
 
-%plot
+%Plot
 figure('Position',[200 200 1000 800]),
 subplot(2,1,1)
 for block = 1:length(blockLimits)
@@ -441,7 +442,7 @@ xticklabels({'Darkness', 'Low contrast', 'High contrast'});
 title('Width at half max per contrast');
 ylabel('Full width at half max');
 
-%save figure
+%Save figure
 saveas(gcf,[path,'plots\closedLoopMeanHW.png']);
 
 %% Plot fly's velocity in all 3 axes  with all vel in deg/s
@@ -504,7 +505,7 @@ histogram(data.total_mvt_ds,'FaceColor','k')
 xlabel('Total movement (deg/s)');
 ylabel('Counts');
 
-%save figure
+%Save figure
 saveas(gcf,[path,'plots\closedLoopVelDistributions.png']);
 
 %% Compute and plot mean total movement per block
@@ -561,7 +562,7 @@ xlim([0 4]);
 xticks(1:3);
 xticklabels({'Darkness','Low contrast','High contrast'});
 
-%save figure
+%Save figure
 saveas(gcf,[path,'plots\closedLoopTotalMvtPerBlock.png']);
 
 %% Repeat for forward velocity
@@ -618,7 +619,7 @@ xlim([0 4]);
 xticks(1:3);
 xticklabels({'Darkness','Low contrast','High contrast'});
 
-%save figure
+%Save figure
 saveas(gcf,[path,'plots\closedLoopFwdVelPerBlock.png']);
 
 %% Repeat for angular speed
@@ -675,10 +676,15 @@ xlim([0 4]);
 xticks(1:3);
 xticklabels({'Darkness','Low contrast','High contrast'});
 
-%save figure
+%Save figure
 saveas(gcf,[path,'plots\closedLoopAngSpeedPerBlock.png']);
 
 %% Relationship between bump magnitude and movement parameters, parsed by contrast
+
+allBumpMag = [];
+for block = 1:length(blockLimits)
+    allBumpMag = [allBumpMag,bump_mag{block}];
+end
 
 figure('Position',[200 200 1400 600]),
 
@@ -688,7 +694,6 @@ for block = 1:length(blockLimits)
     contrast_level{block} = repelem(Intensities(block),blockLimits{block}(2)+1-blockLimits{block}(1));
     all_contrast_levels = [all_contrast_levels,contrast_level{block}];
 end
-
 nbins = 20;
 
 %Forward velocity
@@ -829,17 +834,25 @@ saveas(gcf,[path,'plots\closedLoopBMvsVelPerContrastBinned.png']);
 
 %% Model bump magnitude as a function of contrast level and total movement
 
-%fill missing data in the total movement vector
+%fill missing data in the movement variables
+data.vel_for_deg_ds = fillmissing(data.vel_for_deg_ds,'linear');
+data.vel_side_deg_ds = fillmissing(data.vel_side_deg_ds,'linear');
+data.vel_yaw_ds = fillmissing(data.vel_yaw_ds,'linear');
 data.total_mvt_ds = fillmissing(data.total_mvt_ds,'linear');
-%zscore the total movement data
+%zscore the movement data
+zscored_for_vel = zscore(data.vel_for_deg_ds);
+zscored_side_speed = zscore(abs(data.vel_side_deg_ds));
+zscored_yaw_speed = zscore(abs(data.vel_yaw_ds));
 zscored_total_mvt = zscore(data.total_mvt_ds);
 
 %Create table with the model's variables
-modelTable = table(all_contrast_levels',data.total_mvt_ds(1:length(allBumpMag))',zscored_total_mvt(1:length(allBumpMag))',data.time(1:length(allBumpMag)),allBumpMag','VariableNames',{'ContrastLevel','TotalMovement','ZscoredTotalMovement','Time','BumpMagnitude'});
+modelTable = table(all_contrast_levels',data.vel_for_deg_ds(1:length(allBumpMag)),zscored_for_vel(1:length(allBumpMag)),abs(data.vel_side_deg_ds(1:length(allBumpMag))),zscored_side_speed(1:length(allBumpMag)),abs(data.vel_yaw_ds(1:length(allBumpMag)))',zscored_yaw_speed(1:length(allBumpMag))',data.total_mvt_ds(1:length(allBumpMag))',zscored_total_mvt(1:length(allBumpMag))',data.time(1:length(allBumpMag)),allBumpMag','VariableNames',{'ContrastLevel','ForVelocity','ZscoredForVel','SideSpeed','ZscoredSideSpeed','YawSpeed','ZscoredYawSpeed','TotalMovement','ZscoredTotalMovement','Time','BumpMagnitude'});
 
 %Fit linear model using contrast level as a categorical variable
-mdl_BM = fitlm(modelTable,'BumpMagnitude~ContrastLevel+TotalMovement','CategoricalVars',1)
-mdl_BMz = fitlm(modelTable,'BumpMagnitude~ContrastLevel+ZscoredTotalMovement','CategoricalVars',1)
+% mdl_BM = fitlm(modelTable,'BumpMagnitude~ContrastLevel+TotalMovement','CategoricalVars',1)
+% mdl_BMz = fitlm(modelTable,'BumpMagnitude~ContrastLevel+ZscoredTotalMovement','CategoricalVars',1)
+% mdl_BM_all_mvt = fitlm(modelTable,'BumpMagnitude~ContrastLevel+TotalMovement+ForVelocity+SideSpeed+YawSpeed','CategoricalVars',1)
+% mdl_BM_all_mvt_z = fitlm(modelTable,'BumpMagnitude~ContrastLevel+ZscoredTotalMovement+ZscoredForVel+ZscoredSideSpeed+ZscoredYawSpeed+Time','CategoricalVars',1)
 
 %% Relationship between bump width at half max and velocity
 
@@ -989,12 +1002,14 @@ saveas(gcf,[path,'plots\closedLoopHWvsVelPerContrastBinned.png']);
 
 %% Model bump width at half max as a function of contrastLevel and total movement
 
-%create table with the model's variables
-modelTable_HW = table(all_contrast_levels',data.total_mvt_ds(1:length(allBumpWidth))',zscored_total_mvt(1:length(allBumpWidth))',data.time(1:length(allBumpWidth)),allBumpWidth','VariableNames',{'ContrastLevel','TotalMovement','ZscoredTotalMovement','Time','BumpWidth'});
+%Create table with the model's variables
+modelTable = addvars(modelTable,allBumpWidth','NewVariableNames','BumpWidth');
 
-%fit linear model using contrast level as a categorical variable
-mdl_HW = fitlm(modelTable_HW,'BumpWidth~ContrastLevel+TotalMovement','CategoricalVars',1)
-mdl_HW2 = fitlm(modelTable_HW,'BumpWidth~ContrastLevel+ZscoredTotalMovement','CategoricalVars',1)
+%Fit linear model using contrast level as a categorical variable
+% mdl_HW = fitlm(modelTable,'BumpWidth~ContrastLevel+TotalMovement','CategoricalVars',1)
+% mdl_HWz = fitlm(modelTable,'BumpWidth~ContrastLevel+ZscoredTotalMovement','CategoricalVars',1)
+% mdl_HW_all_mvt = fitlm(modelTable,'BumpWidth~ContrastLevel+TotalMovement+ForVelocity+SideSpeed+YawSpeed','CategoricalVars',1)
+% mdl_HW_all_mvt_z = fitlm(modelTable,'BumpWidth~ContrastLevel+ZscoredTotalMovement+ZscoredForVel+ZscoredSideSpeed+ZscoredYawSpeed+Time','CategoricalVars',1)
 
 %% Heading variation per stimulus
 
@@ -1254,6 +1269,6 @@ end
 
 %% Save useful data
 
-save([path,'\summary_data.mat'],'summary_data','mean_reference_offset','modelTable','modelTable_HW','correlations_hw_thresh','correlations_bm_thresh','pval_hw_thresh','pval_bm_thresh','correlations_hw_thresh_pooled','correlations_bm_thresh_pooled','pval_hw_thresh_pooled','pval_bm_thresh_pooled','bs_table','bump_var_per_contrast','binned_bump_mag_per_contrast','binned_half_width_per_contrast')
+save([path,'\summary_data.mat'],'summary_data','mean_reference_offset','modelTable','correlations_hw_thresh','correlations_bm_thresh','pval_hw_thresh','pval_bm_thresh','correlations_hw_thresh_pooled','correlations_bm_thresh_pooled','pval_hw_thresh_pooled','pval_bm_thresh_pooled','bs_table','bump_var_per_contrast','binned_bump_mag_per_contrast','binned_half_width_per_contrast')
 
 close all; clc;
