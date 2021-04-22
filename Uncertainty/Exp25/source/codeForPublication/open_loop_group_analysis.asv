@@ -219,17 +219,21 @@ for fly = 1:length(data)
     AllFlies = [AllFlies;half_width_data{fly}];
 end
 plot(56:57,AllFlies','-o','color',[0.6 0.6 0.6],'MarkerFaceColor',[0.6 0.6 0.6])
+
+%Get mean offset var by contrast in total
+mean_half_width_data = varfun(@mean,allSummaryData,'InputVariables','half_width',...
+       'GroupingVariables',{'contrast_level'});
 hold on
 errorbar(56:57,mean(AllFlies),std(AllFlies)/sqrt(length(AllFlies)),'-ko','LineWidth',2,'MarkerFaceColor','k','MarkerSize',8)
-% if (mdl_HW5.Coefficients.pValue(2)<0.05 & mdl_HW5.Coefficients.pValue(2)>=0.01)
-%     text(56.5,3.1,'*','fontsize',26);
-% elseif (mdl_HW5.Coefficients.pValue(2)<0.01 & mdl_HW5.Coefficients.pValue(2)>=0.001)
-%     text(56.5,3.1,'**','fontsize',26);
-% elseif mdl_HW5.Coefficients.pValue(2)<0.001
-%     text(56.5,3.1,'***','fontsize',26);
-% else
-%     text(56.5,3.1,'ns');
-% end
+if (mdl_HW5.Coefficients.pValue(2)<0.05 & mdl_HW5.Coefficients.pValue(2)>=0.01)
+    text(56.5,3.1,'*','fontsize',26);
+elseif (mdl_HW5.Coefficients.pValue(2)<0.01 & mdl_HW5.Coefficients.pValue(2)>=0.001)
+    text(56.5,3.1,'**','fontsize',26);
+elseif mdl_HW5.Coefficients.pValue(2)<0.001
+    text(56.5,3.1,'***','fontsize',26);
+else
+    text(56.5,3.1,'ns');
+end
 xlim([55 58]);
 xticks(56:57);
 xticklabels({'Low contrast','High contrast'});
@@ -249,6 +253,9 @@ figure('Position',[200 200 1000 800]),
 mean_half_width_data_per_speed = varfun(@mean,allSummaryData,'InputVariables','half_width',...
        'GroupingVariables',{'contrast_level','stim_vel'});
 plot(mean_half_width_data_per_speed.stim_vel(mean_half_width_data_per_speed.contrast_level==56),mean_half_width_data_per_speed.mean_half_width(mean_half_width_data_per_speed.contrast_level==56),'-o','lineWidth',2,'color',[0 0 0.6],'MarkerFaceColor',[0 0 0.6],'MarkerSize',8)
+%add lines per fly
+mean_half_width_data_per_speed_and_fly = varfun(@mean,allSummaryData,'InputVariables','half_width',...
+       'GroupingVariables',{'contrast_level','stim_vel','Fly'});
 hold on
 plot(mean_half_width_data_per_speed.stim_vel(mean_half_width_data_per_speed.contrast_level==57),mean_half_width_data_per_speed.mean_half_width(mean_half_width_data_per_speed.contrast_level==57),'-o','lineWidth',2,'color',[ 0.5 0.8 0.9],'MarkerFaceColor',[ 0.5 0.8 0.9],'MarkerSize',8)
 xlim([0 4]);
@@ -291,6 +298,26 @@ set(gca,'XTickLabel',a,'fontsize',12,'FontWeight','bold')
 ylabel('Mean total movement (deg/s)','FontSize',12);
 ylim([0 max(mean_total_mvt_data_per_fly.mean_TotalMovement)+10]);
 
+% subplot(1,2,2)
+% %Get mean total mvt by contrast per fly
+% mean_ztotal_mvt_data_per_fly = varfun(@mean,allModelData,'InputVariables','ZscoredMvt',...
+%        'GroupingVariables',{'ContrastLevel','Fly'});
+% %Plot
+% AllFlieszTM = [];
+% for fly = 1:length(data)
+%     ztotal_mvt_data{fly} = [mean_ztotal_mvt_data_per_fly.mean_ZscoredMvt(fly),mean_ztotal_mvt_data_per_fly.mean_ZscoredMvt(fly+length(data))];
+%     AllFlieszTM = [AllFlieszTM;ztotal_mvt_data{fly}];
+% end
+% plot(56:57,AllFlieszTM','-o','color',[0.6 0.6 0.6],'MarkerFaceColor',[0.6 0.6 0.6])
+% hold on
+% errorbar(56:57,mean(AllFlieszTM),std(AllFlieszTM)/sqrt(length(AllFlieszTM)),'-ko','LineWidth',2,'MarkerFaceColor','k','MarkerSize',8)
+% xlim([55 58]);
+% xticks(56:57);
+% xticklabels({'Low contrast','High contrast'});
+% a = get(gca,'XTickLabel');  
+% set(gca,'XTickLabel',a,'fontsize',12,'FontWeight','bold')
+% ylabel('Mean zscored total movement','FontSize',12);
+% %ylim([min(mean_ztotal_mvt_data_per_fly.mean_ZscoredMvt)-0.1 max(mean_ztotal_mvt_data_per_fly.mean_ZscoredMvt)+0.1]);
 
 %save figure
 saveas(gcf,[path,'\globalPlots\mean_open_loop_total_mvt.png']);
