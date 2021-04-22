@@ -741,3 +741,50 @@ xticks([1 2 3]);
 xticklabels({'5','10','15'});
 xlabel('Laser power (%)');
 ylabel('Bump variability');
+
+%Save figure
+saveas(gcf,[path,'\globalPlots\lp_means.png']);
+
+%% Bin the data and compare bins between different contrasts
+
+for fly = 1:length(lp_data)
+    for laser_power = 1:3
+        
+        %1) Obtain zscored bump parameters
+        bump_pos = lp_data{fly,laser_power}.data.dff_pva;
+        zbump_mag = zscore(lp_data{fly,laser_power}.data.bump_magnitude);
+        zbump_width = zscore(compute_bump_width(lp_data{fly,laser_power}.data.mean_dff_EB));
+        
+        %2) Threshold the data
+        mvt_thresh = 20; %I'm using a reasonable threshold from what I obtained quantitatively in other analyses, 20 deg/s of total movement
+        total_mvt = lp_data{fly,laser_power}.data.total_mvt_ds;
+        data_thresh{laser_power,1} = bump_pos(total_mvt > mvt_thresh);
+        data_thresh{laser_power,2} = zbump_mag(total_mvt > mvt_thresh);
+        data_thresh{laser_power,3} = zbump_width(total_mvt > mvt_thresh);
+        
+        for bin_amount = 1:length(bins)
+            
+            %Change bin number
+            bin_number = bins(bin_amount);
+            bin_width = floor(length(data_thresh{laser_power,1})/bin_number);          
+            %Get bin limits
+            bin_limits{1} = [1,bin_width+1];
+            for bin = 2:bin_number-1
+                bin_limits{bin} = [2+bin_width*(bin-1),1+bin_width*(bin-1)+bin_width];
+            end
+            bin_limits{bin_number} = [length(data_thresh{laser_power,1})-bin_width,length(data_thresh{laser_power,1})];
+            
+            %Get metrics per bin
+            for bin = 1:bin_number
+                [~, bump_variation{laser_power,bin_amount}(bin)] = circ_std(data_thresh{laser_power,1}(bin_limits{bin}(1):bin_limits{bin}(2)));
+                binned_bump_mag{laser_power,bin_amount}(bin) = mean(data_thresh{laser_power,2}(bin_limits{bin}(1):bin_limits{bin}(2)));
+                binned_half_width{laser_power,bin_amount}(bin) = mean(data_thresh{laser_power,3}(bin_limits{bin}(1):bin_limits{bin}(2)));
+                diff_BM{fly,bin_amount}(bin) = binned_bump_mag{3,bin_amount}(bin)/binned_bump_mag{2,bin_amount}(bin);
+                diff_BW{fly,bin_amount}(bin) = binned_half_width{3,bin_amount}(bin)/binned_half_width{2,bin_amount}(bin);
+                diff_BumpVar{fly,bin_amount}(bin) = bump_variation{3,bin_amount}(bin)/bump_variation{2,bin_amount}(bin);              
+            end
+            
+        end
+
+    end
+end
