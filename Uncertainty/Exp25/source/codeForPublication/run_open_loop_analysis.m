@@ -20,7 +20,7 @@ data_dirs = flyData(~cellfun(@isempty,flyData));
 %plot
 for fly = 1:length(data_dirs)
     
-    clearvars -except data_dirs fly 
+    clearvars -except data_dirs fly
     %I will create a .txt file for each fly with the session numbers
     %Read the .txt file containing the ID of the open loop sessions.
     path = data_dirs{fly};
@@ -54,24 +54,26 @@ for fly = 1:length(data_dirs)
         %Stimulus position
         subplot(3,5,[6 9])
         bar_position = wrapTo180(data{1,session}.data.panel_angle);
-        change_bar_position = abs([0;diff(smooth(bar_position))]);
-        bar_position_to_plot = smooth(bar_position);
-        bar_position_to_plot(change_bar_position>40==1) = NaN;
+        [x_out_bar, bar_position_to_plot] = removeWrappedLines(data{1,session}.data.time, bar_position);
         %Get EPG phase to plot
         phase = wrapTo180(rad2deg(data{1,session}.data.dff_pva));
-        change_phase = abs([0;diff(smooth(phase))]);
-        phase_to_plot = smooth(phase);
-        phase_to_plot(change_phase>40==1) = NaN;
+        [x_out_phase, phase_to_plot] = removeWrappedLines(data{1,session}.data.time, phase);
         %Plot using different colors if the stimulus was low or high contrast
         if data{1,session}.data.run_obj.pattern_number == 57
-            plot(bar_position_to_plot,'color',[ 0.5 0.8 0.9],'LineWidth',1.5)
+            plot(x_out_bar,bar_position_to_plot,'color',[ 0.5 0.8 0.9],'LineWidth',1.5)
         else
-            plot(bar_position_to_plot,'color',[0 0 0.6],'LineWidth',1.5)
+            plot(x_out_bar,bar_position_to_plot,'color',[0 0 0.6],'LineWidth',1.5)
         end
         hold on
-        plot(phase_to_plot,'color',[0.9 0.3 0.4],'LineWidth',1.5)
-        legend('Stimulus position','EPG phase');
-        xlim([0, length(data{1,session}.data.dff_pva)]);
+        plot(x_out_phase,phase_to_plot,'color',[0.9 0.3 0.4],'LineWidth',1.5)
+        axP = get(gca,'Position');
+        legend('Bar position','EPG phase','Location','EastOutside')
+        set(gca, 'Position', axP);
+        if ~isnan(x_out_phase(end))
+            xlim([0, x_out_phase(end)]);
+        else
+            xlim([0, x_out_phase(end-1)]);
+        end
         ylim([-180 180]);
         ylabel('Degrees');
         set(gca,'xticklabel',{[]})
@@ -81,15 +83,14 @@ for fly = 1:length(data_dirs)
         %Calculate stim offset as the circular distance between EPG activity
         %phase and the stimulus posotion
         stim_offset{session} = rad2deg(circ_dist(data{1,session}.data.dff_pva,deg2rad(data{1,session}.data.panel_angle)));
-        changeStim_offset = abs([0,diff(stim_offset{session})']);
-        stimOffsetToPlot = stim_offset{session};
-        stimOffsetToPlot(changeStim_offset>100==1) = NaN;
+        stimoffset = rad2deg(circ_dist(data{1,session}.data.dff_pva,deg2rad(data{1,session}.data.panel_angle)));
+        [x_out_stimoffset, stimOffsetToPlot] = removeWrappedLines(data{1,session}.data.time, stimoffset);
         subplot(3,5,[11 14])
         %Plot using different colors if the stimulus was low or high contrast
         if data{1,session}.data.run_obj.pattern_number == 57
-            plot(data{1,session}.data.time,stimOffsetToPlot,'color',[ 0.5 0.8 0.9],'LineWidth',1.5)
+            plot(x_out_stimoffset,stimOffsetToPlot,'color',[ 0.5 0.8 0.9],'LineWidth',1.5)
         else
-            plot(data{1,session}.data.time,stimOffsetToPlot,'color',[0 0 0.6],'LineWidth',1.5)
+            plot(x_out_stimoffset,stimOffsetToPlot,'color',[0 0 0.6],'LineWidth',1.5)
         end
         xlim([0, data{1,session}.data.time(end)]);
         ylim([-180 180]);
@@ -114,7 +115,7 @@ for fly = 1:length(data_dirs)
             Ax.RTickLabel = [];
         end
         
-        %save figures
+        %Save figures
         saveas(gcf,[path,'\analysis\plots\openLoopHeatmapAndOffset_session',num2str(session),'.png']);
     end
     
@@ -128,54 +129,25 @@ for fly = 1:length(data_dirs)
         [~,stim_offset_var(session)] = circ_std(deg2rad(stim_offset{session}),[],[],1);
     end
     
-    %Define stimulus velocity conditions
+    %Define stimulus velocity conditions-which panel functions were used?
     low_stim_vel = [50,51];
     medium_stim_vel = [52,53];
     high_stim_vel = [54,55];
     
-    %Define stimulus contrasts
+    %Define stimulus contrasts-which panel patterns were used?
     low_stim_contrast = 56;
     high_stim_contrast = 57;
     
     %Compute bump magnitude as max-min
     for session = 1:length(open_loop_sessions)
-        %Bump mag as min-max
-        BumpMagnitude{session} = data{1,session}.data.bump_magnitude ;
-        medianBM(session) = median(BumpMagnitude{session});
+        BumpMagnitude{session} = data{1,session}.data.bump_magnitude;
+        meanBM(session) = mean(BumpMagnitude{session});
     end
     
     %compute bump width at half max
     for session = 1:length(open_loop_sessions)
-        
-        for timepoint = 1:size(data{1,session}.data.mean_dff_EB,2)
-            
-            %linearly interpolate to have 1000 datapoints instead of 8
-            interp_ex_data = interp1([1:8],data{1,session}.data.mean_dff_EB(:,timepoint),[1:7/1000:8]);
-            %Find the half max point
-            half_max = (max(data{1,session}.data.mean_dff_EB(:,timepoint))-min(data{1,session}.data.mean_dff_EB(:,timepoint)))/2 + min(data{1,session}.data.mean_dff_EB(:,timepoint));
-            [ex_bump_mag_interp I_interp] = max(interp_ex_data);
-            %Find in each half the index closest to the half max
-            diff_data = abs(interp_ex_data-half_max);
-            [sortedVals,indexes] = sort(diff_data);
-            %remove all the indexes that are less than 175 datapoints away (i.e., a little more than 1 glomerulus) from
-            %index(1)
-            diff_indexes = abs(indexes-indexes(1));
-            indexes(diff_indexes<175 & diff_indexes>0)=NaN;
-            indexes = indexes(~isnan(indexes));
-            two_indexes = [indexes(1), indexes(2)];
-            I1 = min(two_indexes);
-            I2 = max(two_indexes);
-            if (all(two_indexes>I_interp) | all(two_indexes<I_interp))
-                half_max_w = I1+1000-I2;
-            else
-                half_max_w = I2-I1;
-            end
-            %convert to EB tiles
-            half_max_width{session}(timepoint) = half_max_w*8/1001;
-            
-        end
-        
-        medianHW(session) = median(half_max_width{session});
+        half_max_width{session} = compute_bump_width(data{1,session}.data.mean_dff_EB);
+        meanHW(session) = mean(half_max_width{session});
     end
     
     
@@ -185,8 +157,8 @@ for fly = 1:length(data_dirs)
     warning('off');
     for session = 1:length(open_loop_sessions)
         summarydata{session,'offset_var'} = stim_offset_var(session);
-        summarydata{session,'bump_mag'} = medianBM(session);
-        summarydata{session,'half_width'} = medianHW(session);
+        summarydata{session,'bump_mag'} = meanBM(session);
+        summarydata{session,'half_width'} = meanHW(session);
         summarydata{session,'contrast_level'} = data{1,session}.data.run_obj.pattern_number;
         if (data{1,session}.data.run_obj.function_number == 50 | data{1,session}.data.run_obj.function_number == 51)
             summarydata{session,'stim_vel'} = 1;
@@ -268,7 +240,7 @@ for fly = 1:length(data_dirs)
     ylabel({'Bump magnitude';'(amplitude of Fourier component)'});
     
     %save
-    saveas(gcf,[path,'\analysis\plots\median_bump_mag.png']);
+    saveas(gcf,[path,'\analysis\plots\mean_bump_mag.png']);
     
     
     %% Compare the width at half max for each speed between contrasts
@@ -305,7 +277,7 @@ for fly = 1:length(data_dirs)
     ylabel('Bump width at half max');
     
     %save
-    saveas(gcf,[path,'\analysis\plots\median_bump_hw.png']);
+    saveas(gcf,[path,'\analysis\plots\mean_bump_hw.png']);
     
     
     %% Heatmap with offset vs movement
@@ -329,25 +301,25 @@ for fly = 1:length(data_dirs)
         subplot(3,5,[6 9])
         %Heading
         heading = wrapTo180(data{1,session}.data.heading_deg);
-        change_heading = abs([0;diff(smooth(heading))]);
-        heading_to_plot = smooth(heading);
-        heading_to_plot(change_heading>40==1) = NaN;
+        [x_out_heading,heading_to_plot] = removeWrappedLines(data{1,session}.data.time,heading);
         %Plot using different colors if the stimulus was low or high contrast
         if data{1,session}.data.run_obj.pattern_number == 57
-            plot(heading_to_plot,'color',[ 0.5 0.8 0.9],'LineWidth',1.5)
+            plot(x_out_heading,heading_to_plot,'color',[ 0.5 0.8 0.9],'LineWidth',1.5)
         else
-            plot(heading_to_plot,'color',[0 0 0.6],'LineWidth',1.5)
+            plot(x_out_heading,heading_to_plot,'color',[0 0 0.6],'LineWidth',1.5)
         end
         hold on
         %Phase
         %I'm negating the phase because it should go against the heading
         phase = -wrapTo180(rad2deg(data{1,session}.data.dff_pva));
-        change_phase = abs([0;diff(smooth(phase))]);
-        phase_to_plot = smooth(phase);
-        phase_to_plot(change_phase>40==1) = NaN;
-        plot(phase_to_plot,'color',[0.9 0.3 0.4],'LineWidth',1.5)
+        [x_out_phase,phase_to_plot] = removeWrappedLines(data{1,session}.data.time,phase);
+        plot(x_out_phase,phase_to_plot,'color',[0.9 0.3 0.4],'LineWidth',1.5)
         legend('Fly heading','EPG phase');
-        xlim([0, length(data{1,session}.data.dff_pva)]);
+        if ~isnan(x_out_phase(end))
+            xlim([0, x_out_phase(end)]);
+        else
+            xlim([0, x_out_phase(end-1)]);
+        end
         ylim([-180 180]);
         ylabel('Degrees');
         set(gca,'xticklabel',{[]})
@@ -355,17 +327,19 @@ for fly = 1:length(data_dirs)
         
         %Mvt offset
         offset{session} = wrapTo180(data{1,session}.data.offset);
-        change_offset = abs([0,diff(offset{session})']);
-        offsetToPlot = offset{session};
-        offsetToPlot(change_offset>200==1) = NaN;
+        [x_out_offset,offsetToPlot] = removeWrappedLines(data{1,session}.data.time,offset{session});
         subplot(3,5,[11 14])
         %Plot using different colors if the stimulus was low or high contrast
         if data{1,session}.data.run_obj.pattern_number == 57
-            plot(data{1,session}.data.time,offsetToPlot,'color',[ 0.5 0.8 0.9],'LineWidth',1.5)
+            plot(x_out_offset,offsetToPlot,'color',[ 0.5 0.8 0.9],'LineWidth',1.5)
         else
-            plot(data{1,session}.data.time,offsetToPlot,'color',[0 0 0.6],'LineWidth',1.5)
+            plot(x_out_offset,offsetToPlot,'color',[0 0 0.6],'LineWidth',1.5)
         end
-        xlim([0, data{1,session}.data.time(end)]);
+        if ~isnan(x_out_offset(end))
+            xlim([0, x_out_offset(end)]);
+        else
+            xlim([0, x_out_offset(end-1)]);
+        end
         ylim([-180 180]);
         xlabel('Time (sec)'); ylabel('Degrees');
         title('Movement offset');
@@ -397,13 +371,13 @@ for fly = 1:length(data_dirs)
     
     close all;
     warning('off');
+    
     for session = 1:length(open_loop_sessions)
         [~, mvt_offset_var(session)] = circ_std(offset{session},[],[],1);
     end
     
     mvt_offset_var = mvt_offset_var';
     summarydata = addvars(summarydata,mvt_offset_var);
-    
     
     %% Compare the movement offset variation for each speed between contrasts
     
@@ -438,25 +412,8 @@ for fly = 1:length(data_dirs)
     set(h2,'FontSize',12,'FontWeight','bold')
     ylabel('Movement offset variation (circ std)');
     
-    %save
+    %Save
     saveas(gcf,[path,'\analysis\plots\open_loop_mvt_offset_var.png']);
-    %
-    % %% Bump magnitude as a function of total movement
-    %
-    % for session = 1:length(open_loop_sessions)
-    %     figure,
-    %     if data{1,session}.data.run_obj.pattern_number == 57
-    %         scatter(data{1,session}.data.total_mvt_ds,BumpMagnitude{1,session},[],[ 0.5 0.8 0.9]);
-    %     else
-    %         scatter(data{1,session}.data.total_mvt_ds,BumpMagnitude{1,session},[],[ 0 0 0.6]);
-    %     end
-    %     xlim([0 max(data{1,session}.data.total_mvt_ds)]);
-    %     xlabel('Total movement (deg/s)');
-    %     ylabel('Bump magnitude');
-    %
-    %     %save figures
-    %     saveas(gcf,[path,'\analysis\plots\openLoopBMvsTM_session',num2str(session),'.png']);
-    % end
     
     %% Plots with heatmap, stimulus position, fly heading, and offset
     
@@ -466,7 +423,6 @@ for fly = 1:length(data_dirs)
         
         %PB heatmap
         subplot(5,4,[1 3])
-        % imagesc(data{1,session}.data.dff_matrix)
         imagesc(data{1,session}.data.dff_matrix)
         colormap(flipud(gray))
         ylabel('PB glomerulus')
@@ -478,24 +434,24 @@ for fly = 1:length(data_dirs)
         %Stimulus position
         subplot(5,4,[5 7])
         bar_position = wrapTo180(data{1,session}.data.panel_angle);
-        change_bar_position = abs([0;diff(smooth(bar_position))]);
-        bar_position_to_plot = smooth(bar_position);
-        bar_position_to_plot(change_bar_position>40==1) = NaN;
+        [x_out_bar,bar_position_to_plot] = removeWrappedLines(data{1,session}.data.time,bar_position);
         %Get EPG phase to plot
         phase = wrapTo180(rad2deg(data{1,session}.data.dff_pva));
-        change_phase = abs([0;diff(smooth(phase))]);
-        phase_to_plot = smooth(phase);
-        phase_to_plot(change_phase>40==1) = NaN;
+        [x_out_phase,phase_to_plot] = removeWrappedLines(data{1,session}.data.time,phase);
         %Plot using different colors if the stimulus was low or high contrast
         if data{1,session}.data.run_obj.pattern_number == 57
-            plot(bar_position_to_plot,'color',[0.5 0.8 0.9],'lineWidth',1.5)
+            plot(x_out_bar,bar_position_to_plot,'color',[0.5 0.8 0.9],'lineWidth',1.5)
         else
-            plot(bar_position_to_plot,'color',[0 0 0.6],'lineWidth',1.5)
+            plot(x_out_bar,bar_position_to_plot,'color',[0 0 0.6],'lineWidth',1.5)
         end
         hold on
-        plot(phase_to_plot,'color',[0.9 0.3 0.4],'lineWidth',1.5)
+        plot(x_out_phase,phase_to_plot,'color',[0.9 0.3 0.4],'lineWidth',1.5)
         legend('Stimulus position','EPG phase');
-        xlim([0, length(data{1,session}.data.dff_pva)]);
+        if ~isnan(x_out_phase(end))
+            xlim([0, x_out_phase(end)]);
+        else
+            xlim([0, x_out_phase(end-1)]);
+        end
         ylim([-180 180]);
         ylabel('Degrees');
         set(gca,'xticklabel',{[]})
@@ -505,17 +461,19 @@ for fly = 1:length(data_dirs)
         %Calculate stim offset as the circular distance between EPG activity
         %phase and the stimulus posotion
         stim_offset{session} = rad2deg(circ_dist(data{1,session}.data.dff_pva,deg2rad(data{1,session}.data.panel_angle)));
-        changeStim_offset = abs([0,diff(stim_offset{session})']);
-        stimOffsetToPlot = stim_offset{session};
-        stimOffsetToPlot(changeStim_offset>100==1) = NaN;
+        [x_out_stimoffset,stimOffsetToPlot] = removeWrappedLines(data{1,session}.data.time,stim_offset{session});
         subplot(5,4,[9 11])
         %Plot using different colors if the stimulus was low or high contrast
         if data{1,session}.data.run_obj.pattern_number == 57
-            plot(data{1,session}.data.time,stimOffsetToPlot,'color',[ 0.5 0.8 0.9],'lineWidth',1.5)
+            plot(x_out_stimoffset,stimOffsetToPlot,'color',[ 0.5 0.8 0.9],'lineWidth',1.5)
         else
-            plot(data{1,session}.data.time,stimOffsetToPlot,'color',[0 0 0.6],'lineWidth',1.5)
+            plot(x_out_stimoffset,stimOffsetToPlot,'color',[0 0 0.6],'lineWidth',1.5)
         end
-        xlim([0, data{1,session}.data.time(end)]);
+        if ~isnan(x_out_stimoffset(end))
+            xlim([0, x_out_stimoffset(end)]);
+        else
+            xlim([0, x_out_stimoffset(end-1)]);
+        end
         ylim([-180 180]);
         set(gca,'xticklabel',{[]})
         ylabel('Degrees');
@@ -544,16 +502,18 @@ for fly = 1:length(data_dirs)
         subplot(5,4,[13 15])
         %Heading
         heading = wrapTo180(-data{1,session}.data.heading_deg);
-        change_heading = abs([0;diff(smooth(heading))]);
-        heading_to_plot = smooth(heading);
-        heading_to_plot(change_heading>40==1) = NaN;
+        [x_out_heading,heading_to_plot] = removeWrappedLines(data{1,session}.data.time,heading);
         %Plot using different colors if the stimulus was low or high contrast
-        plot(heading_to_plot,'color',[ 0.6 0.8 0.2],'lineWidth',1.5)
+        plot(x_out_heading,heading_to_plot,'color',[ 0.6 0.8 0.2],'lineWidth',1.5)
         hold on
         %Phase
-        plot(phase_to_plot,'color',[0.9 0.3 0.4],'lineWidth',1.5)
+        plot(x_out_phase,phase_to_plot,'color',[0.9 0.3 0.4],'lineWidth',1.5)
         legend('-Fly heading','EPG phase');
-        xlim([0, length(data{1,session}.data.heading_deg)]);
+        if ~isnan(x_out_heading(end))
+            xlim([0, x_out_heading(end)]);
+        else
+            xlim([0, x_out_heading(end-1)]);
+        end
         ylim([-180 180]);
         ylabel('Degrees');
         set(gca,'xticklabel',{[]})
@@ -561,17 +521,19 @@ for fly = 1:length(data_dirs)
         
         %Mvt offset
         offset{session} = wrapTo180(data{1,session}.data.offset);
-        change_offset = abs([0,diff(offset{session})']);
-        offsetToPlot = offset{session};
-        offsetToPlot(change_offset>200==1) = NaN;
+        [x_out_offset,offsetToPlot] = removeWrappedLines(data{1,session}.data.time,offset{session});
         subplot(5,4,[17 19])
         %Plot using different colors if the stimulus was low or high contrast
         if data{1,session}.data.run_obj.pattern_number == 57
-            plot(data{1,session}.data.time,offsetToPlot,'color',[ 0.5 0.8 0.9],'lineWidth',1.5)
+            plot(x_out_offset,offsetToPlot,'color',[ 0.5 0.8 0.9],'lineWidth',1.5)
         else
-            plot(data{1,session}.data.time,offsetToPlot,'color',[0 0 0.6],'lineWidth',1.5)
+            plot(x_out_offset,offsetToPlot,'color',[0 0 0.6],'lineWidth',1.5)
         end
-        xlim([0, data{1,session}.data.time(end)]);
+        if ~isnan(x_out_offset(end))
+            xlim([0, x_out_offset(end)]);
+        else
+            xlim([0, x_out_offset(end-1)]);
+        end
         ylim([-180 180]);
         xlabel('Time (sec)'); ylabel('Degrees');
         title('Movement offset');
@@ -620,11 +582,11 @@ for fly = 1:length(data_dirs)
             contrastLevel = [contrastLevel,repelem(1,length(data{1,session}.data.time))];
         end
     end
-    bump_mag_data = table(contrastLevel',allTime',allTotalMvt',allZscoredMvt',allBumpMag','VariableNames',{'ContrastLevel','Time','TotalMovement','ZscoredMvt','BumpMagnitude'});
-    half_width_data = table(contrastLevel',allTime',allTotalMvt',allZscoredMvt',allHalfWidth','VariableNames',{'ContrastLevel','Time','TotalMovement','ZscoredMvt','HalfWidth'});
+    bump_mag_data = table(nominal(contrastLevel)',allTime',allTotalMvt',allZscoredMvt',allBumpMag','VariableNames',{'ContrastLevel','Time','TotalMovement','ZscoredMvt','BumpMagnitude'});
+    half_width_data = table(nominal(contrastLevel)',allTime',allTotalMvt',allZscoredMvt',allHalfWidth','VariableNames',{'ContrastLevel','Time','TotalMovement','ZscoredMvt','HalfWidth'});
     
-    mdl_BM = fitlm(bump_mag_data,'BumpMagnitude ~ ContrastLevel+Time+ZscoredMvt')
-    mdl_HW = fitlm(half_width_data,'HalfWidth ~ ContrastLevel+Time+ZscoredMvt')
+    mdl_BM = fitlm(bump_mag_data,'BumpMagnitude ~ ContrastLevel+ZscoredMvt')
+    mdl_HW = fitlm(half_width_data,'HalfWidth ~ ContrastLevel+ZscoredMvt')
     
     
     %% Plot BM as function of contrast
@@ -643,9 +605,8 @@ for fly = 1:length(data_dirs)
     ylabel({'Bump magnitude';'(amplitude of Fourier component)'});
     ylim([min(mean_BM.mean_BumpMagnitude)-0.4 max(mean_BM.mean_BumpMagnitude)+0.4]);
     
-    %save figure
+    %Save figure
     saveas(gcf,[path,'\analysis\plots\openLoopMeanBMvsContrast.png']);
-    
     
     %% Plot HW as function of contrast
     
@@ -663,9 +624,8 @@ for fly = 1:length(data_dirs)
     ylabel('Mean bump width at half max');
     ylim([min(mean_HW.mean_HalfWidth)-0.4 max(mean_HW.mean_HalfWidth)+0.4]);
     
-    %save figure
+    %Save figure
     saveas(gcf,[path,'\analysis\plots\openLoopMeanHWvsContrast.png']);
-    
     
     %% Model bump velocity as a function of visual and proprioceptive cues
     
@@ -681,49 +641,48 @@ for fly = 1:length(data_dirs)
     
     for session = 1:length(open_loop_sessions)
         
-        %get bump velocity
+        %Get bump velocity
         bump_pos = data{1,session}.data.dff_pva;
         unwrapped_bump_pos = unwrap(bump_pos);
         smooth_bump_pos = smooth(rad2deg(unwrapped_bump_pos));
         bump_vel = diff(smooth_bump_pos).*(length(data{1,session}.data.time)/data{1,session}.data.time(end));
         smooth_bump_vel = smooth(bump_vel);
-        %save in the corresponding array
+        %Save in the corresponding array
         if data{1,session}.data.run_obj.pattern_number == 57
             all_bump_vel_HC = [all_bump_vel_HC;smooth_bump_vel];
         else
             all_bump_vel_LC = [all_bump_vel_LC;smooth_bump_vel];
         end
         
-        %get fly angular velocity
+        %Get fly angular velocity
         fly_heading = -data{1,session}.data.heading;
         unwrapped_fly_heading = unwrap(fly_heading);
         smooth_fly_heading = smooth(rad2deg(unwrapped_fly_heading));
         fly_vel = diff(smooth_fly_heading).*(length(data{1,session}.data.time)/data{1,session}.data.time(end));
         smooth_fly_vel = smooth(fly_vel);
-        %save in the corresponding array
+        %Save in the corresponding array
         if data{1,session}.data.run_obj.pattern_number == 57
             all_fly_vel_HC = [all_fly_vel_HC;smooth_fly_vel];
         else
             all_fly_vel_LC = [all_fly_vel_LC;smooth_fly_vel];
         end
         
-        %import reference offset
+        %Import reference offset
         load([path,'\analysis\summary_data.mat']);
         
-        %compute bump estimate using the offset
-        %bump_estimate2 = wrapTo180(wrapTo360(rad2deg(data{1,session}.data.dff_pva)) - mean_reference_offset);
+        %Compute bump estimate using the offset
         bump_estimate = wrapTo180(rad2deg(circ_dist(data{1,session}.data.dff_pva, deg2rad(mean_reference_offset))));
         
-        %save in the corresponding array
+        %Save in the corresponding array
         if data{1,session}.data.run_obj.pattern_number == 57
             all_bump_estimate_HC = [all_bump_estimate_HC;bump_estimate(2:end)];
         else
             all_bump_estimate_LC = [all_bump_estimate_LC;bump_estimate(2:end)];
         end
         
-        %get stimulus position
+        %Get stimulus position
         stim_position = wrapTo180(data{1,session}.data.panel_angle);
-        %save in the corresponding array
+        %Save in the corresponding array
         if data{1,session}.data.run_obj.pattern_number == 57
             all_stim_position_HC = [all_stim_position_HC;stim_position(2:end)];
         else
@@ -735,17 +694,36 @@ for fly = 1:length(data_dirs)
     all_stim_difference_HC = [wrapTo180(rad2deg(circ_dist(deg2rad(all_stim_position_HC),deg2rad(all_bump_estimate_HC))))];
     all_stim_difference_LC = [wrapTo180(rad2deg(circ_dist(deg2rad(all_stim_position_LC),deg2rad(all_bump_estimate_LC))))];
     
-    %combine variables in table
+    %Combine variables in table
     bump_vel_data_HC = table(all_fly_vel_HC,all_stim_difference_HC,all_bump_vel_HC,'VariableNames',{'FlyAngVel','VisualCueDrive','BumpAngVel'});
     bump_vel_data_LC = table(all_fly_vel_LC,all_stim_difference_LC,all_bump_vel_LC,'VariableNames',{'FlyAngVel','VisualCueDrive','BumpAngVel'});
     
-    %fit models
+    %Fit models
     bump_vel_model_HC = fitlm(bump_vel_data_HC,'Intercept',false)
     bump_vel_model_LC = fitlm(bump_vel_data_LC,'Intercept',false)
+    
+    
+    %% Fit single model for both
+    
+    high_contrast = repelem(2,size(bump_vel_data_HC,1),1);
+    bump_vel_data_HC = addvars(bump_vel_data_HC,nominal(high_contrast),'NewVariableName','contrast');
+    
+    low_contrast = repelem(1,size(bump_vel_data_LC,1),1);
+    bump_vel_data_LC = addvars(bump_vel_data_LC,nominal(low_contrast),'NewVariableName','contrast');
+    
+    %combine both tables
+    bump_vel_data = [bump_vel_data_LC;bump_vel_data_HC];
+    
+    %Fit models
+    bump_vel_model = fitlm(bump_vel_data,'BumpAngVel ~ VisualCueDrive:contrast + FlyAngVel:contrast','Intercept',false)
+    bump_vel_model2 = fitlm(bump_vel_data,'BumpAngVel ~ VisualCueDrive:contrast + FlyAngVel','Intercept',false)
+    bump_vel_model3 = fitlm(bump_vel_data,'BumpAngVel ~ VisualCueDrive*contrast + FlyAngVel*contrast','Intercept',false)
+    bump_vel_model4 = fitlm(bump_vel_data,'BumpAngVel ~ VisualCueDrive*contrast + FlyAngVel','Intercept',false)
+    bump_vel_model5 = fitlm(bump_vel_data,'BumpAngVel ~ VisualCueDrive:contrast + FlyAngVel:contrast + VisualCueDrive + FlyAngVel','Intercept',false)
     
     
     %% Save relevant data
     
     save([path,'\analysis\open_loop_data.mat'],'bump_mag_data','half_width_data','mean_BM','summarydata','mean_data','bump_vel_model_HC','bump_vel_model_LC','mean_bump_data','bump_vel_data_HC','bump_vel_data_LC');
-       
+    
 end

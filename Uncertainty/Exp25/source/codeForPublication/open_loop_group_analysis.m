@@ -30,7 +30,6 @@ end
 allSummaryData = addvars(allSummaryData,flyNumber');
 allSummaryData.Properties.VariableNames{'Var7'} = 'Fly';
 
-
 %% Compute model for offset variation
 
 %fit mixed linear model using fly number as a random variable
@@ -42,29 +41,23 @@ figure('Position',[200 200 1000 800]),
 %Get mean offset var by contrast per fly
 mean_offset_data_per_fly = varfun(@mean,allSummaryData,'InputVariables','offset_var',...
        'GroupingVariables',{'contrast_level','Fly'});
-%plot(mean_offset_data_per_fly.contrast_level,mean_offset_data_per_fly.mean_offset_var,'o','color',[0.6 0.6 0.6],'MarkerFaceColor',[0.6 0.6 0.6])
-%change the code above to be able to get lines per fly
 allFlies = [];
 for fly = 1:length(data)
     fly_data{fly} = [mean_offset_data_per_fly.mean_offset_var(fly),mean_offset_data_per_fly.mean_offset_var(fly+length(data))];
     allFlies = [allFlies;fly_data{fly}];
 end
 plot(56:57,allFlies','-o','color',[0.6 0.6 0.6],'MarkerFaceColor',[0.6 0.6 0.6])
-
-%Get mean offset var by contrast in total
-mean_offset_data = varfun(@mean,allSummaryData,'InputVariables','offset_var',...
-       'GroupingVariables',{'contrast_level'});
 hold on
 plot(56:57,mean(allFlies),'-ko','LineWidth',2,'MarkerFaceColor','k','MarkerSize',8)
-if (mdl_offset.Coefficients.pValue(2)<0.05 & mdl_offset.Coefficients.pValue(2)>=0.01)
-    text(56.4,1.8,'*','fontsize',26);
-elseif (mdl_offset.Coefficients.pValue(2)<0.01 & mdl_offset.Coefficients.pValue(2)>=0.001)
-    text(56.4,1.8,'**','fontsize',26);
-elseif mdl_offset.Coefficients.pValue(2)<0.001
-    text(56.4,1.8,'***','fontsize',26);
-else
-    text(56.4,1.8,'ns');
-end
+% if (mdl_offset.Coefficients.pValue(2)<0.05 & mdl_offset.Coefficients.pValue(2)>=0.01)
+%     text(56.4,1.8,'*','fontsize',26);
+% elseif (mdl_offset.Coefficients.pValue(2)<0.01 & mdl_offset.Coefficients.pValue(2)>=0.001)
+%     text(56.4,1.8,'**','fontsize',26);
+% elseif mdl_offset.Coefficients.pValue(2)<0.001
+%     text(56.4,1.8,'***','fontsize',26);
+% else
+%     text(56.4,1.8,'ns');
+% end
 
 xlim([55 58]);
 xticks(56:57);
@@ -123,7 +116,7 @@ saveas(gcf,[path,'\globalPlots\open_loop_offset_var_per_speed.png']);
 allModelData = array2table(zeros(0,5),'VariableNames', {'ContrastLevel','Time','TotalMovement','ZscoredMvt','BumpMagnitude'});
 Fly = [];
 for fly = 1:length(data)
-    Fly = [Fly,repelem(fly,length(data(fly).bump_mag_data.ContrastLevel))];
+    Fly = [Fly,repelem(fly,length(data(fly).bump_mag_data.Time))];
     allModelData = [allModelData;data(fly).bump_mag_data]; 
 end
 allModelData = addvars(allModelData,Fly');
