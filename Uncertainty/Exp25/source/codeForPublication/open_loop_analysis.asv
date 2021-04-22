@@ -700,12 +700,7 @@ bump_vel_data_LC = addvars(bump_vel_data_LC,nominal(low_contrast),'NewVariableNa
 bump_vel_data = [bump_vel_data_LC;bump_vel_data_HC];
 
 %Fit models
-bump_vel_model = fitlm(bump_vel_data,'BumpAngVel ~ VisualCueDrive:contrast + FlyAngVel:contrast','Intercept',false)
-bump_vel_model2 = fitlm(bump_vel_data,'BumpAngVel ~ VisualCueDrive:contrast + FlyAngVel','Intercept',false)
-bump_vel_model3 = fitlm(bump_vel_data,'BumpAngVel ~ VisualCueDrive*contrast + FlyAngVel*contrast','Intercept',false)
-bump_vel_model4 = fitlm(bump_vel_data,'BumpAngVel ~ VisualCueDrive*contrast + FlyAngVel','Intercept',false)
-bump_vel_model5 = fitlm(bump_vel_data,'BumpAngVel ~ VisualCueDrive:contrast + FlyAngVel:contrast + VisualCueDrive + FlyAngVel','Intercept',false)
-
+bump_vel_model = fitlm(bump_vel_data,'BumpAngVel ~ VisualCueDrive:contrast + FlyAngVel','Intercept',false)
 
 %% Save relevant data
 
