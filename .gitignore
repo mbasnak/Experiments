@@ -97,3 +97,11 @@ PathIntegration/PathIntegrationSummaries/
 Exp1/source/panels/Pattern_longstripe2px_light_360.mat
 *.dat
 *.svg
+Thumbs.db
+
+
+#Ignore certain folders that I moved out of the Neurobio server
+
+Uncertainty/Exp23/
+Uncertainty/Exp24/
+Uncertainty/Exp25/Bleedthrough/
