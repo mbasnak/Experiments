@@ -185,31 +185,22 @@ end
     
 %% Obtain bump parameters
 
-%Get bump magnitude
+%Bump magnitude
 allBumpMag = [];
-allZBumpMag = [];
 for block = 1:length(blockLimits)
    bump_mag{block} = data.bump_magnitude(:,blockLimits{block}(1):blockLimits{block}(2)); 
    allBumpMag = [allBumpMag,bump_mag{block}];
-   %add the bump mag computed with the zscored epg data
-   z_bump_mag{block} = max(data.mean_z_EB(:,blockLimits{block}(1):blockLimits{block}(2)))-min(data.mean_z_EB(:,blockLimits{block}(1):blockLimits{block}(2))); 
-   allZBumpMag = [allZBumpMag,z_bump_mag{block}];
 end
 
-% Bump width at half max
+%Bump width at half max
 half_max_width = compute_bump_width(data.mean_dff_EB);    
-z_half_max_width = compute_bump_width(data.mean_z_EB);
-
 allHalfWidth = [];
-allZHalfWidth = [];
 for block = 1:length(blockLimits)
    width_half_max{block} = half_max_width(blockLimits{block}(1):blockLimits{block}(2)); 
    allHalfWidth = [allHalfWidth,width_half_max{block}];
-   z_width_half_max{block} = z_half_max_width(blockLimits{block}(1):blockLimits{block}(2)); 
-   allZHalfWidth = [allZHalfWidth,z_width_half_max{block}];
 end
 
-%% New heatmap plot including bump magnitude
+%% Heatmap plot including bump magnitude
 
 if type_of_fly == 1
     
@@ -313,6 +304,8 @@ else
     
     % Plot the bar position and the EPG phase
     subplot(5,1,2)
+    heading = wrapTo180(data.heading_deg);
+    [x_out_heading, heading_to_plot] = removeWrappedLines(data.time,heading);
     bar_position = wrapTo180(data.panel_angle);
     [x_out_bar, bar_pos_to_plot] = removeWrappedLines(data.time,bar_position);
     plot(x_out_bar,bar_pos_to_plot,'color',[0.2 0.6 0.7],'LineWidth',1.5)
@@ -320,7 +313,7 @@ else
     %Get EPG phase to plot
     phase = wrapTo180(rad2deg(data.dff_pva));
     [x_out_phase,phase_to_plot] = removeWrappedLines(data.time,phase);
-    plot(x_out_pase,phase_to_plot,'color',[0.9 0.3 0.4],'LineWidth',1.5)
+    plot(x_out_phase,phase_to_plot,'color',[0.9 0.3 0.4],'LineWidth',1.5)
     %Add the changes in stim
     for change = 1:length(gain_changes)
         line([data.time(gain_changes(change)) data.time(gain_changes(change))], [-180 180], 'LineWidth', 2, 'color', [0,0.5,0]);
@@ -369,13 +362,49 @@ else
     saveas(gcf,[path,'plots\BarOffsetWithBumpParameters.png']);   
 end
 
+
+%% Heading stability
+
+heading_variability = matlab.tall.movingWindow(fcn,50,deg2rad(heading));
+smoothed_heading_variability = smooth(heading_variability,150,'rloess');
+
+
+figure('Position',[100 100 1600 400]),
+subplot(3,1,1)
+plot(x_out_heading,heading_to_plot,'k')
+hold on
+for change = 1:length(gain_changes)
+    line([data.time(gain_changes(change)) data.time(gain_changes(change))], [-180 180], 'LineWidth', 2, 'color', [0,0.5,0]);
+end
+ylim([-180 180]);
+title('Heading');
+
+subplot(3,1,2)
+plot(data.time,smooth(heading_variability),'k')
+hold on
+for change = 1:length(gain_changes)
+    line([data.time(gain_changes(change)) data.time(gain_changes(change))], [0 2], 'LineWidth', 2, 'color', [0,0.5,0]);
+end
+title('Heading variability');
+
+subplot(3,1,3)
+plot(data.time,smoothed_heading_variability,'k')
+hold on
+for change = 1:length(gain_changes)
+    line([data.time(gain_changes(change)) data.time(gain_changes(change))], [0 2], 'LineWidth', 2, 'color', [0,0.5,0]);
+end
+title('Smoothed heading variability');
+
+%save figure
+saveas(gcf,[path,'plots\HeadingVariability.png']);
+
 %% Correlate BM and HW with heading or bar offset variability during the inverted gain portion, depending on the type of fly
 
 %Set a mvt threshold
 mvt_thresh = 50;
 
-BumpMagIG = allBumpMag(gain_changes(1):gain_changes(2));
-HalfWidthIG = allHalfWidth(gain_changes(1):gain_changes(2));
+BumpMagIG = bump_mag{2};
+HalfWidthIG = width_half_max{2};
 heading_offset_variabilityIG = heading_offset_variability(gain_changes(1):gain_changes(2),:);
 bar_offset_variabilityIG = bar_offset_variability(gain_changes(1):gain_changes(2),:);
 total_mvtIG = data.total_mvt_ds(gain_changes(1):gain_changes(2));
@@ -486,7 +515,7 @@ end
 
 %% Models of bump parameters
 
-%we will model the two bump parameters as a function of total movement and
+%We will model the two bump parameters as a function of total movement and
 %offset variability 
 
 %Create table with the model's variables
@@ -507,6 +536,7 @@ for window = 1:length(window_sizes)
     end
 end
 
+%Plot model fit with the different time windows
 figure,
 subplot(1,2,1)
 plot(Rsquared_BM,'-o')
@@ -521,6 +551,91 @@ ylabel('Rsquared');
 xlabel('window #');
 
 saveas(gcf,[path,'plots\model_fit.png']);
+
+%% Correlate BM and HW with offset variability during the normal gain portion
+
+BumpMagNG = allBumpMag([1:gain_changes(1),gain_changes(2):end]);
+HalfWidthNG = allHalfWidth([1:gain_changes(1),gain_changes(2):end]);
+heading_offset_variabilityNG = heading_offset_variability([1:gain_changes(1),gain_changes(2):end],:);
+total_mvtNG = data.total_mvt_ds([1:gain_changes(1),gain_changes(2):end]);
+heading_variabilityNG = heading_variability([1:gain_changes(1),gain_changes(2):end]);
+
+figure,
+
+nbins = 10;
+
+%Define bins
+max_bin = prctile(heading_offset_variabilityNG,95,'all');
+min_bin = prctile(heading_offset_variabilityNG,5,'all');
+binWidth = (max_bin-min_bin)/nbins;
+Bins = [min_bin:binWidth:max_bin];
+
+%Create axes for plot
+mvtAxes = Bins - binWidth;
+mvtAxes = mvtAxes(2:end);
+
+%Getting binned means for the different windowSizes
+for bin = 1:length(Bins)-1
+    for window = 1:length(window_sizes)
+        meanBin(bin,window) = nanmean(BumpMagNG((heading_offset_variabilityNG(:,window) > Bins(bin)) & (heading_offset_variabilityNG(:,window) < Bins(bin+1)) & (total_mvtNG' > mvt_thresh)));
+    end
+end
+
+%Plot
+subplot(1,2,1)
+plot(mvtAxes,meanBin)
+ylabel({'Bump magnitude';'(amplitude of Fourier component)'}); xlabel('Heading offset variability');
+ylim([0 max(max(meanBin))+0.5]);
+xlim([mvtAxes(1) mvtAxes(end)]);
+legend({'10 frames','30','50','100','500','1000'},'location','best');
+title('Bump magnitude');
+
+%Getting binned means
+for bin = 1:length(Bins)-1
+    for window = 1:length(window_sizes)
+        meanBin(bin,window) = nanmean(HalfWidthNG((heading_offset_variabilityNG(:,window) > Bins(bin)) & (total_mvtNG' > mvt_thresh) &(heading_offset_variabilityNG(:,window) < Bins(bin+1))));
+    end
+end
+
+%Plot
+subplot(1,2,2)
+plot(mvtAxes,meanBin)
+ylabel('Bump half width'); xlabel('Heading offset variability');
+ylim([0 max(max(meanBin))+0.5]);
+xlim([mvtAxes(1) mvtAxes(end)]);
+legend({'10 frames','30','50','100','500','1000'},'location','best');
+title('Bump half width');
+
+%Save figure
+saveas(gcf,[path,'plots\OffsetVsMedianBumpParametersNG.png']);
+
+%% Run models for the normal gain portion
+
+%Create table with the model's variables
+for window = 1:length(window_sizes)
+    modelTableNG{window} = table(heading_offset_variabilityNG(:,window),total_mvtNG',BumpMagNG',HalfWidthNG',heading_variabilityNG,'VariableNames',{'HeadingOffsetVariability','TotalMovement','BumpMagnitude','BumpWidth','HeadingVariability'});
+    mdl_BM_NG{window} = fitlm(modelTableNG{window},'BumpMagnitude~HeadingOffsetVariability+TotalMovement');
+    mdl_HW_NG{window} = fitlm(modelTableNG{window},'BumpWidth~HeadingOffsetVariability+TotalMovement');
+    %Model Rsquared
+    Rsquared_BM_NG(window) = mdl_BM_NG{window}.Rsquared.Adjusted;
+    Rsquared_HW_NG(window) = mdl_HW_NG{window}.Rsquared.Adjusted;
+end
+
+%Plot model fit with the different time windows
+figure,
+subplot(1,2,1)
+plot(Rsquared_BM_NG,'-o')
+title('Bump magnitude');
+ylabel('Rsquared');
+xlabel('window #');
+
+subplot(1,2,2)
+plot(Rsquared_HW_NG,'-o')
+title('Bump width');
+ylabel('Rsquared');
+xlabel('window #');
+
+saveas(gcf,[path,'plots\model_fit_NG.png']);
 
 %% Divide the inverted gain portion into 4 parts and compare bump parameters
 
@@ -596,44 +711,8 @@ ylim([0 4]);
 
 saveas(gcf,[path,'plots\BW_quartiles.png']);
 
-%% Heading stability
-
-heading_variability = matlab.tall.movingWindow(fcn,50,deg2rad(heading));
-smoothed_heading_variability = smooth(heading_variability,150,'rloess');
-
-
-figure('Position',[100 100 1600 400]),
-subplot(3,1,1)
-plot(x_out_heading,heading_to_plot,'k')
-hold on
-for change = 1:length(gain_changes)
-    line([data.time(gain_changes(change)) data.time(gain_changes(change))], [-180 180], 'LineWidth', 2, 'color', [0,0.5,0]);
-end
-ylim([-180 180]);
-title('Heading');
-
-subplot(3,1,2)
-plot(data.time,smooth(heading_variability),'k')
-hold on
-for change = 1:length(gain_changes)
-    line([data.time(gain_changes(change)) data.time(gain_changes(change))], [0 2], 'LineWidth', 2, 'color', [0,0.5,0]);
-end
-title('Heading variability');
-
-subplot(3,1,3)
-plot(data.time,smoothed_heading_variability,'k')
-hold on
-for change = 1:length(gain_changes)
-    line([data.time(gain_changes(change)) data.time(gain_changes(change))], [0 2], 'LineWidth', 2, 'color', [0,0.5,0]);
-end
-title('Smoothed heading variability');
-
-%save figure
-saveas(gcf,[path,'plots\HeadingVariability.png']);
-
-
 %% Save relevant data
 
-save([path,'\gain_change_data.mat'],'modelTable','type_of_fly');
+save([path,'\gain_change_data.mat'],'modelTable','modelTableNG','type_of_fly');
 
 close all; clear all;
