@@ -123,3 +123,47 @@ xlabel('Laser power (%)');
 ylabel('Total movement (deg/s)');
 
 saveas(gcf,[path,'\groupPlots\laser_control.png']);
+
+
+%% Bin the data into different bump magnitude values and compute bump variability for each laser power, making one plot for each window size
+
+%Define different bump magnitude bins
+%1) Get all the bump magnitude data to find bin limits
+allBumpMag = [];
+for fly = 1:length(data)
+    for laser_power = 1:size(data,2)
+        allBumpMag = [allBumpMag,data{fly,laser_power}.data.bump_magnitude];
+    end
+end
+%2) Set bin limits
+minBin = prctile(allBumpMag,5);
+maxBin = prctile(allBumpMag,95);
+%3) Set bin width
+nBins = 20;
+bin_width = (maxBin-minBin)/nBins;
+binLimits = [minBin:bin_width:maxBin];
+
+%Define the different bin numbers
+bins = [5,10,15,20,30,40,50,100];
+
+for bin_size = 1:length(bins)
+    
+   figure,
+   
+   for laser_power = 1:size(data,2)
+   %Bin bump magnitude values per laser power and get bump var per bin
+        for bin = 1:nBins
+            for fly = 1:length(data)
+                bm = data{fly,laser_power}.data.bump_magnitude;
+                bump_var_fly(fly,bin,laser_power) = circ_std(data{fly,laser_power}.data.dff_pva(bm > binLimits(bin) & bm < binLimits(bin+1))); 
+            end
+            bump_var = squeeze(nanmean(bump_var_fly));
+        end   
+   end
+   
+    plot(bump_var)   
+    %xlim([minBin maxBin]);
+    ylim([0 1.8]);
+    
+end
+

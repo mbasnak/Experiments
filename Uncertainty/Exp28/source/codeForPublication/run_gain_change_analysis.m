@@ -41,7 +41,6 @@ for fly = 1:length(data_dirs)
             
             gain_changes = [1837,9183]; %the gain changes occurred always in those frames
             
-            
             %% Set block limits
             
             blockLimits{1} = [1,gain_changes(1)-1];
@@ -404,6 +403,8 @@ for fly = 1:length(data_dirs)
             heading_offset_variabilityIG = heading_offset_variability(gain_changes(1):gain_changes(2),:);
             bar_offset_variabilityIG = bar_offset_variability(gain_changes(1):gain_changes(2),:);
             total_mvtIG = data.total_mvt_ds(gain_changes(1):gain_changes(2));
+            yaw_speedIG = abs(data.vel_yaw_ds(gain_changes(1):gain_changes(2)));
+            
             
             if type_of_fly == 1
                 
@@ -516,7 +517,7 @@ for fly = 1:length(data_dirs)
             
             %Create table with the model's variables
             for window = 1:length(window_sizes)
-                modelTable{window} = table(bar_offset_variabilityIG(:,window),heading_offset_variabilityIG(:,window),total_mvtIG',BumpMagIG',HalfWidthIG','VariableNames',{'BarOffsetVariability','HeadingOffsetVariability','TotalMovement','BumpMagnitude','BumpWidth'});
+                modelTable{window} = table(bar_offset_variabilityIG(:,window),heading_offset_variabilityIG(:,window),total_mvtIG',yaw_speedIG',BumpMagIG',HalfWidthIG','VariableNames',{'BarOffsetVariability','HeadingOffsetVariability','TotalMovement','YawSpeed','BumpMagnitude','BumpWidth'});
                 if type_of_fly == 1
                     mdl_BM{window} = fitlm(modelTable{window},'BumpMagnitude~HeadingOffsetVariability+TotalMovement');
                     mdl_HW{window} = fitlm(modelTable{window},'BumpWidth~HeadingOffsetVariability+TotalMovement');

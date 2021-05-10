@@ -34,25 +34,25 @@ type_2_data = type_2_data(~cellfun('isempty',type_2_data));
 %Combine the tables into one
 for window = 1:6
     flyNumber = [];
-    allType1Data{window} = array2table(zeros(0,5),'VariableNames', {'BarOffsetVariability','HeadingOffsetVariability','TotalMovement','BumpMagnitude','BumpWidth'});
+    allType1Data{window} = array2table(zeros(0,6),'VariableNames', {'BarOffsetVariability','HeadingOffsetVariability','TotalMovement','YawSpeed','BumpMagnitude','BumpWidth'});
     for fly = 1:length(type_1_data)
         flyNumber = [flyNumber,repelem(fly,length(type_1_data{1,fly}{1,window}.BumpMagnitude))];
         allType1Data{window} = [allType1Data{window};type_1_data{1,fly}{1,window}];
     end
     allType1Data{window} = addvars(allType1Data{window},flyNumber');
-    allType1Data{window}.Properties.VariableNames{'Var6'} = 'Fly';
+    allType1Data{window}.Properties.VariableNames{'Var7'} = 'Fly';
 end
 
 %For type 2 flies
 for window = 1:6
     flyNumber = [];
-    allType2Data{window} = array2table(zeros(0,5),'VariableNames', {'BarOffsetVariability','HeadingOffsetVariability','TotalMovement','BumpMagnitude','BumpWidth'});
+    allType2Data{window} = array2table(zeros(0,6),'VariableNames', {'BarOffsetVariability','HeadingOffsetVariability','TotalMovement','YawSpeed','BumpMagnitude','BumpWidth'});
     for fly = 1:length(type_2_data)
         flyNumber = [flyNumber,repelem(fly,length(type_2_data{1,fly}{1,window}.BumpMagnitude))];
         allType2Data{window} = [allType2Data{window};type_2_data{1,fly}{1,window}];
     end
     allType2Data{window} = addvars(allType2Data{window},flyNumber');
-    allType2Data{window}.Properties.VariableNames{'Var6'} = 'Fly';
+    allType2Data{window}.Properties.VariableNames{'Var7'} = 'Fly';
 end
 
 %% Compute model for bump magnitude for all the type 1 flies
@@ -415,6 +415,36 @@ plot(mvtAxes,nanmean(meanBin),'k','linewidth',2)
 
 %save
 saveas(gcf,'Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp28\data\groupPlots\zBumpParamVsBarVariability.png')
+
+%% Look at correlation between bar and heading offset in type I and type II flies in the best fit window
+
+figure('Position',[100 100 1000 800]),
+subplot(1,2,1)
+for fly = 1:length(type_1_data)
+   bar_offset_variability_I = type_1_data{1,fly}{1,I1}.BarOffsetVariability; 
+end
+plot(heading_offset_variability,bar_offset_variability_I,'o')
+corr_type_I = corrcoef(heading_offset_variability,bar_offset_variability_I);
+hold on
+text(0.8,1.2,['Corr = ',num2str(round(corr_type_I(1,2),2))],'fontweight','bold','fontsize',12);
+title('Type I flies');
+ylabel('Bar offset variability');
+xlabel('Heading offset variability');
+
+subplot(1,2,2)
+for fly = 1:length(type_2_data)
+   heading_offset_variability_II = type_2_data{1,fly}{1,I2}.HeadingOffsetVariability; 
+end
+plot(bar_offset_variability,heading_offset_variability_II,'ro')
+corr_type_II = corrcoef(heading_offset_variability_II,bar_offset_variability);
+hold on
+text(0.8,1.2,['Corr = ',num2str(round(corr_type_II(1,2),2))],'fontweight','bold','fontsize',12);
+title('Type II flies');
+xlabel('Heading offset variability');
+
+%Save figure
+saveas(gcf,'Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp28\data\groupPlots\BarVsHeadingOffset.png')
+
 
 %% Get relationship between bump parameters and offset during normal gain bouts
 
@@ -1032,3 +1062,162 @@ set(gca,'yticklabel',{[]});
 
 %Save
 saveas(gcf,'Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp28\data\groupPlots\BumpParEvolutionType2.png')
+
+%% Relationship between mvt data and heading offset variability data for type 1 flies
+
+figure,
+
+%define bin limits
+allHeadingOffsetVariability = [];
+allTotalMovement = [];
+allYawSpeed = [];
+
+for window = 1:6
+    for fly = 1:length(type_1_data)
+        allHeadingOffsetVariability = [allHeadingOffsetVariability;type_1_data{1,fly}{1,window}.HeadingOffsetVariability];
+        allTotalMovement = [allTotalMovement;zscore(type_1_data{1,fly}{1,window}.TotalMovement)];
+        allYawSpeed = [allYawSpeed;zscore(type_1_data{1,fly}{1,window}.YawSpeed)];
+    end
+end
+%Define bins
+max_bin = prctile(allHeadingOffsetVariability,95,'all');
+min_bin = prctile(allHeadingOffsetVariability,5,'all');
+binWidth = (max_bin-min_bin)/nbins;
+Bins = [min_bin:binWidth:max_bin];
+
+%Create axes for plot
+mvtAxes = Bins - binWidth;
+mvtAxes = mvtAxes(2:end);
+
+for fly = 1:length(type_1_data)
+    
+    %Getting binned means
+    allTotalMvt = zscore(type_1_data{1,fly}{1,I1}.TotalMovement);
+    heading_offset_variability = type_1_data{1,fly}{1,I1}.HeadingOffsetVariability;
+    total_movement = type_1_data{1,fly}{1,I1}.TotalMovement;
+    mvt_thresh = 50;
+    nbins = 10;
+    
+    for bin = 1:length(Bins)-1
+        meanBin(fly,bin) = nanmean(allTotalMvt((heading_offset_variability > Bins(bin)) & (total_movement > mvt_thresh) & (heading_offset_variability < Bins(bin+1))));
+    end
+    
+    subplot(1,2,1)
+    plot(mvtAxes,meanBin(fly,:),'color',[.5 .5 .5])
+    hold on
+    ylabel('zscored total movement'); xlabel('Heading offset variability');
+    ylim([min(min(meanBin))-0.5 max(max(meanBin))+0.5]);
+    xlim([mvtAxes(1) mvtAxes(end)]);
+    
+    subplot(1,2,2)
+    allYawS = zscore(type_1_data{1,fly}{1,I1}.YawSpeed);
+    for bin = 1:length(Bins)-1
+        meanBinYaw(fly,bin) = nanmean(allYawS((heading_offset_variability > Bins(bin)) & (total_movement > mvt_thresh) & (heading_offset_variability < Bins(bin+1))));
+    end
+    plot(mvtAxes,meanBinYaw(fly,:),'color',[.5 .5 .5])
+    hold on
+    ylabel('zscored yaw speed'); xlabel('Heading offset variability');
+    ylim([min(min(meanBinYaw))-0.5 max(max(meanBinYaw))+0.5]);
+    xlim([mvtAxes(1) mvtAxes(end)]);
+    
+
+end
+plot(mvtAxes,nanmean(meanBinYaw),'k','linewidth',2)
+subplot(1,2,1)
+plot(mvtAxes,nanmean(meanBin),'k','linewidth',2)
+
+%Save
+saveas(gcf,'Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp28\data\groupPlots\MvtVsHeadingOffset.png')
+
+%% Repeat for type 2 flies
+
+clear meanBin
+clear meanBinw
+
+figure,
+
+%define bin limits
+allBarOffsetVariability = [];
+allTotalMovement = [];
+for window = 1:6
+    for fly = 1:length(type_2_data)
+        allBarOffsetVariability = [allBarOffsetVariability;type_2_data{1,fly}{1,window}.BarOffsetVariability];
+        allTotalMovement = [allTotalMovement;zscore(type_2_data{1,fly}{1,window}.TotalMovement)];
+        allBumpWidth = [allBumpWidth;zscore(type_2_data{1,fly}{1,window}.BumpWidth)];    
+    end
+end
+%Define bins
+max_bin = prctile(allBarOffsetVariability,95,'all');
+min_bin = prctile(allBarOffsetVariability,5,'all');
+binWidth = (max_bin-min_bin)/nbins;
+Bins = [min_bin:binWidth:max_bin];
+
+%Create axes for plot
+mvtAxes = Bins - binWidth;
+mvtAxes = mvtAxes(2:end);
+
+for fly = 1:length(type_2_data)
+       
+    %Getting binned means
+    allTotalMvt = zscore(type_2_data{1,fly}{1,I2}.TotalMovement);
+    bar_offset_variability = type_2_data{1,fly}{1,I2}.BarOffsetVariability;
+    total_movement = type_2_data{1,fly}{1,I2}.TotalMovement;
+    mvt_thresh = 50;
+    nbins = 10;
+    
+    for bin = 1:length(Bins)-1
+        meanBin(fly,bin) = nanmean(allTotalMvt((bar_offset_variability > Bins(bin)) & (total_movement > mvt_thresh) & (bar_offset_variability < Bins(bin+1))));
+    end
+    
+    plot(mvtAxes,meanBin(fly,:),'color',[.5 .5 .5])
+    hold on
+    ylabel('Zscoed total movement'); xlabel('Bar offset variability');
+    ylim([min(min(meanBin))-0.5 max(max(meanBin))+0.5]);
+    xlim([mvtAxes(1) mvtAxes(end)]);
+
+end
+
+plot(mvtAxes,nanmean(meanBin),'k','linewidth',2)
+
+%save
+saveas(gcf,'Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp28\data\groupPlots\MvtVsBarOffset.png')
+
+
+%% Zscore the movement data
+
+for quartile = 1:4
+    for fly = 1:14
+        zTM = zscore(data(fly).modelTable{1,1}.TotalMovement);
+        TMz(fly,:) = zTM(quartile_changes(quartile):quartile_changes(quartile+1));
+        mvt_q = data(fly).modelTable{1,1}.TotalMovement(quartile_changes(quartile):quartile_changes(quartile+1));
+        TMqz(fly,quartile) = nanmean(TMz(fly,mvt_q > mvt_thresh));
+    end
+end
+
+%% Plot total movement evolution for all flies
+
+figure,
+subplot(1,2,1)
+plot(TMqz(type_of_fly'==1,:)','-o','color',[.5 .5 .5])
+hold on
+plot(mean(TMqz(type_of_fly'==1,:)),'-ko','lineWidth',2)
+%set(gca,'yticklabel',{[]});
+xticks([1:4])
+xlabel('Quartile');
+title('Type 1 flies');
+xlim([0 5]);
+%ylim([0 1.5]);
+ylabel('Zscored total movement');
+
+subplot(1,2,2)
+plot(TMqz(type_of_fly'==2,:)','-o','color',[.5 .5 .5])
+hold on
+plot(mean(TMqz(type_of_fly'==2,:)),'-ko','lineWidth',2)
+%set(gca,'yticklabel',{[]});
+xticks([1:4])
+xlabel('Quartile');
+title('Type 2 flies');
+xlim([0 5]);
+
+%Save
+saveas(gcf,'Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp28\data\groupPlots\zTotalMvtQuartiles.png')
