@@ -1070,13 +1070,11 @@ figure,
 %define bin limits
 allHeadingOffsetVariability = [];
 allTotalMovement = [];
-allYawSpeed = [];
 
 for window = 1:6
     for fly = 1:length(type_1_data)
         allHeadingOffsetVariability = [allHeadingOffsetVariability;type_1_data{1,fly}{1,window}.HeadingOffsetVariability];
         allTotalMovement = [allTotalMovement;zscore(type_1_data{1,fly}{1,window}.TotalMovement)];
-        allYawSpeed = [allYawSpeed;zscore(type_1_data{1,fly}{1,window}.YawSpeed)];
     end
 end
 %Define bins
@@ -1133,6 +1131,7 @@ saveas(gcf,'Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp28\data\groupPlots\MvtV
 
 clear meanBin
 clear meanBinw
+clear meanBinYaw
 
 figure,
 
@@ -1169,14 +1168,28 @@ for fly = 1:length(type_2_data)
         meanBin(fly,bin) = nanmean(allTotalMvt((bar_offset_variability > Bins(bin)) & (total_movement > mvt_thresh) & (bar_offset_variability < Bins(bin+1))));
     end
     
+    subplot(1,2,1)
     plot(mvtAxes,meanBin(fly,:),'color',[.5 .5 .5])
     hold on
     ylabel('Zscoed total movement'); xlabel('Bar offset variability');
     ylim([min(min(meanBin))-0.5 max(max(meanBin))+0.5]);
     xlim([mvtAxes(1) mvtAxes(end)]);
 
-end
+    subplot(1,2,2)
+    allYawS = zscore(type_2_data{1,fly}{1,I2}.YawSpeed);
+    for bin = 1:length(Bins)-1
+        meanBinYaw(fly,bin) = nanmean(allYawS((bar_offset_variability > Bins(bin)) & (total_movement > mvt_thresh) & (bar_offset_variability < Bins(bin+1))));
+    end
+    plot(mvtAxes,meanBinYaw(fly,:),'color',[.5 .5 .5])
+    hold on
+    ylabel('zscored yaw speed'); xlabel('Bar offset variability');
+    ylim([min(min(meanBinYaw))-0.5 max(max(meanBinYaw))+0.5]);
+    xlim([mvtAxes(1) mvtAxes(end)]);
+    
 
+end
+plot(mvtAxes,nanmean(meanBinYaw),'k','linewidth',2)
+subplot(1,2,1)
 plot(mvtAxes,nanmean(meanBin),'k','linewidth',2)
 
 %save
@@ -1191,6 +1204,11 @@ for quartile = 1:4
         TMz(fly,:) = zTM(quartile_changes(quartile):quartile_changes(quartile+1));
         mvt_q = data(fly).modelTable{1,1}.TotalMovement(quartile_changes(quartile):quartile_changes(quartile+1));
         TMqz(fly,quartile) = nanmean(TMz(fly,mvt_q > mvt_thresh));
+        
+        zYS = zscore(data(fly).modelTable{1,1}.YawSpeed);
+        YSz(fly,:) = zYS(quartile_changes(quartile):quartile_changes(quartile+1));
+        YSqz(fly,quartile) = nanmean(YSz(fly,mvt_q > mvt_thresh));
+        
     end
 end
 
@@ -1221,3 +1239,29 @@ xlim([0 5]);
 
 %Save
 saveas(gcf,'Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp28\data\groupPlots\zTotalMvtQuartiles.png')
+
+
+%% Plot yaw speed evolution for all flies
+
+figure,
+subplot(1,2,1)
+plot(YSqz(type_of_fly'==1,:)','-o','color',[.5 .5 .5])
+hold on
+plot(mean(YSqz(type_of_fly'==1,:)),'-ko','lineWidth',2)
+xticks([1:4])
+xlabel('Quartile');
+title('Type 1 flies');
+xlim([0 5]);
+ylabel('Zscored yaw speed');
+
+subplot(1,2,2)
+plot(YSqz(type_of_fly'==2,:)','-o','color',[.5 .5 .5])
+hold on
+plot(mean(YSqz(type_of_fly'==2,:)),'-ko','lineWidth',2)
+xticks([1:4])
+xlabel('Quartile');
+title('Type 2 flies');
+xlim([0 5]);
+
+%Save
+saveas(gcf,'Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp28\data\groupPlots\zYawSpeedQuartiles.png')
