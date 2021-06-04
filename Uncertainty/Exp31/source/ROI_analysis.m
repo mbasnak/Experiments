@@ -43,7 +43,7 @@ for i = 1:num_tids %for every trial
     expression = ['*sid_' num2str(sid) '_tid_' num2str(tid) '*'];
     expression2 = ['rigid_*'];
     roiDir = [imagingDir slash 'ROI' slash]; %get the directory where the ROIs are saved
-    expression3 = ['*sid_' num2str(sid) '_tid_' num2str(tid) '*']; %this looks just like 'expression'
+    expression3 = ['ROI_sid_' num2str(sid) '_tid_' num2str(tid) '*']; %this looks just like 'expression'
     imagingFile = dir(fullfile(imagingTrialDir, expression2)); %get the rigid registration file info (all the data) from the corresponding trial folder
     roiFile = dir(fullfile(roiDir, expression3)); %get the ROI file info for the current trial from the ROI folder
 
