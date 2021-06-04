@@ -5,6 +5,7 @@ Code - contrast change experiment
 -ROI analysis: pre-processing code to take the registered images and obtain the intensity of the imaging channels from the ROIs selected in the previous step
 -PB data analysis: pre-processing code to compute the df/f, obtain the bump's phase, and the behavioral variables in relevant units, as well as computing the offset.
 -run_pre_analysis: function to automatically run the previous two codes on all the sessions of a given fly
+-ROI_selector_midline: GUI to select PB glomeruli and the PB midline
 
 2) Offset stabilizer block analysis
 -offset_stabilizer_block: code to analyze the offset stabilizer session of a given fly
