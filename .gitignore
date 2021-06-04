@@ -98,6 +98,8 @@ Exp1/source/panels/Pattern_longstripe2px_light_360.mat
 *.dat
 *.svg
 Thumbs.db
+Uncertainty/data-management.txt
+Uncertainty/Exp28/source/new_bump_parameters_analysis/
 
 
 #Ignore certain folders that I moved out of the Neurobio server

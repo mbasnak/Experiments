@@ -12,35 +12,71 @@ pattern.gs_val = 4; % we are setting the grayscale value at 4 for defining the i
 %gs_val = 15;
 Pats = zeros(24, 96, pattern.x_num, pattern.y_num);
 
+%%
+%-----------------------------------------------------
+% Stripe optic flow
 %Because of how my LED panels are arranged, the right side of the stimulus
 %goes from px 71 in the front to px 22 in the back, and the left side of
 %the stimulus goes from px 70 in the front to px 23 in the back
 %My stim pattern will then have a structure where I separate in sections
 %what happens with pxs 1-22, 23-70 and 71-96.
 
-stripe_pattern{1} = [zeros(24,1),repmat([ones(24,2),zeros(24,2)],1,4),ones(24,2),zeros(24,1)                               ,zeros(24,1),repmat([ones(24,2),zeros(24,2)],1,11),ones(24,2),zeros(24,1)          ,zeros(24,1),repmat([ones(24,2),zeros(24,2)],1,6),ones(24,2),zeros(24,1)];
-stripe_pattern{2} = [zeros(24,2),repmat([ones(24,2),zeros(24,2)],1,4),ones(24,2)                                           ,repmat([ones(24,2),zeros(24,2)],1,12)                                             ,zeros(24,2),repmat([ones(24,2),zeros(24,2)],1,6),ones(24,2)];
-stripe_pattern{3} = [ones(24,1),zeros(24,2),repmat([ones(24,2),zeros(24,2)],1,4),ones(24,1)                                ,ones(24,1),zeros(24,2),repmat([ones(24,2),zeros(24,2)],1,11),ones(24,1)           ,ones(24,1),zeros(24,2),repmat([ones(24,2),zeros(24,2)],1,6),ones(24,1)];
-stripe_pattern{4} = [repmat([ones(24,2),zeros(24,2)],1,5)                                                                  ,zeros(24,2),repmat([ones(24,2),zeros(24,2)],1,11),ones(24,2)                      ,repmat([ones(24,2),zeros(24,2)],1,7)];                                                                
+% stripe_pattern{1} = [zeros(24,1),repmat([ones(24,2),zeros(24,2)],1,4),ones(24,2),zeros(24,1)                               ,zeros(24,1),repmat([ones(24,2),zeros(24,2)],1,11),ones(24,2),zeros(24,1)          ,zeros(24,1),repmat([ones(24,2),zeros(24,2)],1,6),ones(24,2),zeros(24,1)];
+% stripe_pattern{2} = [zeros(24,2),repmat([ones(24,2),zeros(24,2)],1,4),ones(24,2)                                           ,repmat([ones(24,2),zeros(24,2)],1,12)                                             ,zeros(24,2),repmat([ones(24,2),zeros(24,2)],1,6),ones(24,2)];
+% stripe_pattern{3} = [ones(24,1),zeros(24,2),repmat([ones(24,2),zeros(24,2)],1,4),ones(24,1)                                ,ones(24,1),zeros(24,2),repmat([ones(24,2),zeros(24,2)],1,11),ones(24,1)           ,ones(24,1),zeros(24,2),repmat([ones(24,2),zeros(24,2)],1,6),ones(24,1)];
+% stripe_pattern{4} = [repmat([ones(24,2),zeros(24,2)],1,5)                                                                  ,zeros(24,2),repmat([ones(24,2),zeros(24,2)],1,11),ones(24,2)                      ,repmat([ones(24,2),zeros(24,2)],1,7)];                                                                
+% 
+% 
+% for i = 5:48
+%     stripe_pattern{i} = stripe_pattern{i-4};
+% end
+% 
+% 
+% for i = 49:70
+%     stripe_pattern{i} = stripe_pattern{24};
+% end
+% 
+% for i = 71:92
+%     stripe_pattern{i} = stripe_pattern{1};
+% end
+% 
+% for y = 1:pattern.y_num %for every y dimension
+%     
+%     Pats(:,:,1,y) = stripe_pattern{1,y}; %the x dim = 1 will be the stripe pattern for that dimension
+%     Pats(:,53:54,1,y) = 15; %add the Sun stimulus
+%     
+%     for x = 2:pattern.x_num
+%         Pats(:,:,x,y) = circshift(Pats(:,:,x-1,y),[0,1]); %the other x dims will be shifting one px in yaw per 1 dim shift
+%     end
+% 
+% end
+% ----------------------------------------------------------------------
 
+% Starfield Optic Flow
+% Right side front to back from px 62 to 31, Left side front to back from
+% px 79 to 96 and then px 1 to 14. From 63 to 78 and from 15 to 30 are set
+% to darkness.
 
-for i = 5:48
-    stripe_pattern{i} = stripe_pattern{i-4};
+dot_density=0.20;
+% Draw the initial image at xpos=l, ypos=1
+
+star_pattern{1}=zeros(24,32); % The right side from px 31 to 62 
+% Shuffle a list of linear indices
+shuffled_pixels=randperm(numel(star_pattern{1})); 
+numDots=round( length(shuffled_pixels)*dot_density );
+for d=1:numDots
+    star_pattern{1}(shuffled_pixels(d))=1;
 end
 
-
-for i = 49:70
-    stripe_pattern{i} = stripe_pattern{24};
+for y=2:pattern.y_num
+    star_pattern{y}=circshift(star_pattern{y-1},[0,-1]);
 end
 
-for i = 71:92
-    stripe_pattern{i} = stripe_pattern{1};
-end
-
-for y = 1:pattern.y_num %for every y dimension
+for y = 1:pattern.y_num % for every y dimension
     
-    Pats(:,:,1,y) = stripe_pattern{1,y}; %the x dim = 1 will be the stripe pattern for that dimension
-    Pats(:,53:54,1,y) = 15; %add the Sun stimulus
+    % px 1-14 = px 44-31
+    Pats(:,:,1,y) = [flip(star_pattern{y}(:,1:14),2),zeros(24,16),star_pattern{y},zeros(24,16),flip(star_pattern{y}(:,15:32),2)];
+    Pats(:,63:64,1,y) = 15; %add the Sun stimulus
     
     for x = 2:pattern.x_num
         Pats(:,:,x,y) = circshift(Pats(:,:,x-1,y),[0,1]); %the other x dims will be shifting one px in yaw per 1 dim shift
@@ -48,6 +84,7 @@ for y = 1:pattern.y_num %for every y dimension
 
 end
 
+%%
 
 % map = [0 0 0; 0 0 1];
 % 
@@ -69,10 +106,10 @@ end
 
 pattern.Pats = Pats;
 
-
-pattern.Panel_map = [36 32 28 35 31 27 34 30 26 33 29 25;...
-                     24 20 16 23 19 15 22 18 14 21 17 13;...
-                     12 8 4 11 7 3 10 6 2 9 5 1];
+% Change mapping to accomodate bad '31' wz 2021/05/19
+pattern.Panel_map = [36 32 28 35 25 27 34 30 26 33 29 31;...
+                     24 20 16 23 13 15 22 18 14 21 17 19;...
+                     12 8 4 11 1 3 10 6 2 9 5 7];
 
 pattern.Panel_map = pattern.Panel_map;
 pattern.BitMapIndex = process_panel_map(pattern);
@@ -83,5 +120,5 @@ pattern.data = Make_pattern_vector(pattern);
 %% Save data
 
 directory_name = 'C:\Users\Wilson\Desktop\panels-matlab_071618\Patterns\mel360_36panels';
-str = [directory_name '\Pattern038_vhallway_with_opticflow_and_sun'];
+str = [directory_name '\Pattern031_newMap_vhallway_with_star_opticflow1_and_sun15'];
 save(str, 'pattern'); % save the file in the specified directory
