@@ -1,6 +1,6 @@
 %Function to obtain bump parameters from the fit of a sum of von Mises functions to the DF/F data
 
-function [bump_mag,bump_width,adj_rs,u] = fitVonMises(midline_distances,dff_data)
+function [bump_mag,bump_width,adj_rs,bump_pos] = fitVonMises(midline_distances,dff_data)
 
 %INPUTS
 %midline_distances = distances along the PB midline
@@ -48,7 +48,7 @@ for timepoint = 1:length(dff_data)
         k = -k;
         u = u + pi;
     end
-    u(timepoint) = mod(u,2*pi);
+    bump_pos(timepoint) = mod(u,2*pi);
     
     %6) Get bump parameteres
     bump_mag(timepoint) = a * exp(k);
