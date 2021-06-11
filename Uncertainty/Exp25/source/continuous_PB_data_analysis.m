@@ -5,7 +5,7 @@ function continuous_PB_data_analysis(path,sid,tid)
 
 %% Create the data analysis folder
 
-data_analysis_dir = [parentDir,'\analysis\'];
+data_analysis_dir = [path,'\analysis\'];
 if(~exist(data_analysis_dir, 'dir'))
     mkdir(data_analysis_dir);
 end

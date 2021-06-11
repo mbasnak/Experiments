@@ -1,12 +1,33 @@
 function continuous_PB_data_analysis(path,sid,tid)
 
+%Code to analyze the imaging and behavior data, with the imaging data
+%analyzed using the new 'continuous' method
+
+global slash;
+if isunix() == 1 %if running in Linux or mac
+    slash = '/'; %define the slash this way
+else %if running in windows
+    slash = '\'; %define the other way
+end
+set(0,'DefaultTextInterpreter','none');
+
+%% Create the data analysis folder
+
+data_analysis_dir = [path slash 'analysis' slash];
+
+if(~exist(data_analysis_dir, 'dir'))
+    mkdir(data_analysis_dir);
+end
+
+%% Load the imaging data
+
 %Move to the folder of interest
 cd(path)
 
 %Load the roi data 
-load(['2p/ROI/ROI_midline_sid_',num2str(sid),'_tid_',num2str(tid),'.mat']);
+load(['2p' slash 'ROI' slash 'ROI_midline_sid_' num2str(sid) '_tid_' num2str(tid) '.mat']);
 %Load the registered imaging stack
-load(['2p/sid_',num2str(sid),'_tid_',num2str(tid),'/rigid_sid_',num2str(sid),'_tid_',num2str(tid),'_Chan_1_sessionFile.mat']);
+load(['2p' slash 'sid_' num2str(sid) '_tid_' num2str(tid) slash 'rigid_sid_' num2str(sid) '_tid_' num2str(tid) '_Chan_1_sessionFile.mat']);
 
 %% Get the summed GCaMP7f data
 
@@ -62,56 +83,8 @@ for segment = 1:length(midline_coordinates)-1
     point2{segment} = [midV{segment}(1) + normal1{segment}(1), midV{segment}(2) + normal1{segment}(2)];
 end
 
-% figure('Position',[200 50 600 800]);
-% subplot(3,1,1)
-% plot(midline_coordinates(:,1),midline_coordinates(:,2), 'r');
-% hold on
-% for segment = 1:length(midline_coordinates)-1
-%     plot([midV{segment}(1), midV{segment}(1) + normal1{segment}(1)], [midV{segment}(2), midV{segment}(2) + normal1{segment}(2)], 'b');
-%     plot([midV{segment}(1), midV{segment}(1) + normal2{segment}(1)], [midV{segment}(2), midV{segment}(2) + normal2{segment}(2)], 'b');
-% end
-% title('PB midline and normal segments');
-
-%% Get the distance to each normal line in an example timepoint
-
-% PB_image = summedData(:,:,1000);
-% PB_image(PB_coverage == 0) = 0;
-% 
-% %For each of those locations, find the distance to each normal in the
-% %midline
-% midline_f = zeros(1,length(midline_coordinates)-1); %start empty midline brightness vector
-% 
-% for row = 1:size(PB_coverage,1)
-%     for column = 1:size(PB_coverage,2)
-%         if PB_coverage(row,column) == 1
-%             %for every normal to the midline
-%             dist_to_midline = zeros(length(normal1),1);
-%             for norm_line = 1:length(normal1)
-%                 % Get the distance to that normal
-%                 dist_to_midline(norm_line) = GetPointLineDistance(column,row,point1{norm_line}(1),point1{norm_line}(2),point2{norm_line}(1),point2{norm_line}(2));
-%             end
-%             %find the minimum distance
-%             [~ , Imin] = min(dist_to_midline);
-%             %add intensity value of that pixel to that point in the midline
-%             midline_f(Imin) = midline_f(Imin) + PB_image(row,column);
-%         end
-%     end
-% end
-% % 
-% % Plot
-% subplot(3,1,2)
-% imagesc(flip(PB_image))
-% title('PB activity at example timepoint');
-% colormap(gray)
-% 
-% subplot(3,1,3)
-% plot(midline_distances,midline_f)
-% title('Fluorescence at example timepoint using midline');
-% 
-% saveas(gcf,'ExampleTimepoint.png');
-
-% 
-%% Repeat for every timepoint
+ 
+%% Assign fluorescence across the PB to the corresponding closest point in the midline
 
 %tic
 
@@ -159,69 +132,111 @@ end
 % Compute df/f
 dff = (midline_ff'-baseline_f)./baseline_f;
 
-% figure('Position',[100 100 1400 300]),
-% imagesc(dff')
-% colormap(flipud(gray));
-% title('Dff using new method');
-% saveas(gcf,'epg_activity_heatmap.png');
-
 
 %% Compute bump parameters
 
 %tic
-[bump_mag, bump_width, adj_rs, u] = fitVonMises(midline_distances,dff);
+[bump_mag, bump_width, adj_rs, bump_pos] = fitVonMises(midline_distances,dff);
 %toc
 
-%Plot
-% figure,
-% subplot(2,1,1)
-% plot(bump_mag)
-% title('Bump magnitude');
-% 
-% subplot(2,1,2)
-% plot(bump_width)
-% title('Bump width');
+%% Load the ball data
 
-%% Figure out which frames to ditch
+ball_dir = [path slash 'ball' slash];
+expression = ['*sid_' num2str(sid) '_tid_' num2str(tid) '*.mat'];
+ball_file = dir(fullfile(ball_dir, expression));
+ballData = load(fullfile(ball_dir, ball_file.name)); %load ballData
+runobjFile = dir(fullfile([ball_dir,'\runobj\'], ['*_sid_' num2str(sid) '_*']));
+load(fullfile([ball_dir,'\runobj\'], runobjFile.name)); %load run_obj
 
-frames = [1:length(dff)];
 
-% %Plot
-% figure,
-% subplot(3,1,1)
-% imagesc(dff')
-% colormap(flipud(gray))
-% 
-% subplot(3,1,2)
-% plot(frames(adj_rs>=0.5),bump_mag(adj_rs>=0.5),'.r')
-% hold on
-% plot(frames(adj_rs<0.5),bump_mag(adj_rs<0.5),'.k')
-% title('Bump magnitude');
-% ylabel('DF/F');
-% xlim([1 length(adj_rs)]);
-% legend('adjrs >= 0.5','adjrs < 0.5');
-% 
-% subplot(3,1,3)
-% plot(frames(adj_rs>=0.5),bump_width(adj_rs>=0.5),'.r')
-% hold on
-% plot(frames(adj_rs<0.5),bump_width(adj_rs<0.5),'.k')
-% title('Bump witdh');
-% ylabel('Radians');
-% xlim([1 length(adj_rs)]);
-% legend('adjrs >= 0.5','adjrs < 0.5');
-% 
-% %Get percentage of useful frames (good gof)
-% perc_good = (sum(adj_rs>=.5)/length(adj_rs))*100;
-% suptitle([num2str(round(perc_good)),'% good frames']);
+%% Convert the ball data panel position into an angle, bar position; fictrac position/velocities
 
-%% Save data
+% 1)Import behavior file
+ball_file = dir(fullfile(ball_dir, expression));
+ballData = load(fullfile(ball_dir, ball_file.name)); %load ballData
+runobjFile = dir(fullfile([ball_dir,'\runobj\'], ['*_sid_' num2str(sid) '_*']));
+load(fullfile([ball_dir,'\runobj\'], runobjFile.name)); %load run_obj
+bdata_raw = ballData.trial_bdata; %get the ball data
+bdata_time = ballData.trial_time; %get the trial time
 
+% 2)Use an auxiliary function to get the different components of the behavior data
+number_x = 96;
+[smoothed, bdata_time_out, panel_angle, flyPosRad] = get_data_360(bdata_time, bdata_raw, number_x);
+
+% 3)Recover relevant movement parameters
+vel_for = smoothed.xVel';
+vel_yaw = smoothed.angularVel;
+vel_for_deg = smoothed.xVelDeg';
+vel_side_deg = smoothed.yVelDeg';
+total_mvt = smoothed.total_mvt;
+
+%If you want to check what the movement data looks like, uncomment the
+%following line
+%plot_mvt_parameters(vel_for_deg,vel_side_deg,vel_yaw,total_mvt)
+
+panel_y = downsample(bdata_raw(:,6), floor(4000/50));
+
+% 4)Subsample all the variables to have the length of the number of
+%volumes scanned:
+volumes = length(dff); %get the volume number
+time_ds = bdata_time_out(round(linspace(1, length(bdata_time_out), volumes))); 
+vel_for_ds = vel_for(round(linspace(1, length(vel_for), volumes)));
+vel_yaw_ds = vel_yaw(round(linspace(1, length(vel_yaw), volumes)));
+vel_for_deg_ds = vel_for_deg(round(linspace(1, length(vel_for_deg), volumes)));
+vel_side_deg_ds = vel_side_deg(round(linspace(1, length(vel_side_deg), volumes)));
+total_mvt_ds = total_mvt(round(linspace(1, length(total_mvt), volumes)));
+panel_y_ds = panel_y(round(linspace(1, length(panel_y), volumes)));
+
+%With this convention, a positive change in panel_angle_ds implies a
+%clockwise change in bar position.
+panel_angle_ds = panel_angle(round(linspace(1, length(panel_angle), volumes)));
+
+%With this convention, a positive change in flyPosRad_ds implies a
+%clockwise change in heading.
+flyPosRad_ds = resample(wrapToPi(flyPosRad),volumes,length(flyPosRad));
+
+
+%% Offset calculation
+%we will compute and define the offset as the
+%circular distance between the negative of dff_pva and the heading
+%(since a clockwise movement in the EB should elicit a counterclockwise movement of the fly)
+offset = wrapTo360(rad2deg(circ_dist(-bump_pos',flyPosRad_ds)));
+
+
+%% Save the data into the analysis folder
+
+% General experiment info
+continuous_data.parentDir = path;
+continuous_data.sid = sid;
+continuous_data.tid = tid;
+continuous_data.time = time_ds;
+continuous_data.run_obj = run_obj;
+continuous_data.trial_dur = run_obj.trial_t;
+continuous_data.fr_y_ds = panel_y_ds;
+
+% Movement parameters
+continuous_data.vel_for = vel_for;
+continuous_data.vel_yaw = vel_yaw;
+continuous_data.vel_for_ds = vel_for_ds;
+continuous_data.vel_yaw_ds = vel_yaw_ds;
+continuous_data.vel_side_deg_ds = vel_side_deg_ds;
+continuous_data.vel_for_deg_ds = vel_for_deg_ds;
+continuous_data.total_mvt_ds = total_mvt_ds;
+continuous_data.heading = flyPosRad_ds;
+continuous_data.heading_deg = rad2deg(flyPosRad_ds);
+continuous_data.panel_angle = panel_angle_ds;
+
+% Imaging data
+continuous_data.volumes = volumes;
 continuous_data.dff_matrix = dff;
 continuous_data.bump_magnitude = bump_mag;
 continuous_data.bump_width = bump_width;
 continuous_data.adj_rs = adj_rs;
-continuous_data.bump_pos = u;
+continuous_data.bump_pos = wrapToPi(bump_pos);
+continuous_data.offset = offset;
 
+
+% Write file
 filename = [path, '\analysis\continuous_analysis_sid_' num2str(sid) '_tid_' num2str(tid) '.mat'];
 save(filename, 'continuous_data');
 
