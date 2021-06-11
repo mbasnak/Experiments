@@ -24,7 +24,7 @@ function varargout = ROI_selector(varargin)
 
 % Edit the above text to modify the response to help ROI_selector
 
-% Last Modified by GUIDE v2.5 25-May-2021 10:57:00
+% Last Modified by GUIDE v2.5 06-Mar-2019 13:17:54
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -231,35 +231,6 @@ handles.roi_all = [handles.roi_all roi_i];
 
 addROI(hObject, ghandles, handles, roi_i);
 
-% --- Executes on button press in pushbutton7.
-function addmidline_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton7 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-ghandles = guihandles(hObject);
-ax = handles.axes1;
-h = drawpolyline(ax);
-position = h.Position;
-
-%leftPB = get(ghandles.leftPB, 'Value');
-%glomerulus = str2num(get(ghandles.glomerulus_number, 'String'));
-zplane = get(ghandles.zplane, 'Value');
-name = get(ghandles.roi_name, 'String');
-
-roi_i.name = name;
-roi_i.z = zplane;
-roi_i.positions = position;
-roi_i.xi = position(:,1);
-roi_i.yi = position(:,2);
-roi_i.BW = [];
-roi_i.id = handles.counter;
-roi_i.handle = h;
-handles.counter = handles.counter + 1;
-handles.roi_all = [handles.roi_all roi_i];
-
-addROI(hObject, ghandles, handles, roi_i);
-
-
 % --- Executes on button press in save_all.
 function save_all_Callback(hObject, eventdata, handles)
 % hObject    handle to save_all (see GCBO)
@@ -281,7 +252,7 @@ roi_path = [datapath(1:k+3) 'ROI'];
 if(~exist(roi_path, 'dir'))
     mkdir(roi_path);
 end
-filename = [roi_path slash ['ROI_midline_sid_' num2str(handles.sid) '_tid_' num2str(handles.tid) '.mat']];
+filename = [roi_path slash ['ROI_sid_' num2str(handles.sid) '_tid_' num2str(handles.tid) '.mat']];
 roi = handles.roi_all;
 save(filename, 'roi');
 disp('ROIs saved!');
@@ -378,13 +349,7 @@ roi_data = handles.roi_all;
 for i = 1:length(handles.roi_all)
     cmap = hsv(21);
     color = cmap(i, :);
-    %plot(roi_data(i).xi, roi_data(i).yi,'k','linewidth',2, 'FaceAlpha', 0)
-    if (contains(handles.roi_name.String,'mid')==0)
-        patch('XData', roi_data(i).xi, 'YData', roi_data(i).yi, 'FaceAlpha', 0, 'EdgeColor', color, 'LineWidth', 1);
-    else
-        hold on
-        plot(roi_data(i).xi, roi_data(i).yi)
-    end
+    patch('XData', roi_data(i).xi, 'YData', roi_data(i).yi, 'FaceAlpha', 0, 'EdgeColor', color, 'LineWidth', 1);
     text(mean(roi_data(i).xi), mean(roi_data(i).yi), num2str(roi_data(i).id), 'Color', color, 'FontSize', 20);
     hold on;
 end
@@ -564,6 +529,15 @@ switch eventdata.Key
         gco;
 end
 
+
+
+function roi_name_Callback(hObject, eventdata, handles)
+% hObject    handle to roi_name (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of roi_name as text
+%        str2double(get(hObject,'String')) returns contents of roi_name as a double
 
 
 % --- Executes during object creation, after setting all properties.

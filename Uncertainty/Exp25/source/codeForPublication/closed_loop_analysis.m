@@ -347,6 +347,65 @@ xlim([0 data.time(end)]);
 %save figure
 saveas(gcf,[path,'plots\closedLoopBMinTime.png']);
 
+
+%% Compute and plot bump magnitude using the von Mises fit method with PB midline data points
+
+%1) load the data
+fileNames = dir(path);
+for fileNumber = 1:length(fileNames)
+    if (contains(fileNames(fileNumber).name,file) & contains(fileNames(fileNumber).name,'continuous'))
+        load(fullfile(fileNames(fileNumber).folder,fileNames(fileNumber).name))
+    end
+end
+
+%2) Get bump magnitude per block
+for block = 1:length(blockLimits)
+   new_bump_mag{block} = continuous_data.bump_magnitude(:,blockLimits{block}(1):blockLimits{block}(2));
+   adj_rs{block} = continuous_data.adj_rs(:,blockLimits{block}(1):blockLimits{block}(2));
+end
+
+%3) Plot
+figure('Position',[200 200 1600 600]),
+%Plot EPG activity
+subplot(2,1,1)
+imagesc(continuous_data.dff_matrix')
+colormap(flipud(gray))
+hold on
+%add the changes in stim
+for change = 1:length(changeContrast)
+   line([changeContrast(change) changeContrast(change)], [0 size(continuous_data.dff_matrix,2)], 'LineWidth', 2, 'color', [0,0.5,0]); 
+end
+title('EPG activity in the PB','fontweight','bold','fontsize',12);
+set(gca,'xtick',[]);
+set(gca,'XTickLabel',[]);
+legend('Change in stimulus');
+
+%Plot bump magnitude
+subplot(2,1,2)
+for block = 1:length(blockLimits)
+    time = data.time(blockLimits{block}(1):blockLimits{block}(2));
+    if contains(contrasts(block),'Dark')
+        plot(time(adj_rs{block}>=0.5),new_bump_mag{block}(adj_rs{block}>=0.5),'.','color',color_gradient{1})
+        hold on
+        plot(time(adj_rs{block}<0.5),new_bump_mag{block}(adj_rs{block}<0.5),'.r')
+    elseif contains(contrasts(block),'Low')
+        plot(time(adj_rs{block}>=0.5),new_bump_mag{block}(adj_rs{block}>=0.5),'.','color',color_gradient{2})
+        hold on
+        plot(time(adj_rs{block}<0.5),new_bump_mag{block}(adj_rs{block}<0.5),'.r')
+    else
+        plot(time(adj_rs{block}>=0.5),new_bump_mag{block}(adj_rs{block}>=0.5),'.','color',color_gradient{3})
+        hold on
+        plot(time(adj_rs{block}<0.5),new_bump_mag{block}(adj_rs{block}<0.5),'.r')
+    end
+end
+title('Bump magnitude','fontweight','bold','fontsize',12);
+ylabel({'Bump magnitude';'(from von Mises fit)'},'fontweight','bold','fontsize',10);
+xlabel('Time (sec)','fontweight','bold','fontsize',10);
+xlim([0 data.time(end)]);
+
+%4) Save figure
+saveas(gcf,[path,'plots\closedLoopBMinTimeNewMethod.png']);
+
 %% Compute and plot mean bump magnitude per block
 
 figure('Position',[200 200 1000 800]),
@@ -392,6 +451,53 @@ ylabel({'Bump magnitude';'(amplitude of Fourier component)'});
 %save figure
 saveas(gcf,[path,'plots\closedLoopMeanBM.png']);  
 
+
+
+%% Compute and plot mean bump magnitude per block with new method
+
+figure('Position',[200 200 1000 800]),
+subplot(2,1,1)
+for block = 1:length(blockLimits)
+   mean_new_bump_mag(block) = mean(new_bump_mag{block}(adj_rs{block}>=0.5)); %select only datapoints with good gof
+   plot(block,mean_new_bump_mag(block),'ko','MarkerFaceColor',color_gradient{Intensities(block)},'MarkerSize',8)
+   hold on
+end
+xlim([0 num_subplots+1]);
+ylim([min(mean_new_bump_mag)-0.5 max(mean_new_bump_mag)+0.5]); 
+xticks(1:num_subplots);
+title('Mean bump magnitude per block');
+ylabel({'Bump magnitude';'(from von Mises fit)'});
+xlabel('Block number');
+%Add custom legend
+h = zeros(3, 1);
+h(1) = plot(NaN,NaN,'ko','MarkerFaceColor',color_gradient{1});
+h(2) = plot(NaN,NaN,'ko','MarkerFaceColor',color_gradient{2});
+h(3) = plot(NaN,NaN,'ko','MarkerFaceColor',color_gradient{3});
+legend(h, 'Darkness','Low contrast','High Contrast');
+
+subplot(2,1,2)
+%Add bump mag data to table
+if size(summary_data,2) == 3
+    summary_data = addvars(summary_data, mean_new_bump_mag','NewVariableNames','mean_new_bump_mag');
+end
+%Get mean bump mag by contrast
+mean_new_bump_data = varfun(@mean,summary_data,'InputVariables','mean_new_bump_mag',...
+       'GroupingVariables',{'contrast'});
+%Plot
+for contrastLevel = 1:3
+   plot(contrastLevel,mean_new_bump_data.mean_mean_new_bump_mag(newOrder(contrastLevel)),'ko','MarkerFaceColor',color_gradient{contrastLevel},'MarkerSize',8)
+   hold on
+end
+xlim([0 4]);
+ylim([min(mean_new_bump_data.mean_mean_new_bump_mag)-0.5 max(mean_new_bump_data.mean_mean_new_bump_mag)+0.5]); 
+xticks(1:3);
+xticklabels({'Darkness', 'Low contrast', 'High contrast'});
+title('Mean bump magnitude per contrast');
+ylabel({'Bump magnitude';'(from von Mises fit)'});
+
+%save figure
+saveas(gcf,[path,'plots\closedLoopMeanBMNewMethod.png']);  
+
 %% Analyze bump width at half max per block
 
 %Compute bump width at half maximum (using aux function)
@@ -424,7 +530,7 @@ legend(h, 'Darkness','Low contrast','High Contrast');
 
 subplot(2,1,2)
 %Add bump mag data to table
-if size(summary_data,2) == 3
+if size(summary_data,2) == 4
     summary_data = addvars(summary_data, mean_half_w','NewVariableNames','mean_half_width');
 end
 %Get mean bump mag by contrast
@@ -444,6 +550,60 @@ ylabel('Full width at half max');
 
 %Save figure
 saveas(gcf,[path,'plots\closedLoopMeanHW.png']);
+
+
+%% Analyze bump width at half max per block with the new method
+
+%Compute bump width at half maximum (using aux function)
+new_half_max_width = continuous_data.bump_width; 
+
+for block = 1:length(blockLimits)
+   new_width_half_max{block} = new_half_max_width(blockLimits{block}(1):blockLimits{block}(2)); 
+end
+
+%Plot
+figure('Position',[200 200 1000 800]),
+subplot(2,1,1)
+for block = 1:length(blockLimits)
+   mean_new_half_w(block) = nanmean(new_width_half_max{block}(adj_rs{block}>=0.5)); 
+   plot(block,mean_new_half_w(block),'ko','MarkerFaceColor',color_gradient{Intensities(block)},'MarkerSize',8)
+   hold on
+end
+xlim([0 num_subplots+1]);
+xticks(1:num_subplots);    
+ylim([min(mean_new_half_w)-0.5 max(mean_new_half_w)+0.5]); 
+title('Mean half max width per block');
+ylabel('Half max width (EB wedges)');
+xlabel('Block number');
+%Add custom legend
+h = zeros(3, 1);
+h(1) = plot(NaN,NaN,'ko','MarkerFaceColor',color_gradient{1});
+h(2) = plot(NaN,NaN,'ko','MarkerFaceColor',color_gradient{2});
+h(3) = plot(NaN,NaN,'ko','MarkerFaceColor',color_gradient{3});
+legend(h, 'Darkness','Low contrast','High Contrast');
+
+subplot(2,1,2)
+%Add bump mag data to table
+if size(summary_data,2) == 5
+    summary_data = addvars(summary_data, mean_new_half_w','NewVariableNames','mean_new_half_width');
+end
+%Get mean bump mag by contrast
+mean_new_half_width = varfun(@mean,summary_data,'InputVariables','mean_new_half_width',...
+       'GroupingVariables',{'contrast'});
+%Plot
+for contrastLevel = 1:3
+   plot(contrastLevel,mean_new_half_width.mean_mean_new_half_width(newOrder(contrastLevel)),'ko','MarkerFaceColor',color_gradient{contrastLevel},'MarkerSize',8)
+   hold on
+end
+xlim([0 4]);
+ylim([min(mean_new_half_width.mean_mean_new_half_width)-0.5 max(mean_new_half_width.mean_mean_new_half_width)+0.5]); 
+xticks(1:3);
+xticklabels({'Darkness', 'Low contrast', 'High contrast'});
+title('Width at half max per contrast');
+ylabel('Full width at half max');
+
+%Save figure
+saveas(gcf,[path,'plots\closedLoopMeanHWNewMethod.png']);
 
 %% Plot fly's velocity in all 3 axes  with all vel in deg/s
 
@@ -832,6 +992,153 @@ legend('Darkness','Low contrast','High contrast');
 %save figure
 saveas(gcf,[path,'plots\closedLoopBMvsVelPerContrastBinned.png']);
 
+
+%% Repeat using new method
+
+allNewBumpMag = [];
+all_adj_rs = [];
+for block = 1:length(blockLimits)
+    allNewBumpMag = [allNewBumpMag,new_bump_mag{block}];
+    all_adj_rs = [all_adj_rs,adj_rs{block}];
+end
+
+figure('Position',[200 200 1400 600]),
+nbins = 20;
+
+%Forward velocity
+subplot(1,4,1)
+%Define bin limits
+maxBin = max(data.vel_for_deg_ds); %upper limit
+binWidth = maxBin/nbins;
+forVelBins = [0:binWidth:maxBin];
+
+%Create axes for plot, centering them in the middle of the bin
+forVelAxes = forVelBins-binWidth/2;
+forVelAxes = forVelAxes(2:end);
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(forVelBins)-1
+        doubleBin(bin,contrast) = nanmean(allNewBumpMag((data.vel_for_deg_ds(1:length(allNewBumpMag)) > forVelBins(bin)) & (data.vel_for_deg_ds(1:length(allNewBumpMag)) < forVelBins(bin+1)) & (all_adj_rs' >= 0.5) & (all_contrast_levels' == contrast)));
+    end
+    plot(forVelAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean bump magnitude'); xlabel('Forward velocity (deg/s)');
+ylim([0 (max(max(doubleBin))+0.5)]);
+%if you have a row with nans, make that the upper limit
+nan_row = sum(isnan(doubleBin(:,:)),2);
+nan_rows = find(nan_row==3);
+if ~isempty(nan_rows)
+    xlim([0 forVelAxes(nan_rows(1)-1)+binWidth/2]);
+else
+    xlim([0 forVelAxes(end)+binWidth/2]);
+end
+legend('Darkness','Low contrast','High contrast');
+
+
+%Side speed
+subplot(1,4,2)
+
+%Define bin limits
+maxBin = max(abs(data.vel_side_deg_ds));
+binWidth = maxBin/nbins;
+sideSpeedBins = [0:binWidth:maxBin];
+
+%Create axes for plot
+sideSpeedAxes = sideSpeedBins-binWidth/2;
+sideSpeedAxes = sideSpeedAxes(2:end);
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(sideSpeedBins)-1
+        doubleBin(bin,contrast) = nanmean(allNewBumpMag((abs(data.vel_side_deg_ds(1:length(allNewBumpMag))) > sideSpeedBins(bin)) & (abs(data.vel_side_deg_ds(1:length(allNewBumpMag))) < sideSpeedBins(bin+1)) & (all_adj_rs' >= 0.5) & (all_contrast_levels' == contrast)));
+    end
+    plot(sideSpeedAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean bump magnitude'); xlabel('Side speed (deg/s)');
+ylim([0 (max(max(doubleBin))+0.5)]);
+%if you have a row with nans, make that the upper limit
+nan_row = sum(isnan(doubleBin(:,:)),2);
+nan_rows = find(nan_row==3);
+if ~isempty(nan_rows)
+    xlim([0 sideSpeedAxes(nan_rows(1)-1)+binWidth/2]);
+else
+    xlim([0 sideSpeedAxes(end)+binWidth/2]);
+end
+legend('Darkness','Low contrast','High contrast');
+
+
+%Angular speed
+subplot(1,4,3)
+
+%Define bin limits
+maxBin = max(abs(data.vel_yaw_ds));
+binWidth = maxBin/nbins;
+angSpeedBins = [0:binWidth:maxBin];
+
+%Create axes for plot
+angSpeedAxes = angSpeedBins-binWidth/2;
+angSpeedAxes = angSpeedAxes(2:end);
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(angSpeedBins)-1
+        doubleBin(bin,contrast) = nanmean(allNewBumpMag((abs(data.vel_yaw_ds(1:length(allNewBumpMag))) > angSpeedBins(bin)) & (abs(data.vel_yaw_ds(1:length(allNewBumpMag))) < angSpeedBins(bin+1)) & (all_adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+    end
+    plot(angSpeedAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean bump magnitude'); xlabel('Angular speed (deg/s)');
+ylim([0 (max(max(doubleBin))+0.5)]);
+%if you have a row with nans, make that the upper limit
+nan_row = sum(isnan(doubleBin(:,:)),2);
+nan_rows = find(nan_row==3);
+if ~isempty(nan_rows)
+    xlim([0 angSpeedAxes(nan_rows(1)-1)+binWidth/2]);
+else
+    xlim([0 angSpeedAxes(end)+binWidth/2]);
+end
+legend('Darkness','Low contrast','High contrast');
+
+
+
+%Total movement
+subplot(1,4,4)
+
+%Define bin limits
+maxBin = max(data.total_mvt_ds);
+binWidth = maxBin/nbins;
+mvtBins = [0:binWidth:maxBin];
+
+%Create axes for plot
+mvtAxes = mvtBins-binWidth/2;
+mvtAxes = mvtAxes(2:end);
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(mvtBins)-1
+        doubleBin(bin,contrast) = mean(allNewBumpMag((data.total_mvt_ds(1:length(allNewBumpMag)) > mvtBins(bin)) & (data.total_mvt_ds(1:length(allNewBumpMag)) < mvtBins(bin+1)) & (all_adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+    end
+    plot(mvtAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean bump magnitude'); xlabel('Total movement (deg/s)');
+%if you have a row with nans, make that the upper limit
+nan_row = sum(isnan(doubleBin(:,:)),2);
+nan_rows = find(nan_row==3);
+if ~isempty(nan_rows)
+    xlim([0 mvtAxes(nan_rows(1)-1)+binWidth/2]);
+else
+    xlim([0 mvtAxes(end)+binWidth/2]);
+end
+ylim([0 (max(max(doubleBin))+0.5)]);
+legend('Darkness','Low contrast','High contrast');
+
+%save figure
+saveas(gcf,[path,'plots\closedLoopBMNewMethodvsVelPerContrastBinned.png']);
+
 %% Model bump magnitude as a function of contrast level and total movement
 
 %fill missing data in the movement variables
@@ -846,7 +1153,7 @@ zscored_yaw_speed = zscore(abs(data.vel_yaw_ds));
 zscored_total_mvt = zscore(data.total_mvt_ds);
 
 %Create table with the model's variables
-modelTable = table(all_contrast_levels',data.vel_for_deg_ds(1:length(allBumpMag)),zscored_for_vel(1:length(allBumpMag)),abs(data.vel_side_deg_ds(1:length(allBumpMag))),zscored_side_speed(1:length(allBumpMag)),abs(data.vel_yaw_ds(1:length(allBumpMag)))',zscored_yaw_speed(1:length(allBumpMag))',data.total_mvt_ds(1:length(allBumpMag))',zscored_total_mvt(1:length(allBumpMag))',data.time(1:length(allBumpMag)),allBumpMag','VariableNames',{'ContrastLevel','ForVelocity','ZscoredForVel','SideSpeed','ZscoredSideSpeed','YawSpeed','ZscoredYawSpeed','TotalMovement','ZscoredTotalMovement','Time','BumpMagnitude'});
+modelTable = table(all_contrast_levels',data.vel_for_deg_ds(1:length(allBumpMag)),zscored_for_vel(1:length(allBumpMag)),abs(data.vel_side_deg_ds(1:length(allBumpMag))),zscored_side_speed(1:length(allBumpMag)),abs(data.vel_yaw_ds(1:length(allBumpMag)))',zscored_yaw_speed(1:length(allBumpMag))',data.total_mvt_ds(1:length(allBumpMag))',zscored_total_mvt(1:length(allBumpMag))',data.time(1:length(allBumpMag)),allBumpMag',allNewBumpMag',all_adj_rs','VariableNames',{'ContrastLevel','ForVelocity','ZscoredForVel','SideSpeed','ZscoredSideSpeed','YawSpeed','ZscoredYawSpeed','TotalMovement','ZscoredTotalMovement','Time','BumpMagnitude','NewBumpMagnitude','AdjRSquare'});
 
 %Fit linear model using contrast level as a categorical variable
 % mdl_BM = fitlm(modelTable,'BumpMagnitude~ContrastLevel+TotalMovement','CategoricalVars',1)
@@ -1000,10 +1307,158 @@ legend('Darkness','Low contrast','High contrast');
 %save figure
 saveas(gcf,[path,'plots\closedLoopHWvsVelPerContrastBinned.png']);
 
+
+%% Repeat with new method
+
+allNewBumpWidth = [];
+for block = 1:length(blockLimits)
+    allNewBumpWidth = [allNewBumpWidth,new_width_half_max{block}];
+end
+
+%Plot
+figure('Position',[200 200 1400 600]),
+
+%Forward velocity
+subplot(1,4,1)
+
+%Define bin limits
+maxBin = max(data.vel_for_deg_ds); %upper limit
+binWidth = maxBin/nbins;
+forVelBins = [0:binWidth:maxBin];
+
+%Create axes for plot, centering them in the middle of the bin
+forVelAxes = forVelBins-binWidth/2;
+forVelAxes = forVelAxes(2:end);
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(forVelBins)-1
+        doubleBin(bin,contrast) = nanmean(allNewBumpWidth((data.vel_for_deg_ds(1:length(allNewBumpWidth)) > forVelBins(bin)) & (data.vel_for_deg_ds(1:length(allNewBumpWidth)) < forVelBins(bin+1)) & (all_adj_rs' >= 0.5) & (all_contrast_levels' == contrast)));
+    end
+    plot(forVelAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean bump width'); xlabel('Forward velocity (deg/s)');
+ylim([0 (max(max(doubleBin))+0.5)]);
+%if you have a row with nans, make that the upper limit
+nan_row = sum(isnan(doubleBin(:,:)),2);
+nan_rows = find(nan_row==3);
+if ~isempty(nan_rows)
+    xlim([0 forVelAxes(nan_rows(1)-1)+binWidth/2]);
+else
+    xlim([0 forVelAxes(end)+binWidth/2]);
+end
+legend('Darkness','Low contrast','High contrast');
+
+
+
+%Side speed
+subplot(1,4,2)
+
+%Define bin limits
+maxBin = max(abs(data.vel_side_deg_ds));
+binWidth = maxBin/nbins;
+sideSpeedBins = [0:binWidth:maxBin];
+
+%Create axes for plot
+sideSpeedAxes = sideSpeedBins-binWidth/2;
+sideSpeedAxes = sideSpeedAxes(2:end);
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(sideSpeedBins)-1
+        doubleBin(bin,contrast) = nanmean(allNewBumpWidth((abs(data.vel_side_deg_ds(1:length(allNewBumpWidth))) > sideSpeedBins(bin)) & (abs(data.vel_side_deg_ds(1:length(allNewBumpWidth))) < sideSpeedBins(bin+1)) & (all_adj_rs' >= 0.5) & (all_contrast_levels' == contrast)));
+    end
+    plot(sideSpeedAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean bump width'); xlabel('Side speed (deg/s)');
+ylim([0 (max(max(doubleBin))+0.5)]);
+%if you have a row with nans, make that the upper limit
+nan_row = sum(isnan(doubleBin(:,:)),2);
+nan_rows = find(nan_row==3);
+if ~isempty(nan_rows)
+    xlim([0 sideSpeedAxes(nan_rows(1)-1)+binWidth/2]);
+else
+    xlim([0 sideSpeedAxes(end)+binWidth/2]);
+end
+legend('Darkness','Low contrast','High contrast');
+
+
+%Angular speed
+subplot(1,4,3)
+
+%Define bin limits
+maxBin = max(abs(data.vel_yaw_ds));
+binWidth = maxBin/nbins;
+angSpeedBins = [0:binWidth:maxBin];
+
+%Create axes for plot
+angSpeedAxes = angSpeedBins-binWidth/2;
+angSpeedAxes = angSpeedAxes(2:end);
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(angSpeedBins)-1
+        doubleBin(bin,contrast) = nanmean(allNewBumpWidth((abs(data.vel_yaw_ds(1:length(allNewBumpWidth))) > angSpeedBins(bin)) & (abs(data.vel_yaw_ds(1:length(allNewBumpWidth))) < angSpeedBins(bin+1)) & (all_adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+    end
+    plot(angSpeedAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean bump width'); xlabel('Angular speed (deg/s)');
+ylim([0 (max(max(doubleBin))+0.5)]);
+%if you have a row with nans, make that the upper limit
+nan_row = sum(isnan(doubleBin(:,:)),2);
+nan_rows = find(nan_row==3);
+if ~isempty(nan_rows)
+    xlim([0 angSpeedAxes(nan_rows(1)-1)+binWidth/2]);
+else
+    xlim([0 angSpeedAxes(end)+binWidth/2]);
+end
+legend('Darkness','Low contrast','High contrast');
+
+
+
+%Total movement
+subplot(1,4,4)
+
+%Define bin limits
+maxBin = max(data.total_mvt_ds);
+binWidth = maxBin/nbins;
+mvtBins = [0:binWidth:maxBin];
+
+%Create axes for plot
+mvtAxes = mvtBins-binWidth/2;
+mvtAxes = mvtAxes(2:end);
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(mvtBins)-1
+        doubleBin(bin,contrast) = mean(allNewBumpWidth((data.total_mvt_ds(1:length(allNewBumpWidth)) > mvtBins(bin)) & (data.total_mvt_ds(1:length(allNewBumpWidth)) < mvtBins(bin+1)) & (all_adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+    end
+    plot(mvtAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean bump width'); xlabel('Total movement (deg/s)');
+%if you have a row with nans, make that the upper limit
+nan_row = sum(isnan(doubleBin(:,:)),2);
+nan_rows = find(nan_row==3);
+if ~isempty(nan_rows)
+    xlim([0 mvtAxes(nan_rows(1)-1)+binWidth/2]);
+else
+    xlim([0 mvtAxes(end)+binWidth/2]);
+end
+ylim([0 (max(max(doubleBin))+0.5)]);
+legend('Darkness','Low contrast','High contrast');
+
+%save figure
+saveas(gcf,[path,'plots\closedLoopHWNewMethodvsVelPerContrastBinned.png']);
+
 %% Model bump width at half max as a function of contrastLevel and total movement
 
 %Create table with the model's variables
 modelTable = addvars(modelTable,allBumpWidth','NewVariableNames','BumpWidth');
+modelTable = addvars(modelTable,allNewBumpWidth','NewVariableNames','NewBumpWidth');
 
 %Fit linear model using contrast level as a categorical variable
 % mdl_HW = fitlm(modelTable,'BumpWidth~ContrastLevel+TotalMovement','CategoricalVars',1)
@@ -1035,7 +1490,7 @@ legend(h, 'Darkness','Low contrast','High Contrast');
 
 subplot(2,1,2)
 %Create table with contrast level and offset variation
-if size(summary_data,2) == 4
+if size(summary_data,2) == 6
     summary_data = addvars(summary_data, heading_var','NewVariableNames','heading_var');
 end
 %Get mean heading var by contrast

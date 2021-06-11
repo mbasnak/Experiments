@@ -1,0 +1,10 @@
+#!/bin/sh
+#SBATCH -p short
+#SBATCH -t 3:00:00
+#SBATCH --mem=128G
+#SBATCH -c 6
+#SBATCH --mail-user=melaniebasnak@g.harvard.edu
+#SBATCH --mail-type=ALL
+
+module load matlab/2016b
+matlab -nodesktop -r "addpath('/n/scratch3/users/m/mb491/codes/continuous_PB_analysis'); continuous_PB_data_analysis('/n/scratch3/users/m/mb491/data/Exp25/${1}',${2},${3})"

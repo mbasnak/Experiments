@@ -1,0 +1,93 @@
+Notes 20210609
+
+
+Fly 1 (60D05_7f, 2 days old)
+
+I accidentaly punctured her thorax while doing the dissection.
+She's not really walking.
+Her PB signal looks great, but for some reason the 3x zoom looks like what 6x should look like, so I'm imaging at 3x.
+I wasn't able to tild the arena because the fly holder is in the way. Hopefully the new holders will get at this.
+I'm imaging at 10% laser power, with the PMT gain set at 800 V.
+
+
+I run a 400 sec session of pattern 57 in closed loop.
+The fly isn't moving.
+
+
+
+
+Fly 2 (60D05_7f, 1 day old)
+
+She moves when the LED is on, but is not really moving after that.
+Her PB signal looks really good.
+I am imaging with a 12% laser power and a gain of 700 V.
+The zoom now looks ok again.
+
+
+I run a 30 sec session with the panels in closed loop to make sure they are working.
+She doesn't really move.
+
+I then run a 400 sec session with the panels in closed loop.
+She starts walking very nicely!
+
+200 sec closed loop wind with airflow at 0.3 L. She walks well and very straight, with the nozzle in the front.
+200 sec closed loop wind with airflow at 0.7 L. Again, very straight, wind up front.
+200 sec closed loop wind with airflow at 0 L.
+200 sec closed loop wind with airflow at 0.5 L. She's not moving much.
+200 sec closed loop wind with airflow at 0.1 L. She's still very good at keeping it in the front.
+200 sec closed loop wind with airflow at 0.05 L. She got a bit worse, but still pretty good.
+200 sec closed loop wind with airflow at 0.02 L. fictrac malfunctioned, so I run it again. Here the fly's trajectory deteriorates a bit.
+
+Panels in open loop with pattern 57:
+-function 55
+-function 208
+-function 210
+-52. It's hard to see the bump moving in this fly.
+-206
+-215
+-212
+-209
+-207
+-54
+-213.
+-214. imaging failed, so I run it again.
+-211. imaging matlab failed, so I run it again. The imaging resolution was to high and the rate too low, so I ran it again. The phase was terrible.
+
+
+
+Fly 3 (60D05_7f, 1 day old)
+
+She is walking pretty well.
+Her PB signal looks really good.
+I am imaging with a 12% laser power and a gain of 700 V.
+
+I run a 30 sec session with the panels in closed loop to make sure they are working.
+I run a 400 sec session with the panels in closed loop. She's nicely active! Her PB signal looks good, although I'm not seing a bump that clearly. There is a little brain movement but it's not bad.
+
+Closed-loop wind bouts (200 sec each):
+-0 L/min. fictrac malfunctioned. I run another, 100 sec long session. There is quite a bit of brain movement. fictrac malfunctioned again.
+I re run it once more.
+-0.1
+-0.02
+-0.3
+-0.05
+
+Open-loop panel bouts, function #:
+-215
+-207
+-206
+-213
+-54
+-209
+-212. I closed the plot before time, so I ran it again.
+-52
+-211
+-214
+-53
+-208
+-55
+(I might have used 55 at some point in the middle too).
+
+
+-100 sec closed loop session with pattern 57 to see how she does.
+She walks super straight!

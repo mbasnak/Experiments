@@ -21,7 +21,7 @@ end
 data = data(all(~cellfun(@isempty,struct2cell(data))));
 
 %Combine the tables into one
-allSummaryData = array2table(zeros(0,5),'VariableNames', {'contrast','offset_var','mean_bump_mag','mean_half_width','heading_var'});
+allSummaryData = array2table(zeros(0,7),'VariableNames', {'contrast','offset_var','mean_bump_mag','mean_new_bump_mag','mean_half_width','mean_new_half_width','heading_var'});
 flyNumber= [];
 for fly = 1:length(data)
     flyNumber = [flyNumber,repelem(fly,length(data(fly).summary_data.contrast))];
@@ -30,7 +30,7 @@ end
 
 %Add the fly ID as a variable
 allSummaryData = addvars(allSummaryData,nominal(flyNumber'));
-allSummaryData.Properties.VariableNames{'Var6'} = 'Fly';
+allSummaryData.Properties.VariableNames{'Var8'} = 'Fly';
 
 %% Compare offset variation statistically
 
@@ -234,11 +234,16 @@ for fly = 1:length(data)
     zscoredBW = zscore(data(fly).modelTable.BumpWidth);    
     data(fly).modelTable = addvars(data(fly).modelTable,zscoredBM,'NewVariableNames','zscoredBM');
     data(fly).modelTable = addvars(data(fly).modelTable,zscoredBW,'NewVariableNames','zscoredBW');
+    
+    zscoredNewBM = zscore(data(fly).modelTable.NewBumpMagnitude);
+    zscoredNewBW = zscore(data(fly).modelTable.NewBumpWidth);    
+    data(fly).modelTable = addvars(data(fly).modelTable,zscoredNewBM,'NewVariableNames','zscoredNewBM');
+    data(fly).modelTable = addvars(data(fly).modelTable,zscoredNewBW,'NewVariableNames','zscoredNewBW');
 end
 
 
 %Combine the tables into one
-allModelData = array2table(zeros(0,14),'VariableNames', {'ContrastLevel','ForVelocity','ZscoredForVel','SideSpeed','ZscoredSideSpeed','YawSpeed','ZscoredYawSpeed','TotalMovement','ZscoredTotalMovement','Time','BumpMagnitude','BumpWidth','zscoredBM','zscoredBW'});
+allModelData = array2table(zeros(0,19),'VariableNames', {'ContrastLevel','ForVelocity','ZscoredForVel','SideSpeed','ZscoredSideSpeed','YawSpeed','ZscoredYawSpeed','TotalMovement','ZscoredTotalMovement','Time','BumpMagnitude','NewBumpMagnitude','AdjRSquare','BumpWidth','NewBumpWidth','zscoredBM','zscoredBW','zscoredNewBM','zscoredNewBW'});
 Fly = [];
 for fly = 1:length(data)
     Fly = [Fly,repelem(fly,length(data(fly).modelTable.ContrastLevel))];
@@ -246,7 +251,7 @@ for fly = 1:length(data)
 end
 %Add fly id as a categorical variable
 allModelData = addvars(allModelData,nominal(Fly'));
-allModelData.Properties.VariableNames{'Var15'} = 'Fly';
+allModelData.Properties.VariableNames{'Var20'} = 'Fly';
 
 %Change contrast level as a categorical variable
 allModelData.ContrastLevel = nominal(allModelData.ContrastLevel);
@@ -297,6 +302,56 @@ saveas(gcf,[path,'\globalPlots\modelComparisonBM.png']);
 % end
 % bonfCorrection = 1;
 % [pVal F df1 df2] = coefTest(mdl_BM2, [0  1 -1 0]);   pVal = min(1,pVal*bonfCorrection);           fprintf('Planned comparison low conrast vs high contrast,  F(%i, %i)=%0.2f,\t p=%0.7f (contrast 0  1 -1)\n', df1, df2, F, pVal);
+
+
+%% Repeat for new method
+
+adj_rs = allModelData.AdjRSquare;
+
+%Fit different models
+mdl_new_BM{1} = fitlme(allModelData(adj_rs >= 0.5,:),'NewBumpMagnitude~ContrastLevel+TotalMovement+(1|Fly)');
+mdl_new_BM{2} = fitlme(allModelData(adj_rs >= 0.5,:),'NewBumpMagnitude~ContrastLevel+ForVelocity+SideSpeed+YawSpeed+(1|Fly)');
+mdl_new_BM{3} = fitlme(allModelData(adj_rs >= 0.5,:),'NewBumpMagnitude~ContrastLevel+ForVelocity+SideSpeed+YawSpeed+Time+(1|Fly)');
+%zscored data
+mdl_new_BM{4} = fitlme(allModelData(adj_rs >= 0.5,:),'NewBumpMagnitude~ContrastLevel+ZscoredTotalMovement+(1|Fly)');
+mdl_new_BM{5} = fitlme(allModelData(adj_rs >= 0.5,:),'NewBumpMagnitude~ContrastLevel+ZscoredForVel+ZscoredSideSpeed+ZscoredYawSpeed+(1|Fly)');
+mdl_new_BM{6} = fitlme(allModelData(adj_rs >= 0.5,:),'NewBumpMagnitude~ContrastLevel+ZscoredForVel+ZscoredSideSpeed+ZscoredYawSpeed+Time+(1|Fly)');
+
+%Plot model comparison
+figure,
+%Plot R squared
+subplot(1,2,1)
+for model = 1:length(mdl_new_BM)
+   Rsquared(model) = mdl_new_BM{1,model}.Rsquared.Adjusted; 
+end
+plot(Rsquared,'-ko')
+xlabel('Model #');ylim([0 1]);
+xlim([1 length(mdl_new_BM)]);
+ylabel('Proportion of variance explained');
+title('R squared');
+
+%Plot fit statistics
+subplot(1,2,2)
+for model = 1:length(mdl_new_BM)
+   AIC(model) = mdl_new_BM{1,model}.ModelCriterion.AIC; 
+end
+plot(AIC,'-ko')
+xlabel('Model #');
+xlim([1 length(mdl_new_BM)]);
+title('AIC');
+ylabel('AIC');
+
+suptitle('Model comparison for bump magnitude');
+
+%Save figure
+saveas(gcf,[path,'\globalPlots\modelComparisonNewBM.png']);
+
+
+for y = 1:numel(mdl_new_BM{1}.CoefficientNames)
+    fprintf('Contrast position %i: %s\n', y, char(mdl_new_BM{1}.CoefficientNames{y}));
+end
+bonfCorrection = 1;
+[pVal F df1 df2] = coefTest(mdl_new_BM{1}, [0  1 -1 0]);   pVal = min(1,pVal*bonfCorrection);           fprintf('Planned comparison low conrast vs high contrast,  F(%i, %i)=%0.2f,\t p=%0.7f (contrast 0  1 -1)\n', df1, df2, F, pVal);
 
 
 %% Get and plot mean bump magnitude
@@ -373,6 +428,33 @@ ylim([min(mean_bump_data_per_fly.mean_mean_bump_mag)-0.3 max(mean_bump_data_per_
 
 %Save figure
 saveas(gcf,[path,'\globalPlots\mean_closed_loop_bump_mag.png']);
+
+%% Repeat with new method
+
+figure('Position',[200 200 1000 800]),
+%Get mean offset var by contrast per fly
+mean_new_bump_data_per_fly = varfun(@mean,allSummaryData,'InputVariables','mean_new_bump_mag',...
+       'GroupingVariables',{'contrast','Fly'});
+%Plot
+AllFlies = [];
+for fly = 1:length(data)
+    new_bump_data{fly} = [mean_new_bump_data_per_fly.mean_mean_new_bump_mag(fly),mean_new_bump_data_per_fly.mean_mean_new_bump_mag(fly+2*length(data)),mean_new_bump_data_per_fly.mean_mean_new_bump_mag(fly+length(data))];
+    AllFlies = [AllFlies;new_bump_data{fly}];
+end
+plot(1:3,AllFlies','-o','color',[0.6 0.6 0.6],'MarkerFaceColor',[0.6 0.6 0.6])
+hold on
+errorbar(1:3,mean(AllFlies),std(AllFlies)/sqrt(length(allFlies)),'-ko','LineWidth',2,'MarkerFaceColor','k','MarkerSize',8)
+
+xlim([0 4]);
+xticks(1:3);
+xticklabels({'Darkness','Low contrast','High contrast'});
+a = get(gca,'XTickLabel');  
+set(gca,'XTickLabel',a,'fontsize',12,'FontWeight','bold')
+ylabel({'Mean bump magnitude';'(from von Mises fit'},'FontSize',12);
+ylim([min(mean_new_bump_data_per_fly.mean_mean_new_bump_mag)-0.3 max(mean_new_bump_data_per_fly.mean_mean_new_bump_mag)+0.3]);
+
+%Save figure
+saveas(gcf,[path,'\globalPlots\mean_closed_loop_new_bump_mag.png']);
 
 %% Plot mean bump magnitude vs movement parameters, parsed by contrast
 
@@ -497,6 +579,128 @@ legend('Darkness','Low contrast','High contrast');
 %Save figure
 saveas(gcf,[path,'\globalPlots\bumpMag_vs_mvt_and_contrast.png']);
 
+%% Repeat using new method
+
+allNewBumpMag = allModelData.NewBumpMagnitude;
+nbins = 20;
+
+
+figure('Position',[200 200 1400 600]),
+
+%Forward velocity
+subplot(1,4,1)
+
+%Define bin limits
+ZForVel = allModelData.ZscoredForVel;
+maxBinFV = prctile(ZForVel,97.5); %upper limit
+minBinFV = prctile(ZForVel,2.5);
+binWidthFV = (maxBinFV-minBinFV)/nbins;
+forVelBins = [minBinFV:binWidthFV:maxBinFV];
+
+%Create axes for plot, centering them in the middle of the bin
+forVelAxes = forVelBins-binWidthFV/2;
+forVelAxes = forVelAxes(2:end);
+
+color_gradient = {[0,0,0],[0 0 0.6],[ 0.5 0.8 0.9]};
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(forVelBins)-1
+        doubleBin(bin,contrast) = nanmean(allNewBumpMag((ZForVel(1:length(allNewBumpMag)) > forVelBins(bin)) & (ZForVel(1:length(allNewBumpMag)) < forVelBins(bin+1)) & (adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+    end
+    plot(forVelAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean bump magnitude'); xlabel('Zscored forward velocity (deg/s)');
+ylim([0 (max(max(doubleBin))+0.5)]);
+xlim([minBinFV-binWidthFV/2 maxBinFV+binWidthFV/2]);
+legend('Darkness','Low contrast','High contrast');
+
+
+%Side speed
+subplot(1,4,2)
+
+%Define bin limits
+ZSideSpeed = allModelData.ZscoredSideSpeed;
+maxBinSS = prctile(ZSideSpeed,97.5); %upper limit
+minBinSS = prctile(ZSideSpeed,2.5);
+binWidthSS = (maxBinSS-minBinSS)/nbins;
+sideSpeedBins = [minBinSS:binWidthSS:maxBinSS];
+
+%Create axes for plot, centering them in the middle of the bin
+sideSpeedAxes = sideSpeedBins-binWidthSS/2;
+sideSpeedAxes = sideSpeedAxes(2:end);
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(sideSpeedBins)-1
+        doubleBin(bin,contrast) = nanmean(allNewBumpMag((ZSideSpeed(1:length(allNewBumpMag)) > sideSpeedBins(bin)) & (ZSideSpeed(1:length(allNewBumpMag)) < sideSpeedBins(bin+1)) & (adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+    end
+    plot(sideSpeedAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean bump magnitude'); xlabel('Zscored side speed (deg/s)');
+ylim([0 (max(max(doubleBin))+0.5)]);
+xlim([minBinSS-binWidthSS/2 maxBinSS+binWidthSS/2]);
+legend('Darkness','Low contrast','High contrast');
+
+
+%Yaw speed
+subplot(1,4,3)
+
+%Define bin limits
+ZYawSpeed = allModelData.ZscoredYawSpeed;
+maxBinYS = prctile(ZYawSpeed,97.5); %upper limit
+minBinYS = prctile(ZYawSpeed,2.5);
+binWidthYS = (maxBinYS-minBinYS)/nbins;
+yawSpeedBins = [minBinYS:binWidthYS:maxBinYS];
+
+%Create axes for plot, centering them in the middle of the bin
+yawSpeedAxes = yawSpeedBins-binWidthYS/2;
+yawSpeedAxes = yawSpeedAxes(2:end);
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(yawSpeedBins)-1
+        doubleBin(bin,contrast) = nanmean(allNewBumpMag((ZYawSpeed(1:length(allNewBumpMag)) > yawSpeedBins(bin)) & (ZYawSpeed(1:length(allNewBumpMag)) < yawSpeedBins(bin+1)) & (adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+    end
+    plot(yawSpeedAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean bump magnitude'); xlabel('Zscored yaw speed (deg/s)');
+ylim([0 (max(max(doubleBin))+0.5)]);
+xlim([minBinYS-binWidthYS/2 maxBinYS+binWidthYS/2]);
+legend('Darkness','Low contrast','High contrast');
+
+%Total movement
+subplot(1,4,4)
+
+%Define bin limits
+ZTotalMvt = allModelData.ZscoredTotalMovement;
+maxBinTM = prctile(ZTotalMvt,97.5); %upper limit
+minBinTM = prctile(ZTotalMvt,2.5);
+binWidthTM = (maxBinTM-minBinTM)/nbins;
+totalMvtBins = [minBinTM:binWidthTM:maxBinTM];
+
+%Create axes for plot, centering them in the middle of the bin
+totalMvtAxes = totalMvtBins-binWidthTM/2;
+totalMvtAxes = totalMvtAxes(2:end);
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(totalMvtBins)-1
+        doubleBin(bin,contrast) = nanmean(allNewBumpMag((ZTotalMvt(1:length(allNewBumpMag)) > totalMvtBins(bin)) & (ZTotalMvt(1:length(allNewBumpMag)) < totalMvtBins(bin+1)) & (adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+    end
+    plot(totalMvtAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean bump magnitude'); xlabel('Zscored total movement (deg/s)');
+ylim([0 (max(max(doubleBin))+0.5)]);
+xlim([minBinTM-binWidthTM/2 maxBinTM+binWidthTM/2]);
+legend('Darkness','Low contrast','High contrast');
+
+%Save figure
+saveas(gcf,[path,'\globalPlots\NewBumpMag_vs_mvt_and_contrast.png']);
+
 %% Repeat using zscored BM data
 
 allzBumpMag = allModelData.zscoredBM;
@@ -568,6 +772,77 @@ legend('Darkness','Low contrast','High contrast');
 %Save figure
 saveas(gcf,[path,'\globalPlots\zBumpMag_vs_mvt_and_contrast.png']);
 
+%% Repeat using new method
+
+allzNewBumpMag = allModelData.zscoredNewBM;
+
+figure('Position',[200 200 1400 600]),
+
+%Forward velocity
+subplot(1,4,1)
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(forVelBins)-1
+        doubleBin(bin,contrast) = nanmean(allzNewBumpMag((ZForVel(1:length(allzNewBumpMag)) > forVelBins(bin)) & (ZForVel(1:length(allzNewBumpMag)) < forVelBins(bin+1)) & (adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+    end
+    plot(forVelAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean zscored bump magnitude'); xlabel('Zscored forward velocity (deg/s)');
+xlim([minBinFV-binWidthFV/2 maxBinFV+binWidthFV/2]);
+legend('Darkness','Low contrast','High contrast');
+
+
+%Side speed
+subplot(1,4,2)
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(sideSpeedBins)-1
+        doubleBin(bin,contrast) = nanmean(allzNewBumpMag((ZSideSpeed(1:length(allzNewBumpMag)) > sideSpeedBins(bin)) & (ZSideSpeed(1:length(allzNewBumpMag)) < sideSpeedBins(bin+1)) & (adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+    end
+    plot(sideSpeedAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean zscored bump magnitude'); xlabel('Zscored side speed (deg/s)');
+xlim([minBinSS-binWidthSS/2 maxBinSS+binWidthSS/2]);
+legend('Darkness','Low contrast','High contrast');
+
+
+%Yaw speed
+subplot(1,4,3)
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(yawSpeedBins)-1
+        doubleBin(bin,contrast) = nanmean(allzNewBumpMag((ZYawSpeed(1:length(allzNewBumpMag)) > yawSpeedBins(bin)) & (ZYawSpeed(1:length(allzNewBumpMag)) < yawSpeedBins(bin+1)) & (adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+    end
+    plot(yawSpeedAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean zscored bump magnitude'); xlabel('Zscored yaw speed (deg/s)');
+xlim([minBinYS-binWidthYS/2 maxBinYS+binWidthYS/2]);
+legend('Darkness','Low contrast','High contrast');
+
+%Total movement
+subplot(1,4,4)
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(totalMvtBins)-1
+        doubleBin(bin,contrast) = nanmean(allzNewBumpMag((ZTotalMvt(1:length(allzNewBumpMag)) > totalMvtBins(bin)) & (ZTotalMvt(1:length(allzNewBumpMag)) < totalMvtBins(bin+1)) & (adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+    end
+    plot(totalMvtAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean zscored bump magnitude'); xlabel('Zscored total movement (deg/s)');
+xlim([minBinTM-binWidthTM/2 maxBinTM+binWidthTM/2]);
+legend('Darkness','Low contrast','High contrast');
+
+%Save figure
+saveas(gcf,[path,'\globalPlots\zNewBumpMag_vs_mvt_and_contrast.png']);
+
 %% Compute model for bump width at half max
 
 %Fit different models
@@ -616,6 +891,50 @@ saveas(gcf,[path,'\globalPlots\modelComparisonBW.png']);
 % end
 % bonfCorrection = 1;
 % [pVal F df1 df2] = coefTest(mdl_HW5, [0  1 -1 0]);   pVal = min(1,pVal*bonfCorrection);           fprintf('Planned comparison low conrast vs high contrast,  F(%i, %i)=%0.2f,\t p=%0.7f (contrast 0  1 -1)\n', df1, df2, F, pVal);
+
+
+%% Repeat with new method
+
+
+%Fit different models
+mdl_new_HW{1} = fitlme(allModelData(adj_rs >= 0.5,:),'NewBumpWidth~ContrastLevel+(1|Fly)');
+mdl_new_HW{2} = fitlme(allModelData(adj_rs >= 0.5,:),'NewBumpWidth~ContrastLevel+TotalMovement+(1|Fly)');
+mdl_new_HW{3} = fitlme(allModelData(adj_rs >= 0.5,:),'NewBumpWidth~ContrastLevel+ForVelocity+SideSpeed+YawSpeed+(1|Fly)');
+mdl_new_HW{4} = fitlme(allModelData(adj_rs >= 0.5,:),'NewBumpWidth~ContrastLevel+ForVelocity+SideSpeed+YawSpeed+Time+(1|Fly)');
+%Zscored data
+mdl_new_HW{5} = fitlme(allModelData(adj_rs >= 0.5,:),'NewBumpWidth~ContrastLevel+(1|Fly)');
+mdl_new_HW{6} = fitlme(allModelData(adj_rs >= 0.5,:),'NewBumpWidth~ContrastLevel+ZscoredTotalMovement+(1|Fly)');
+mdl_new_HW{7} = fitlme(allModelData(adj_rs >= 0.5,:),'NewBumpWidth~ContrastLevel+ZscoredForVel+ZscoredSideSpeed+ZscoredYawSpeed+(1|Fly)');
+mdl_new_HW{8} = fitlme(allModelData(adj_rs >= 0.5,:),'NewBumpWidth~ContrastLevel+ZscoredForVel+ZscoredSideSpeed+ZscoredYawSpeed+Time+(1|Fly)');
+
+%Plot model comparison
+figure,
+%Plot R squared
+subplot(1,2,1)
+for model = 1:length(mdl_new_HW)
+   Rsquared(model) = mdl_new_HW{1,model}.Rsquared.Adjusted; 
+end
+plot(Rsquared,'-ko')
+xlabel('Model #');ylim([0 1]);
+xlim([1 length(mdl_new_HW)]);
+ylabel('Proportion of variance explained');
+title('R squared');
+
+%Plot fit statistics
+subplot(1,2,2)
+for model = 1:length(mdl_new_HW)
+   AIC(model) = mdl_new_HW{1,model}.ModelCriterion.AIC; 
+end
+plot(AIC,'-ko')
+xlabel('Model #');
+xlim([1 length(mdl_new_HW)]);
+title('AIC');
+ylabel('AIC');
+
+suptitle('Model comparison for bump width');
+
+%save figure
+saveas(gcf,[path,'\globalPlots\modelComparisonNewBW.png']);
 
 
 %% Get and plot mean bump width at half max
@@ -692,6 +1011,31 @@ ylim([0 max(mean_hw_per_fly.mean_mean_half_width)+0.8]);
 %Save figure
 saveas(gcf,[path,'\globalPlots\mean_closed_loop_half_width.png']);
 
+%% Repeat using new method
+
+figure('Position',[200 200 1000 800]),
+mean_new_hw_per_fly = varfun(@mean,allSummaryData,'InputVariables','mean_new_half_width',...
+       'GroupingVariables',{'contrast','Fly'});
+%Plot
+AllFliesHW = [];
+for fly = 1:length(data)
+    new_hw_bump_data{fly} = [mean_new_hw_per_fly.mean_mean_new_half_width(fly),mean_new_hw_per_fly.mean_mean_new_half_width(fly+2*length(data)),mean_new_hw_per_fly.mean_mean_new_half_width(fly+length(data))];
+    AllFliesHW = [AllFliesHW;new_hw_bump_data{fly}];
+end
+plot(1:3,AllFliesHW','-o','color',[0.6 0.6 0.6],'MarkerFaceColor',[0.6 0.6 0.6])
+hold on
+errorbar(1:3,mean(AllFliesHW),std(AllFliesHW)/sqrt(length(AllFliesHW)),'-ko','LineWidth',2,'MarkerFaceColor','k','MarkerSize',8)
+xlim([0 4]);
+xticks(1:3);
+xticklabels({'Darkness','Low contrast','High contrast'});
+a = get(gca,'XTickLabel');  
+set(gca,'XTickLabel',a,'fontsize',12,'FontWeight','bold')
+ylabel('Mean bump width at half max','FontSize',12);
+ylim([0 max(mean_new_hw_per_fly.mean_mean_new_half_width)+0.8]);
+
+%Save figure
+saveas(gcf,[path,'\globalPlots\mean_closed_loop_new_half_width.png']);
+
 %% Plot mean bump width vs movement parameters, parsed by contrast
 
 allBumpWidth = allModelData.BumpWidth;
@@ -767,6 +1111,81 @@ legend('Darkness','Low contrast','High contrast');
 %Save figure
 saveas(gcf,[path,'\globalPlots\bumpWidth_vs_mvt_and_contrast.png']);
 
+%% Repeat using new method
+
+allNewBumpWidth = allModelData.NewBumpWidth;
+
+figure('Position',[200 200 1400 600]),
+
+%Forward velocity
+subplot(1,4,1)
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(forVelBins)-1
+        doubleBin(bin,contrast) = nanmean(allNewBumpWidth((ZForVel(1:length(allNewBumpWidth)) > forVelBins(bin)) & (ZForVel(1:length(allNewBumpWidth)) < forVelBins(bin+1)) & (adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+    end
+    plot(forVelAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean bump width'); xlabel('Zscored forward velocity (deg/s)');
+ylim([0 (max(max(doubleBin))+0.5)]);
+xlim([minBinFV-binWidthFV/2 maxBinFV+binWidthFV/2]);
+legend('Darkness','Low contrast','High contrast');
+
+
+%Side speed
+subplot(1,4,2)
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(sideSpeedBins)-1
+        doubleBin(bin,contrast) = nanmean(allNewBumpWidth((ZSideSpeed(1:length(allNewBumpWidth)) > sideSpeedBins(bin)) & (ZSideSpeed(1:length(allNewBumpWidth)) < sideSpeedBins(bin+1)) & (adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+    end
+    plot(sideSpeedAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean bump width'); xlabel('Zscored side speed (deg/s)');
+ylim([0 (max(max(doubleBin))+0.5)]);
+xlim([minBinSS-binWidthSS/2 maxBinSS+binWidthSS/2]);
+legend('Darkness','Low contrast','High contrast');
+
+
+%Yaw speed
+subplot(1,4,3)
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(yawSpeedBins)-1
+        doubleBin(bin,contrast) = nanmean(allNewBumpWidth((ZYawSpeed(1:length(allNewBumpWidth)) > yawSpeedBins(bin)) & (ZYawSpeed(1:length(allNewBumpWidth)) < yawSpeedBins(bin+1)) & (adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+    end
+    plot(yawSpeedAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean bump width'); xlabel('Zscored yaw speed (deg/s)');
+ylim([0 (max(max(doubleBin))+0.5)]);
+xlim([minBinYS-binWidthYS/2 maxBinYS+binWidthYS/2]);
+legend('Darkness','Low contrast','High contrast');
+
+%Total movement
+subplot(1,4,4)
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(totalMvtBins)-1
+        doubleBin(bin,contrast) = nanmean(allNewBumpWidth((ZTotalMvt(1:length(allNewBumpWidth)) > totalMvtBins(bin)) & (ZTotalMvt(1:length(allNewBumpWidth)) < totalMvtBins(bin+1)) & (adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+    end
+    plot(totalMvtAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean bump width'); xlabel('Zscored total movement (deg/s)');
+ylim([0 (max(max(doubleBin))+0.5)]);
+xlim([minBinTM-binWidthTM/2 maxBinTM+binWidthTM/2]);
+legend('Darkness','Low contrast','High contrast');
+
+%Save figure
+saveas(gcf,[path,'\globalPlots\NewBumpWidth_vs_mvt_and_contrast.png']);
+
 %% Repeat using zscored data
 
 allzBumpWidth = allModelData.zscoredBW;
@@ -837,6 +1256,77 @@ legend('Darkness','Low contrast','High contrast');
 
 %Save figure
 saveas(gcf,[path,'\globalPlots\zBumpWidth_vs_mvt_and_contrast.png']);
+
+%% Repeat using new method
+
+allzNewBumpWidth = allModelData.zscoredNewBW;
+
+figure('Position',[200 200 1400 600]),
+
+%Forward velocity
+subplot(1,4,1)
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(forVelBins)-1
+        doubleBin(bin,contrast) = nanmean(allzNewBumpWidth((ZForVel(1:length(allzNewBumpWidth)) > forVelBins(bin)) & (ZForVel(1:length(allzNewBumpWidth)) < forVelBins(bin+1)) & (adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+    end
+    plot(forVelAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean zscored bump width'); xlabel('Zscored forward velocity (deg/s)');
+xlim([minBinFV-binWidthFV/2 maxBinFV+binWidthFV/2]);
+legend('Darkness','Low contrast','High contrast');
+
+
+%Side speed
+subplot(1,4,2)
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(sideSpeedBins)-1
+        doubleBin(bin,contrast) = nanmean(allzNewBumpWidth((ZSideSpeed(1:length(allzNewBumpWidth)) > sideSpeedBins(bin)) & (ZSideSpeed(1:length(allzNewBumpWidth)) < sideSpeedBins(bin+1)) & (adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+    end
+    plot(sideSpeedAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean zscored bump width'); xlabel('Zscored side speed (deg/s)');
+xlim([minBinSS-binWidthSS/2 maxBinSS+binWidthSS/2]);
+legend('Darkness','Low contrast','High contrast');
+
+
+%Yaw speed
+subplot(1,4,3)
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(yawSpeedBins)-1
+        doubleBin(bin,contrast) = nanmean(allzNewBumpWidth((ZYawSpeed(1:length(allzNewBumpWidth)) > yawSpeedBins(bin)) & (ZYawSpeed(1:length(allzNewBumpWidth)) < yawSpeedBins(bin+1)) & (adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+    end
+    plot(yawSpeedAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean zscored bump width'); xlabel('Zscored yaw speed (deg/s)');
+xlim([minBinYS-binWidthYS/2 maxBinYS+binWidthYS/2]);
+legend('Darkness','Low contrast','High contrast');
+
+%Total movement
+subplot(1,4,4)
+
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(totalMvtBins)-1
+        doubleBin(bin,contrast) = nanmean(allzNewBumpWidth((ZTotalMvt(1:length(allzNewBumpWidth)) > totalMvtBins(bin)) & (ZTotalMvt(1:length(allzNewBumpWidth)) < totalMvtBins(bin+1)) & (adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+    end
+    plot(totalMvtAxes,doubleBin(:,contrast),'-o','color',color_gradient{contrast})
+    hold on
+end
+ylabel('Mean zscored bump width'); xlabel('Zscored total movement (deg/s)');
+xlim([minBinTM-binWidthTM/2 maxBinTM+binWidthTM/2]);
+legend('Darkness','Low contrast','High contrast');
+
+%Save figure
+saveas(gcf,[path,'\globalPlots\zNewBumpWidth_vs_mvt_and_contrast.png']);
 
 %% Get and plot total movement per contrast
 
