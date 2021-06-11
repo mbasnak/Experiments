@@ -36,6 +36,7 @@ Uncertainty/Exp28/data/
 Uncertainty/Exp30/data/
 Uncertainty/Exp31/data/
 Uncertainty/Exp32/data/
+Uncertainty/Exp33/data/
 Uncertainty/Laser_power_control/data/
 Uncertainty/DataToShare/
 
@@ -97,6 +98,7 @@ PathIntegration/PathIntegrationSummaries/
 Exp1/source/panels/Pattern_longstripe2px_light_360.mat
 *.dat
 *.svg
+*.asv
 Thumbs.db
 Uncertainty/data-management.txt
 Uncertainty/Exp28/source/new_bump_parameters_analysis/
