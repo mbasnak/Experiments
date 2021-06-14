@@ -142,7 +142,7 @@ dff = (midline_ff'-baseline_f)./baseline_f;
 %% Load the ball data
 
 ball_dir = [path slash 'ball' slash];
-expression = ['*sid_' num2str(sid) '_tid_' num2str(tid) '*.mat'];
+expression = ['bdata' '*sid_' num2str(sid) '_tid_' num2str(tid) '*.mat'];
 ball_file = dir(fullfile(ball_dir, expression));
 ballData = load(fullfile(ball_dir, ball_file.name)); %load ballData
 runobjFile = dir(fullfile([ball_dir,'\runobj\'], ['*_sid_' num2str(sid) '_*']));
@@ -161,7 +161,7 @@ bdata_time = ballData.trial_time; %get the trial time
 
 % 2)Use an auxiliary function to get the different components of the behavior data
 number_x = 96;
-[smoothed, bdata_time_out, panel_angle, flyPosRad] = get_data_360(bdata_time, bdata_raw, number_x);
+[smoothed, bdata_time_out, panel_angle, flyPosRad, motor_pos] = get_data_360(bdata_time, bdata_raw, number_x);
 
 % 3)Recover relevant movement parameters
 vel_for = smoothed.xVel';
@@ -190,6 +190,7 @@ panel_y_ds = panel_y(round(linspace(1, length(panel_y), volumes)));
 %With this convention, a positive change in panel_angle_ds implies a
 %clockwise change in bar position.
 panel_angle_ds = panel_angle(round(linspace(1, length(panel_angle), volumes)));
+motor_pos_ds = motor_pos(round(linspace(1, length(motor_pos), volumes)));
 
 %With this convention, a positive change in flyPosRad_ds implies a
 %clockwise change in heading.
@@ -224,7 +225,10 @@ continuous_data.vel_for_deg_ds = vel_for_deg_ds;
 continuous_data.total_mvt_ds = total_mvt_ds;
 continuous_data.heading = flyPosRad_ds;
 continuous_data.heading_deg = rad2deg(flyPosRad_ds);
+
+%Devices
 continuous_data.panel_angle = panel_angle_ds;
+continuous_data.motor_pos = motor_pos_ds;
 
 % Imaging data
 continuous_data.volumes = volumes;

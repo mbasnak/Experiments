@@ -1,6 +1,6 @@
-function [smoothed, t, angle, flyPosRad] = get_data_360( trial_time, trial_data, num_frames_x)
+function [smoothed, t, angle, flyPosRad, motor_pos] = get_data_360( trial_time, trial_data, num_frames_x)
 
-%% Processes data from ball and panels for a 360 degree panel arena.
+%% Processes data from ball, panels and wind device
 
 % DAQ channels and sensor settings % check the channel settings, especially
 % the panels - MB 20191005
@@ -11,6 +11,7 @@ settings.fictrac_yaw_DAQ_AI = 3;
 settings.fictrac_y_DAQ_AI = 2;
 settings.panels_DAQ_AI = 5;
 settings.panels_DAQ_AI_Y = 6;
+settings.motor = 8;
 
 % When assigning fictrac directions, x will be forward, y will be side
 ft_for = trial_data( :, settings.fictrac_x_DAQ_AI );
@@ -18,6 +19,7 @@ ft_yaw = trial_data( :, settings.fictrac_yaw_DAQ_AI );
 ft_side = trial_data( :, settings.fictrac_y_DAQ_AI );
 panels = trial_data( :, settings.panels_DAQ_AI );
 panels_y_raw = trial_data( :, settings.panels_DAQ_AI_Y );
+motor = trial_data( :, settings.motor );
 
 %I'm adding the following lines to make my velocity analysis - MB 20191005
 data.ficTracIntx = ft_for;
@@ -29,8 +31,9 @@ data.ficTracAngularPosition = ft_yaw;
 %%%%%%%%%%%%%%%%%%%%
 
 [angle] = process_panel_360(panels, num_frames_x);
-%I'm adding the next line to get the heading the way I do
 flyPosRad = smoothed.angularPosition;
+motor_pos = process_motor_360(motor);
+
 %
 [t] = process_time(trial_time);
 end
