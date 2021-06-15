@@ -39,17 +39,26 @@ figure,
 subplot(4,1,1)
 plot(airflow,heading_var, 'o')
 title('Heading variability');
+xlim([-0.1 0.8]);
+ylim([0 2.5]);
 
 subplot(4,1,2)
 plot(airflow,offset_var,'o')
 title('Offset variability');
+xlim([-0.1 0.8]);
+ylim([0 2.5]);
 
 subplot(4,1,3)
 plot(airflow,meanBM,'o')
-title('Mean bump magnitude');
+title('Mean bump magnitude')
+xlim([-0.1 0.8]);
+ylim([0 2]);
 
 subplot(4,1,4)
 plot(airflow,meanBW,'o')
 title('Mean bump width');
 xlabel('Airflow (L/min)');
+xlim([-0.1 0.8]);
+ylim([1 3]);
+
 
