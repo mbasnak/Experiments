@@ -27,6 +27,24 @@ end
 cd([path,'plots\'])
 
 
+%% Recover PMT gain and zoom factor
+% 
+% imagingDir = [path(1:end-10), '\2p\'];
+% expression = ['*sid' sid 'tid_0_*'];
+% imagingFile = dir(fullfile(imagingDir, expression));
+% 
+% import ScanImageTiffReader.ScanImageTiffReader; %imports functinos necessary to open the scanimage tiff files
+% reader = ScanImageTiffReader(fullfile(imagingDir, imagingFile(1).name));
+% rawFile_original = reader.data();
+% metadata_char = reader.metadata();
+% %descriptions = reader.descriptions();
+% list = strsplit(metadata_char,'RoiGroups');%,'CollapseDelimiters',true);
+% list = char(list{1});
+% list = list(1:end-7);
+% eval(list);
+% zoom = SI.hRoiManager.scanZoomFactor;
+% PMT_gain = SI.hPmts.gains(1);
+
 %% Determine airflow
 
 %import run_obj

@@ -62,3 +62,4 @@ xlim([-0.1 0.8]);
 ylim([1 3]);
 
 
+save([path,'\group_closed_loop_wind.png']);

@@ -1,4 +1,6 @@
-function continuous_PB_data_analysis(path,sid,tid)
+function continuous_PB_data_analysis(path,sid)
+
+tid = 0;
 
 %Code to analyze the imaging and behavior data, with the imaging data
 %analyzed using the new 'continuous' method
@@ -15,9 +17,9 @@ set(0,'DefaultTextInterpreter','none');
 
 data_analysis_dir = [path slash 'analysis' slash];
 
-if(~exist(data_analysis_dir, 'dir'))
-    mkdir(data_analysis_dir);
-end
+% if(~exist(data_analysis_dir, 'dir'))
+%     mkdir(data_analysis_dir);
+% end
 
 %% Load the imaging data
 
@@ -145,17 +147,13 @@ ball_dir = [path slash 'ball' slash];
 expression = ['bdata' '*sid_' num2str(sid) '_tid_' num2str(tid) '*.mat'];
 ball_file = dir(fullfile(ball_dir, expression));
 ballData = load(fullfile(ball_dir, ball_file.name)); %load ballData
-runobjFile = dir(fullfile([ball_dir,'\runobj\'], ['*_sid_' num2str(sid) '_*']));
-load(fullfile([ball_dir,'\runobj\'], runobjFile.name)); %load run_obj
+runobjFile = dir(fullfile([ball_dir 'runobj' slash], ['*_sid_' num2str(sid) '_*']));
+load(fullfile([ball_dir 'runobj' slash], runobjFile.name)); %load run_obj
 
 
 %% Convert the ball data panel position into an angle, bar position; fictrac position/velocities
 
 % 1)Import behavior file
-ball_file = dir(fullfile(ball_dir, expression));
-ballData = load(fullfile(ball_dir, ball_file.name)); %load ballData
-runobjFile = dir(fullfile([ball_dir,'\runobj\'], ['*_sid_' num2str(sid) '_*']));
-load(fullfile([ball_dir,'\runobj\'], runobjFile.name)); %load run_obj
 bdata_raw = ballData.trial_bdata; %get the ball data
 bdata_time = ballData.trial_time; %get the trial time
 
@@ -241,7 +239,7 @@ continuous_data.offset = offset;
 
 
 % Write file
-filename = [path, '\analysis\continuous_analysis_sid_' num2str(sid) '_tid_' num2str(tid) '.mat'];
+filename = [path slash 'analysis' slash 'continuous_analysis_sid_' num2str(sid) '_tid_' num2str(tid) '.mat'];
 save(filename, 'continuous_data');
 
 end

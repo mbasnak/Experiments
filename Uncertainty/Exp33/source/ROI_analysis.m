@@ -158,7 +158,7 @@ for i = 1:num_tids %for every trial
        %timepoints, and since we pre-sorted them, that corresponds to the
        %lowest 5% values of the trial
        
-       fithpercentile = floor(.05*timepoints);
+       fifthpercentile = floor(.05*timepoints);
        baseline_f = mean(sorted(1:fifthpercentile));
        
        %I will add lines for the 10th percentile

@@ -27,7 +27,8 @@ for session = 1:length(open_loop_sessions)
     
     %PB heatmap
     subplot(3,5,[1 4])
-    imagesc(data{1,session}.continuous_data.dff_matrix')
+    dff = data{1,session}.continuous_data.dff_matrix';
+    imagesc(fliplr(dff))
     colormap(flipud(gray))
     ylabel('PB distance')
     set(gca,'xticklabel',{[]});
