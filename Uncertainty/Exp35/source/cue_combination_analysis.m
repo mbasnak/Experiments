@@ -6,7 +6,7 @@
 clear all; close all;
 
 %Get the pre-processed data
-[path] = uigetdir('Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp34\data\');
+[path] = uigetdir('Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp35\data\');
 
 % Import sessions information
 load([path,'\analysis\sessions_info.mat'])
@@ -37,7 +37,7 @@ title('Bump and fly position');
 ylim([-180 180]);
 
 subplot(3,1,3)
-offset = wrapTo180(continuous_data.offset);
+offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',-continuous_data.heading)));
 %store offset for later
 pre_panels_offset = deg2rad(offset);
 [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
@@ -75,7 +75,7 @@ title('Bump and fly position');
 ylim([-180 180]);
 
 subplot(3,1,3)
-offset = wrapTo180(continuous_data.offset);
+offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',-continuous_data.heading)));
 %store offset for later
 pre_wind_offset = deg2rad(offset);
 [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
@@ -113,7 +113,7 @@ title('Bump and fly position');
 ylim([-180 180]);
 
 subplot(3,1,3)
-offset = wrapTo180(continuous_data.offset);
+offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',-continuous_data.heading)));
 %store offset for later
 combined_offset = deg2rad(offset);
 [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
@@ -151,7 +151,7 @@ title('Bump and fly position');
 ylim([-180 180]);
 
 subplot(3,1,3)
-offset = wrapTo180(continuous_data.offset);
+offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',-continuous_data.heading)));
 %store offset for later
 post_panels_offset = deg2rad(offset);
 [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
@@ -189,7 +189,7 @@ title('Bump and fly position');
 ylim([-180 180]);
 
 subplot(3,1,3)
-offset = wrapTo180(continuous_data.offset);
+offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',-continuous_data.heading)));
 %store offset for later
 post_wind_offset = deg2rad(offset);
 [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
@@ -229,3 +229,5 @@ suptitle('Offset evolution');
 
 saveas(gcf,[path,'\analysis\plots\offset_evolution.png']);
 
+%%
+close all; clear all;

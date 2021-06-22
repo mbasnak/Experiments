@@ -5,7 +5,7 @@ clear all; close all;
 %% Load data
 
 %Get directory you're interested in
-path = uigetdir('Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp33\data');
+path = uigetdir('Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp34\data');
 
 %I will create a .txt file for each fly with the session numbers
 %Read the .txt file containing the ID of the open loop sessions.
@@ -28,7 +28,7 @@ for session = 1:length(open_loop_sessions)
     %PB heatmap
     subplot(3,5,[1 4])
     dff = data{1,session}.continuous_data.dff_matrix';
-    imagesc(fliplr(dff))
+    imagesc(flip(dff))
     colormap(flipud(gray))
     ylabel('PB distance')
     set(gca,'xticklabel',{[]});
@@ -167,7 +167,7 @@ mean_bump_data = varfun(@mean,summarydata,'InputVariables','bump_mag',...
 %Plot
 figure('Position',[200 200 800 800]),
 scatter(mean_bump_data.stim_vel,mean_bump_data.mean_bump_mag,60)
-ylim([min(mean_bump_data.mean_bump_mag) - 0.2, max(mean_bump_data.mean_bump_mag) + 0.2]);
+ylim([0 2.5]);
 [ax,h2]=suplabel('Stimulus angular velocity (deg/s)','x');
 set(h2,'FontSize',12,'FontWeight','bold')
 ylabel({'Bump magnitude';'(from von Mises fit'});
@@ -185,128 +185,13 @@ mean_hw_data = varfun(@mean,summarydata,'InputVariables','bump_width',...
 %Plot
 figure('Position',[200 200 800 800]),
 scatter(mean_hw_data.stim_vel,mean_hw_data.mean_bump_width,60)
-ylim([min(mean_hw_data.mean_bump_width) - 0.2, max(mean_hw_data.mean_bump_width) + 0.2]);
+ylim([0 5]);
 [ax,h2]=suplabel('Stimulus angular velocity (deg/s)','x');
 set(h2,'FontSize',12,'FontWeight','bold')
 ylabel('Bump width at half max');
 
 %save
 saveas(gcf,[path,'\analysis\plots\mean_bump_hw.png']);
-
-
-%% Plots with heatmap, stimulus position, fly heading, and offset
-
-for session = 1:length(open_loop_sessions)
-    
-    figure('Position',[100, 100, 1000, 800]),
-    
-    %PB heatmap
-    subplot(5,4,[1 3])
-    imagesc(data{1,session}.continuous_data.dff_matrix')
-    colormap(flipud(gray))
-    ylabel('PB glomerulus')
-    set(gca,'xticklabel',{[]});
-    yticks(1:2:16);
-    yticklabels({'8R','6R','4R','2R','1L','3L','5L','7L'});
-    title('EPG activity in the PB');
-    
-    %Stimulus position
-    subplot(5,4,[5 7])
-    bar_position = wrapTo180(data{1,session}.continuous_data.panel_angle);
-    [x_out_bar,bar_position_to_plot] = removeWrappedLines(data{1,session}.continuous_data.time,bar_position);
-    %Get EPG phase to plot
-    phase = wrapTo180(rad2deg(data{1,session}.continuous_data.bump_pos));
-    [x_out_phase,phase_to_plot] = removeWrappedLines(data{1,session}.continuous_data.time,phase');
-    %Plot using different colors if the stimulus was low or high contrast
-    plot(x_out_bar,bar_position_to_plot,'color',[0.5 0.8 0.9],'lineWidth',1.5)
-    hold on
-    plot(x_out_phase,phase_to_plot,'color',[0.9 0.3 0.4],'lineWidth',1.5)
-    legend('Stimulus position','EPG phase');
-    if ~isnan(x_out_phase(end))
-        xlim([0, x_out_phase(end)]);
-    else
-        xlim([0, x_out_phase(end-1)]);
-    end
-    ylim([-180 180]);
-    ylabel('Degrees');
-    set(gca,'xticklabel',{[]})
-    title('Stimulus position');
-    
-    %Stim offset
-    %Calculate stim offset as the circular distance between EPG activity
-    %phase and the stimulus posotion
-    stim_offset{session} = rad2deg(circ_dist(data{1,session}.continuous_data.bump_pos,deg2rad(data{1,session}.continuous_data.panel_angle')));
-    [x_out_stimoffset,stimOffsetToPlot] = removeWrappedLines(data{1,session}.continuous_data.time,stim_offset{session}');
-    subplot(5,4,[9 11])
-    %Plot using different colors if the stimulus was low or high contrast
-    plot(x_out_stimoffset,stimOffsetToPlot,'color',[ 0.5 0.8 0.9],'lineWidth',1.5)
-    if ~isnan(x_out_stimoffset(end))
-        xlim([0, x_out_stimoffset(end)]);
-    else
-        xlim([0, x_out_stimoffset(end-1)]);
-    end
-    ylim([-180 180]);
-    set(gca,'xticklabel',{[]})
-    ylabel('Degrees');
-    title('Stimulus offset');
-    
-    %Plot stimulus offset distribution
-    subplot(5,4,12)
-    polarhistogram(deg2rad(stim_offset{session}),20,'FaceColor',[ 0.5 0.8 0.9])
-    set(gca,'ThetaZeroLocation','top');
-    title({'Offset distribution','High contrast'});
-    Ax = gca;
-    Ax.RGrid = 'off';
-    Ax.RTickLabel = [];
-    
-    %add movement plots
-    %Fly heading
-    subplot(5,4,[13 15])
-    %Heading
-    heading = wrapTo180(-data{1,session}.continuous_data.heading_deg);
-    [x_out_heading,heading_to_plot] = removeWrappedLines(data{1,session}.continuous_data.time,heading); 
-    %Plot using different colors if the stimulus was low or high contrast
-    plot(x_out_heading,heading_to_plot,'color',[ 0.6 0.8 0.2],'lineWidth',1.5)
-    hold on
-    %Phase
-    plot(x_out_phase,phase_to_plot,'color',[0.9 0.3 0.4],'lineWidth',1.5)
-    legend('-Fly heading','EPG phase');
-    if ~isnan(x_out_heading(end))
-        xlim([0, x_out_heading(end)]);
-    else
-        xlim([0, x_out_heading(end-1)]);
-    end
-    ylim([-180 180]);
-    ylabel('Degrees');
-    set(gca,'xticklabel',{[]})
-    title('Fly heading');
-    
-    %Mvt offset
-    offset{session} = wrapTo180(data{1,session}.continuous_data.offset);
-    [x_out_offset,offsetToPlot] = removeWrappedLines(data{1,session}.continuous_data.time,offset{session});
-    subplot(5,4,[17 19])
-    plot(x_out_offset,offsetToPlot,'color',[ 0.5 0.8 0.9],'lineWidth',1.5)
-    if ~isnan(x_out_offset(end))
-        xlim([0, x_out_offset(end)]);
-    else
-        xlim([0, x_out_offset(end-1)]);
-    end
-    ylim([-180 180]);
-    xlabel('Time (sec)'); ylabel('Degrees');
-    title('Movement offset');
-    
-    %Plot stimulus offset distribution
-    subplot(5,4,20)
-    polarhistogram(deg2rad(offset{session}),20,'FaceColor',[ 0.5 0.8 0.9])
-    set(gca,'ThetaZeroLocation','top');
-    title({'Offset distribution','High contrast'});
-    Ax = gca;
-    Ax.RGrid = 'off';
-    Ax.RTickLabel = [];
-    
-    %save figures
-    saveas(gcf,[path,'\analysis\plots\openLoopCombinedHeatmap_session',num2str(session),'.png']);
-end
 
 %% Model BM and BW as a function of total movement, and stim velocity
 
