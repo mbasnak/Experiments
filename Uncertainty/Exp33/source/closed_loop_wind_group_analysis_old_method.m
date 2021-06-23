@@ -14,7 +14,7 @@ formatSpec = '%d';
 wind_sessions = fscanf(fileID,formatSpec);
 
 for session = 1:length(wind_sessions)
-   data{session} = load([path,'\analysis\summary_data_sid_',num2str(wind_sessions(session)),'_.mat']);    
+   data{session} = load([path,'\analysis\summary_data_old_method_sid_',num2str(wind_sessions(session)),'_.mat']);    
 end
 
 %% Combine the variables
@@ -59,31 +59,32 @@ plot(airflow,meanBW,'o')
 title('Mean bump width');
 xlabel('Airflow (L/min)');
 xlim([-0.1 0.8]);
-ylim([1 3]);
+ylim([1 4]);
 
 
-save([path,'\group_closed_loop_wind.png']);
+save([path,'\group_closed_loop_wind_old_method.png']);
 
 
 %% Adding movement
 
 for session = 1:length(wind_sessions)
-   all_data{session} = load([path,'\analysis\continuous_analysis_sid_',num2str(wind_sessions(session)),'_tid_0.mat']);    
+   all_data{session} = load([path,'\analysis\analysis_sid_',num2str(wind_sessions(session)),'_tid_0.mat']);    
 end
 
-%% Repeat analysis ignoring the gof, but add a movement threshold
-
+%%
+%ignore the gof, but add a movement threshold
 mvt_thresh = 25;
 meanBM_thresh = [];
 meanBW_thresh = [];
 offset_var_all = [];
 heading_var_all = [];
 for session = 1:length(wind_sessions)
-    meanBM_thresh = [meanBM_thresh,mean(all_data{1,session}.continuous_data.bump_magnitude(all_data{1,session}.continuous_data.total_mvt_ds>mvt_thresh))];
-    meanBW_thresh = [meanBW_thresh,mean(all_data{1,session}.continuous_data.bump_width(all_data{1,session}.continuous_data.total_mvt_ds>mvt_thresh))];    
-    [~,offset_var_] = circ_std(deg2rad(all_data{1,session}.continuous_data.offset));
+    meanBM_thresh = [meanBM_thresh,mean(all_data{1,session}.data.bump_magnitude(all_data{1,session}.data.total_mvt_ds>mvt_thresh))];
+    bump_width = compute_bump_width(all_data{1,session}.data.mean_dff_EB);
+    meanBW_thresh = [meanBW_thresh,mean(bump_width(all_data{1,session}.data.total_mvt_ds>mvt_thresh))];    
+    [~,offset_var_] = circ_std(deg2rad(all_data{1,session}.data.heading_offset));
     offset_var_all = [offset_var_all,offset_var_];
-    [~,heading_var_] = circ_std(all_data{1,session}.continuous_data.motor_pos,[],[],2);
+    [~,heading_var_] = circ_std(all_data{1,session}.data.motor_pos,[],[],2);
     heading_var_all = [heading_var_all,heading_var_];    
 end
 
@@ -112,9 +113,9 @@ plot(airflow,meanBW_thresh,'o')
 title('Mean bump width');
 xlabel('Airflow (L/min)');
 xlim([-0.1 0.8]);
-ylim([1 5]);
+ylim([1 4]);
 
-save([path,'\group_closed_loop_wind_mvt_thresh.png']);
+save([path,'\group_closed_loop_wind_mvt_thresh_old_method.jpg']);
 
 
 %% Save data for across fly comparison
@@ -125,7 +126,7 @@ summary_data.heading_var = heading_var_all;
 summary_data.mean_bm = meanBM_thresh;
 summary_data.mean_bw = meanBW_thresh;
 
-save([path,'\analysis\all_summary_data.mat'],'summary_data')
+save([path,'\analysis\all_summary_data_old_method.mat'],'summary_data')
 
 %% Clean up
 
