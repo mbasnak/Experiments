@@ -112,12 +112,15 @@ for session = 1:length(open_loop_sessions)
 
     BumpWidth{session} = compute_bump_width(data{1,session}.data.mean_dff_EB);
     meanBW(session) = mean(BumpWidth{session});   
+    
+    TotalMvt{session} = data{1,session}.data.total_mvt_ds;
+    total_mvt(session) = mean(TotalMvt{session});
 end
 
 
 %Obtain for each session a table with their offset var, their mean bump magnitude and bump width and their stim
 %velocity
-summarydata = array2table(zeros(0,4), 'VariableNames',{'offset_var','bump_mag','bump_width','stim_vel'});
+summarydata = array2table(zeros(0,5), 'VariableNames',{'offset_var','bump_mag','bump_width','stim_vel','total_mvt'});
 warning('off');
 for session = 1:length(open_loop_sessions)
     summarydata{session,'offset_var'} = stim_offset_var(session);
@@ -138,6 +141,7 @@ for session = 1:length(open_loop_sessions)
     else
         summarydata{session,'stim_vel'} = 210; 
     end
+    summarydata{session,'total_mvt'} = total_mvt(session);
 end
 
 %% Compare the offset variation across speeds

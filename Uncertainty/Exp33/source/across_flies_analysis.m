@@ -33,7 +33,7 @@ for fly = 1:length(data)
     mean_bw{fly} = data{1,fly}.summary_data.mean_bw;
 end
  
-%% Replicate the individual plot with all the data points
+%% Combine all variables in a table to compute the means
 
 %Create a table with the variables
 for folder = 1:length(folderNames)

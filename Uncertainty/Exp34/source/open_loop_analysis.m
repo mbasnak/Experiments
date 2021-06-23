@@ -111,13 +111,16 @@ for session = 1:length(open_loop_sessions)
     meanBM(session) = mean(BumpMagnitude{session});   
 
     BumpWidth{session} = data{1,session}.continuous_data.bump_width;
-    meanBW(session) = mean(BumpWidth{session});   
+    meanBW(session) = mean(BumpWidth{session});
+    
+    TotalMvt{session} = data{1,session}.continuous_data.total_mvt_ds;
+    total_mvt(session) = mean(TotalMvt{session});
 end
 
 
 %Obtain for each session a table with their offset var, their mean bump magnitude and bump width and their stim
 %velocity
-summarydata = array2table(zeros(0,4), 'VariableNames',{'offset_var','bump_mag','bump_width','stim_vel'});
+summarydata = array2table(zeros(0,5), 'VariableNames',{'offset_var','bump_mag','bump_width','stim_vel','total_mvt'});
 warning('off');
 for session = 1:length(open_loop_sessions)
     summarydata{session,'offset_var'} = stim_offset_var(session);
@@ -138,6 +141,7 @@ for session = 1:length(open_loop_sessions)
     else
         summarydata{session,'stim_vel'} = 210; 
     end
+    summarydata{session,'total_mvt'} = total_mvt(session);
 end
 
 %% Compare the offset variation across speeds
@@ -170,7 +174,7 @@ scatter(mean_bump_data.stim_vel,mean_bump_data.mean_bump_mag,60)
 ylim([0 2.5]);
 [ax,h2]=suplabel('Stimulus angular velocity (deg/s)','x');
 set(h2,'FontSize',12,'FontWeight','bold')
-ylabel({'Bump magnitude';'(from von Mises fit'});
+ylabel({'Bump magnitude';'(from von Mises fit)'});
 
 %save
 saveas(gcf,[path,'\analysis\plots\mean_bump_mag.png']);
