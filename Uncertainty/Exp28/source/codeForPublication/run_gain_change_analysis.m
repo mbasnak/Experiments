@@ -556,6 +556,7 @@ for fly = 1:length(data_dirs)
             heading_offset_variabilityNG = heading_offset_variability([1:gain_changes(1),gain_changes(2):end],:);
             total_mvtNG = data.total_mvt_ds([1:gain_changes(1),gain_changes(2):end]);
             heading_variabilityNG = heading_variability([1:gain_changes(1),gain_changes(2):end]);
+            yaw_speedNG = abs(data.vel_yaw_ds([1:gain_changes(1),gain_changes(2):end]));
             
             figure,
             
@@ -610,7 +611,7 @@ for fly = 1:length(data_dirs)
             
             %Create table with the model's variables
             for window = 1:length(window_sizes)
-                modelTableNG{window} = table(heading_offset_variabilityNG(:,window),total_mvtNG',BumpMagNG',HalfWidthNG',heading_variabilityNG,'VariableNames',{'HeadingOffsetVariability','TotalMovement','BumpMagnitude','BumpWidth','HeadingVariability'});
+                modelTableNG{window} = table(heading_offset_variabilityNG(:,window),total_mvtNG',BumpMagNG',HalfWidthNG',heading_variabilityNG,yaw_speedNG','VariableNames',{'HeadingOffsetVariability','TotalMovement','BumpMagnitude','BumpWidth','HeadingVariability','YawSpeed'});
                 mdl_BM_NG{window} = fitlm(modelTableNG{window},'BumpMagnitude~HeadingOffsetVariability+TotalMovement');
                 mdl_HW_NG{window} = fitlm(modelTableNG{window},'BumpWidth~HeadingOffsetVariability+TotalMovement');
                 %Model Rsquared

@@ -458,13 +458,13 @@ NG_data = NG_data(~cellfun('isempty',NG_data));
 %Combine the tables into one
 for window = 1:6
     flyNumber = [];
-    allNGData{window} = array2table(zeros(0,5),'VariableNames', {'HeadingOffsetVariability','TotalMovement','BumpMagnitude','BumpWidth','HeadingVariability'});
+    allNGData{window} = array2table(zeros(0,6),'VariableNames', {'HeadingOffsetVariability','TotalMovement','BumpMagnitude','BumpWidth','HeadingVariability','YawSpeed'});
     for fly = 1:length(NG_data)
         flyNumber = [flyNumber,repelem(fly,length(NG_data{1,fly}{1,window}.BumpMagnitude))];
         allNGData{window} = [allNGData{window};NG_data{1,fly}{1,window}];
     end
     allNGData{window} = addvars(allNGData{window},flyNumber');
-    allNGData{window}.Properties.VariableNames{'Var6'} = 'Fly';
+    allNGData{window}.Properties.VariableNames{'Var7'} = 'Fly';
 end
 
 %% Compute model for bump magnitude for the normal gain period
@@ -1265,3 +1265,27 @@ xlim([0 5]);
 
 %Save
 saveas(gcf,'Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp28\data\groupPlots\zYawSpeedQuartiles.png')
+
+
+%% Plot distribution of angular speed under normal and inverted gain conditions
+
+%Combine movement variables
+allYawSpeedNG = [];
+allYawSpeedIG = [];
+for fly = 1:length(data)
+   allYawSpeedNG = [allYawSpeedNG,data(fly).modelTableNG{1,1}.TotalMovement];
+   allYawSpeedIG = [allYawSpeedIG,data(fly).modelTable{1,1}.TotalMovement];       
+end
+
+
+figure,
+subplot(2,1,1)
+histogram(allYawSpeedNG);
+title('Normal gain');
+xlim([0 400]);
+
+subplot(2,1,2)
+histogram(allYawSpeedIG);
+title('Inverted gain');
+xlim([0 350]);
+xlabel('Angular speed (deg/s)');
