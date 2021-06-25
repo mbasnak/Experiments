@@ -96,6 +96,16 @@ for file = 1:length(fileNames)
         
         saveas(gcf,[path,'\analysis\plots\heatmap_and_offset_',bar_reliability,'_bar_gain',num2str(run_obj.gain_panels),wind_reliability,'_wind_gain',num2str(run_obj.gain_wind),'.png']);
         
+        
+        %% Correlation between cue positions
+        
+        figure,
+        scatter(panels,wind)
+        xlabel('Bar position');
+        ylabel('Wind position');
+        
+        saveas(gcf,[path,'\analysis\plots\cue_pos_correlation_',bar_reliability,'_bar_gain',num2str(run_obj.gain_panels),wind_reliability,'_wind_gain',num2str(run_obj.gain_wind),'.png']);
+        
     end
 end
 

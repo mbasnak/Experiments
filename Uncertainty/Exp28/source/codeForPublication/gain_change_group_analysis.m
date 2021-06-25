@@ -416,6 +416,150 @@ plot(mvtAxes,nanmean(meanBin),'k','linewidth',2)
 %save
 saveas(gcf,'Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp28\data\groupPlots\zBumpParamVsBarVariability.png')
 
+%% Look at heading offset variability in type II flies
+
+clear meanBin
+clear meanBinw
+
+figure,
+
+%define bin limits
+allHeadingOffsetVariability2 = [];
+allBumpMagnitude = [];
+allBumpWidth = [];
+for window = 1:6
+    for fly = 1:length(type_2_data)
+        allHeadingOffsetVariability2 = [allHeadingOffsetVariability2;type_2_data{1,fly}{1,window}.HeadingOffsetVariability];
+        allBumpMagnitude = [allBumpMagnitude;zscore(type_2_data{1,fly}{1,window}.BumpMagnitude)];
+        allBumpWidth = [allBumpWidth;zscore(type_2_data{1,fly}{1,window}.BumpWidth)];    
+    end
+end
+%Define bins
+max_bin = prctile(allHeadingOffsetVariability2,95,'all');
+min_bin = prctile(allHeadingOffsetVariability2,5,'all');
+binWidth = (max_bin-min_bin)/nbins;
+Bins = [min_bin:binWidth:max_bin];
+
+%Create axes for plot
+mvtAxes = Bins - binWidth;
+mvtAxes = mvtAxes(2:end);
+
+for fly = 1:length(type_2_data)
+    
+    subplot(1,2,1)
+    
+    %Getting binned means
+    allBumpMag = zscore(type_2_data{1,fly}{1,I2}.BumpMagnitude);
+    heading_offset_variability2 = type_2_data{1,fly}{1,I2}.HeadingOffsetVariability;
+    total_movement = type_2_data{1,fly}{1,I2}.TotalMovement;
+    mvt_thresh = 50;
+    nbins = 10;
+    
+    for bin = 1:length(Bins)-1
+        meanBin(fly,bin) = nanmean(allBumpMag((heading_offset_variability2 > Bins(bin)) & (total_movement > mvt_thresh) & (heading_offset_variability2 < Bins(bin+1))));
+    end
+    
+    plot(mvtAxes,meanBin(fly,:),'color',[.5 .5 .5])
+    hold on
+    ylabel({'Bump magnitude';'(amplitude of Fourier component)'}); xlabel('Heading offset variability');
+    ylim([min(min(meanBin))-0.5 max(max(meanBin))+0.5]);
+    xlim([mvtAxes(1) mvtAxes(end)]);
+    title('Bump magnitude');
+    
+    subplot(1,2,2)
+    
+    allHalfWidth = zscore(type_2_data{1,fly}{1,Iw2}.BumpWidth);
+    for bin = 1:length(Bins)-1
+        meanBinw(fly,bin) = nanmean(allHalfWidth((heading_offset_variability2 > Bins(bin)) & (total_movement > mvt_thresh) & (heading_offset_variability2 < Bins(bin+1))));
+    end
+    
+    plot(mvtAxes,meanBinw(fly,:),'color',[.5 .5 .5])
+    hold on
+    ylabel('Bump half width (EB wedges)'); xlabel('Heading offset variability');
+    ylim([min(min(meanBin))-0.5 max(max(meanBinw))+0.5]);
+    xlim([mvtAxes(1) mvtAxes(end)]);
+    title('Bump half width');
+end
+
+plot(mvtAxes,nanmean(meanBinw),'k','linewidth',2)
+subplot(1,2,1)
+plot(mvtAxes,nanmean(meanBin),'k','linewidth',2)
+
+%save
+saveas(gcf,'Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp28\data\groupPlots\zBumpParamVsHeadingVariability2.png')
+
+%% Now look at the correlation between bump parameters and bar offset variability for type I flies
+
+clear meanBin
+clear meanBinw
+
+figure,
+
+%define bin limits
+allBarOffsetVariability = [];
+allBumpMagnitude = [];
+allBumpWidth = [];
+for window = 1:6
+    for fly = 1:length(type_2_data)
+        allBarOffsetVariability1 = [allBarOffsetVariability;type_1_data{1,fly}{1,window}.BarOffsetVariability];
+        allBumpMagnitude = [allBumpMagnitude;zscore(type_1_data{1,fly}{1,window}.BumpMagnitude)];
+        allBumpWidth = [allBumpWidth;zscore(type_1_data{1,fly}{1,window}.BumpWidth)];    
+    end
+end
+%Define bins
+max_bin = prctile(allBarOffsetVariability1,95,'all');
+min_bin = prctile(allBarOffsetVariability1,5,'all');
+binWidth = (max_bin-min_bin)/nbins;
+Bins = [min_bin:binWidth:max_bin];
+
+%Create axes for plot
+mvtAxes = Bins - binWidth;
+mvtAxes = mvtAxes(2:end);
+
+for fly = 1:length(type_1_data)
+    
+    subplot(1,2,1)
+    
+    %Getting binned means
+    allBumpMag = zscore(type_1_data{1,fly}{1,I2}.BumpMagnitude);
+    bar_offset_variability1 = type_1_data{1,fly}{1,I2}.BarOffsetVariability;
+    total_movement = type_1_data{1,fly}{1,I2}.TotalMovement;
+    mvt_thresh = 50;
+    nbins = 10;
+    
+    for bin = 1:length(Bins)-1
+        meanBin(fly,bin) = nanmean(allBumpMag((bar_offset_variability1 > Bins(bin)) & (total_movement > mvt_thresh) & (bar_offset_variability1 < Bins(bin+1))));
+    end
+    
+    plot(mvtAxes,meanBin(fly,:),'color',[.5 .5 .5])
+    hold on
+    ylabel({'Bump magnitude';'(amplitude of Fourier component)'}); xlabel('Bar offset variability');
+    ylim([min(min(meanBin))-0.5 max(max(meanBin))+0.5]);
+    xlim([mvtAxes(1) mvtAxes(end)]);
+    title('Bump magnitude');
+    
+    subplot(1,2,2)
+    
+    allHalfWidth = zscore(type_1_data{1,fly}{1,Iw2}.BumpWidth);
+    for bin = 1:length(Bins)-1
+        meanBinw(fly,bin) = nanmean(allHalfWidth((bar_offset_variability1 > Bins(bin)) & (total_movement > mvt_thresh) & (bar_offset_variability1 < Bins(bin+1))));
+    end
+    
+    plot(mvtAxes,meanBinw(fly,:),'color',[.5 .5 .5])
+    hold on
+    ylabel('Bump half width (EB wedges)'); xlabel('Bar offset variability');
+    ylim([min(min(meanBin))-0.5 max(max(meanBinw))+0.5]);
+    xlim([mvtAxes(1) mvtAxes(end)]);
+    title('Bump half width');
+end
+
+plot(mvtAxes,nanmean(meanBinw),'k','linewidth',2)
+subplot(1,2,1)
+plot(mvtAxes,nanmean(meanBin),'k','linewidth',2)
+
+%save
+saveas(gcf,'Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp28\data\groupPlots\zBumpParamVsBarVariability1.png')
+
 %% Look at correlation between bar and heading offset in type I and type II flies in the best fit window
 
 figure('Position',[100 100 1000 800]),
