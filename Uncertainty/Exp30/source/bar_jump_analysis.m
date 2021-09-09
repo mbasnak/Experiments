@@ -191,6 +191,35 @@ for jump = 1:length(ds_jump_frames)
    
 end
 
+%% Reproduce the Kim et al plot
+
+for jump = 1:length(ds_jump_frames)
+   
+   time_zero = data.time(ds_jump_frames(jump));
+   time = data.time-time_zero;
+   
+   figure('Position',[100 100 1200 500]),
+   subplot(8,1,1)
+   imagesc(bump_mag(:,ds_jump_frames(jump)-25:ds_jump_frames(jump)+26))
+   colormap(flipud(gray))
+   set(gca,'xtick',[])
+   set(gca,'ytick',[])
+   title('Bump magnitude');
+   
+   subplot(8,1,[2 8])
+   plot(time(ds_jump_frames(jump)-25:ds_jump_frames(jump)+26) , bar_position(ds_jump_frames(jump)-25:ds_jump_frames(jump)+26),'r')
+   hold on
+   plot(time(ds_jump_frames(jump)-25:ds_jump_frames(jump)+26), phase(ds_jump_frames(jump)-25:ds_jump_frames(jump)+26),'b')
+   xline(time(ds_jump_frames(jump)),'k','linestyle','--','linewidth',2)
+   ylim([-180 180]);
+   xlim([time(ds_jump_frames(jump)-25) time(ds_jump_frames(jump)+26)]);
+   ylabel('Heading (deg)');
+   xlabel('Time');
+   legend('Bar position','Bump estimate');
+   
+   saveas(gcf,[path,'plots\bm_evolution',num2str(jump),'.png'])
+end
+
 
 %% Plot the bump parameters vs the bump jump magnitude
 
@@ -520,6 +549,7 @@ ylabel('Frame that returned to pre-jump offset');
 xlabel('Jumps sorted by BM');
 
 %% Plot the offset return frames sorted by BM
+
 [sorted_BW,Iw] = sort(mean_bw_pre_jump);
 subplot(1,2,2)
 plot(first_return_frame(Iw),'o')
@@ -527,8 +557,59 @@ ylabel('Frame that returned to pre-jump offset');
 xlabel('Jumps sorted by BW');
 saveas(gcf,[path,'plots\offset_return_sorted_frames.png']);
 
+%% Bump magnitude around the jumps
+
+for jump = 1:length(ds_jump_frames)
+    
+   figure('Position',[100 100 1200 800]),
+     
+   subplot(3,1,1)
+   imagesc(data.dff_matrix(:,ds_jump_frames(jump)-25:ds_jump_frames(jump)+25))
+   colormap(flipud(gray))
+   hold on
+   xline(26,'linewidth',2,'color','r')
+   title('EPG activity');
+     
+   subplot(3,1,2)
+   plot(offset(ds_jump_frames(jump)-25:ds_jump_frames(jump)+25))
+   xline(26,'linewidth',2,'color','r')
+   title(['Jump #',num2str(jump)]); 
+   xlim([1 51]);
+   ylim([-180 180]);
+   title('Offset (deg)');
+   
+   subplot(3,1,3)
+   %compute the mean bump parameters right before the jump
+   mean_bm_pre_jump(jump) = mean(bump_mag(ds_jump_frames(jump)-25:ds_jump_frames(jump)));
+   mean_bm_post_jump(jump) = mean(bump_mag(ds_jump_frames(jump)+1:ds_jump_frames(jump)+26));
+   bm_around_jump{jump} = [mean_bm_pre_jump(jump),mean_bm_post_jump(jump)];
+   plot(bm_around_jump{jump},'-ko')
+   xlim([0 3]);
+   set(gca,'xticklabel',{[]})
+   ylim([min(bm_around_jump{jump})-0.5, max(bm_around_jump{jump})+0.5]);  
+   title('Bump magnitude (max-min)');
+   
+   saveas(gcf,[path,'plots\AJ_bump_magnitude_',num2str(jump),'.png']);
+   
+end
+
+%% Combining all the data on bump magnitude around the jumps
+
+figure,
+bm_aj = cell2mat(bm_around_jump);
+bm_aj = reshape(bm_aj,2,length(bm_around_jump));
+plot(bm_aj,'-o','color',[.5 .5 .5])
+hold on
+plot(mean(bm_aj,2),'-ko','linewidth',2)
+xlim([0 3]);
+xticks([1 2])
+xticklabels({'pre-jump','post-jump'})
+ylabel('Mean bump magnitude (max-min)');
+saveas(gcf,[path,'plots\AJ_bump_magnitude.png']);
+
 %% Save data
 
 save([path,'\offset_change.mat'],'change_in_offset_AJ','time_around_jump','mean_bm_pre_jump','mean_bw_pre_jump','offset_AJ','longer_offset_AJ','first_return_frame');
+save([path,'\bm_change.mat'],'bm_aj')
 
 close all; clear all;
