@@ -41,6 +41,8 @@ subplot(5,1,3)
 offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',-continuous_data.heading)));
 %store offset for later
 pre_panels_offset = deg2rad(offset);
+%store the offset minus the points where the fit is low
+pre_panels_offset_above_thresh = pre_panels_offset(continuous_data.adj_rs>=0.5);
 [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
 plot(x_out_offset,offset_to_plot,'LineWidth',1.5)
 title('Offset')
@@ -93,6 +95,7 @@ subplot(5,1,3)
 offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',-continuous_data.heading)));
 %store offset for later
 pre_wind_offset = deg2rad(offset);
+pre_wind_offset_above_thresh = pre_wind_offset(continuous_data.adj_rs>=0.5);
 [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
 plot(x_out_offset,offset_to_plot,'LineWidth',1.5)
 title('Offset')
@@ -144,6 +147,7 @@ subplot(5,1,3)
 offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',-continuous_data.heading)));
 %store offset for later
 combined_offset = deg2rad(offset);
+combined_offset_above_thresh = combined_offset(continuous_data.adj_rs>=0.5);
 [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
 plot(x_out_offset,offset_to_plot,'LineWidth',1.5)
 title('Offset')
@@ -195,6 +199,7 @@ subplot(5,1,3)
 offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',-continuous_data.heading)));
 %store offset for later
 post_panels_offset = deg2rad(offset);
+post_panels_offset_above_thresh = post_panels_offset(continuous_data.adj_rs>=0.5);
 [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
 plot(x_out_offset,offset_to_plot,'LineWidth',1.5)
 title('Offset')
@@ -246,6 +251,7 @@ subplot(5,1,3)
 offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',-continuous_data.heading)));
 %store offset for later
 post_wind_offset = deg2rad(offset);
+post_wind_offset_above_thresh = post_wind_offset(continuous_data.adj_rs>=0.5);
 [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
 plot(x_out_offset,offset_to_plot,'LineWidth',1.5)
 title('Offset')
@@ -294,6 +300,33 @@ title('Final wind offset');
 suptitle('Offset evolution');
 
 saveas(gcf,[path,'\analysis\plots\offset_evolution.png']);
+
+%% Offset evolution with only the datapoints where the fit was above threshold
+
+figure('Position',[100 100 1400 400]),
+subplot(1,5,1)
+polarhistogram(pre_panels_offset_above_thresh)
+title('Initial panels offset');
+
+subplot(1,5,2)
+polarhistogram(pre_wind_offset_above_thresh)
+title('Initial wind offset');
+
+subplot(1,5,3)
+polarhistogram(combined_offset_above_thresh)
+title('Cue combination offset');
+
+subplot(1,5,4)
+polarhistogram(post_panels_offset_above_thresh)
+title('Final panels offset');
+
+subplot(1,5,5)
+polarhistogram(post_wind_offset_above_thresh)
+title('Final wind offset');
+
+suptitle('Offset evolution, fit above threshold');
+
+saveas(gcf,[path,'\analysis\plots\offset_evolution_above_thresh.png']);
 
 %% Heading evolution
 
