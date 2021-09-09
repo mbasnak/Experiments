@@ -51,7 +51,7 @@ phase = wrapTo180(rad2deg(data.dff_pva));
 %Remove lines that wrap around using auxiliary function
 [x_out_phase,phase_to_plot] = removeWrappedLines(data.time,phase);
 plot(x_out_phase,phase_to_plot,'LineWidth',1.5,'color',[0.9 0.3 0.4])
-xlim([0 x_out_phase(end)]);
+xlim([0 x_out_phase(end-1)]);
 ylim([-180 180]);
 legend('Bar position','EPG phase','Location','EastOutside')
 %Set legend outside of the plot so that it doesn't occlude the traces
@@ -83,3 +83,109 @@ rticklabels({}); %remove rticklabels
 
 %Save figure
 saveas(gcf,[path,'plots\Offset_stabilizer_block_heatmap.png']);
+
+
+%% Analyze relationship between yaw speed data and BM
+
+nbins = 20;
+yaw_speed = abs(data.vel_yaw_ds);
+maxBinYS = max(yaw_speed);
+binWidthYS = maxBinYS/nbins;
+YSBins = [0:binWidthYS:maxBinYS]; 
+
+%getting binned means 
+for bin = 1:length(YSBins)-1
+    meanBin(bin) = mean(data.bump_magnitude((yaw_speed(1:length(data.bump_magnitude)) > YSBins(bin)) & (yaw_speed(1:length(data.bump_magnitude)) < YSBins(bin+1))));
+end
+
+%create axes for plot
+YSAxes = YSBins - binWidthYS;
+YSAxes = YSAxes(2:end);
+YSAxes(end) = YSAxes(end-1)+binWidthYS;
+
+%Plot
+figure('Position',[200 200 1400 600]),
+%Plot bump magnitude in time
+subplot(2,4,[1 3])
+plot(data.time(1:length(data.bump_magnitude)),data.bump_magnitude, 'k')
+ylabel('Bump magnitude');
+ylim([0 5]);
+set(gca,'xticklabel',{[]});
+
+%Plot total movement 
+subplot(2,4,[5 7])
+plot(data.time(1:length(data.bump_magnitude)),yaw_speed(1:length(data.bump_magnitude)),'k')
+xlabel('Time (sec)');
+ylabel('Yaw speed (deg/s)');
+
+%Plot relationship between both parameters
+subplot(2,4,[4,8]);
+plot(mvtAxes,meanBin,'-ko')
+ylabel('Mean bump magnitude'); xlabel('Yaw speed (deg/s)');
+ylim([0 (max(meanBin)+0.5)]);
+
+
+%% Bin for vel data
+
+for_vel = abs(data.vel_for_ds');
+maxBinFV = max(for_vel);
+binWidthFV = maxBinFV/nbins;
+FVBins = [0:binWidthFV:maxBinFV]; 
+
+%getting binned means 
+for bin = 1:length(FVBins)-1
+    meanBin(bin) = mean(data.bump_magnitude((for_vel(1:length(data.bump_magnitude)) > FVBins(bin)) & (for_vel(1:length(data.bump_magnitude)) < FVBins(bin+1))));
+end
+
+%create axes for plot
+fvAxes = FVBins - binWidth;
+fvAxes = fvAxes(2:end);
+fvAxes(end) = fvAxes(end-1)+binWidthFV;
+
+%Plot
+figure('Position',[200 200 1400 600]),
+%Plot bump magnitude in time
+subplot(2,4,[1 3])
+plot(data.time(1:length(data.bump_magnitude)),data.bump_magnitude, 'k')
+ylabel('Bump magnitude');
+ylim([0 5]);
+set(gca,'xticklabel',{[]});
+
+%Plot total movement 
+subplot(2,4,[5 7])
+plot(data.time(1:length(data.bump_magnitude)),for_vel(1:length(data.bump_magnitude)),'k')
+xlabel('Time (sec)');
+ylabel('Forward velocity (mm/s)');
+
+%Plot relationship between both parameters
+subplot(2,4,[4,8]);
+plot(fvAxes,meanBin,'-ko')
+ylabel('Mean bump magnitude'); xlabel('Forward velocity (mm/s)');
+ylim([0 (max(meanBin)+0.5)]);
+
+%% Bin both parameters to build heatmap
+
+%getting binned means 
+for ys_bin = 1:length(YSBins)-1
+    for fv_bin = 1:length(FVBins)-1
+        doubleBin(ys_bin,fv_bin) = mean(data.bump_magnitude((yaw_speed(1:length(data.bump_magnitude)) > YSBins(ys_bin)) & (yaw_speed(1:length(data.bump_magnitude)) < YSBins(ys_bin+1)) & (for_vel(1:length(data.bump_magnitude)) > FVBins(fv_bin)) & (for_vel(1:length(data.bump_magnitude)) < FVBins(fv_bin+1))));
+    end
+end
+
+%flip the data such that high forward velocity values are at the top
+binned_data = flip(doubleBin);
+
+figure,
+imagesc(binned_data)
+xticks([1:4:20])
+set(gca, 'XTickLabel', round(FVBins(1:4:20)))
+xlabel('Forward velocity (mm/s)','fontsize',12,'fontweight','bold');
+ylabel('Yaw speed (deg/sec)','fontsize',12,'fontweight','bold');
+yticks([1:4:20])
+set(gca, 'YTickLabel', round(YSBins(20:-4:1)))
+c = colorbar;
+ylabel(c, 'Bump magnitude')
+
+
+%Save figure
+saveas(gcf,[path,'plots\bm_heatmap.png']);
