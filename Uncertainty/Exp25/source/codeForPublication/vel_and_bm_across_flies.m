@@ -27,6 +27,66 @@ end
 %Remove empty rows
 data = data(all(~cellfun(@isempty,struct2cell(data))));
 
+%% Plot relationship between forward velocity and bump magnitude
+
+figure('Position',[200 200 800 600]),
+
+subplot(1,2,1)
+for fly = 1:size(data,2)
+    nbins = 20;
+    yaw_speed = abs(data(fly).yaw_speed);
+    maxBinYS = min([max(yaw_speed),nanmean(yaw_speed)+3*nanstd(yaw_speed)]);
+    binWidthYS = maxBinYS/nbins;
+    YSBins = [0:binWidthYS:maxBinYS];
+    
+    %getting binned means
+    for bin = 1:length(YSBins)-1
+        meanBin(bin) = nanmean(data(fly).bump_magnitude((yaw_speed(1:length(data(fly).bump_magnitude)) > YSBins(bin)) & (yaw_speed(1:length(data(fly).bump_magnitude)) < YSBins(bin+1))));
+    end
+    
+    %create axes for plot
+    YSAxes = YSBins - binWidthYS;
+    YSAxes = YSAxes(2:end);
+    YSAxes(end) = YSAxes(end-1)+binWidthYS;
+    
+    %Plot
+    plot(YSAxes,meanBin,'-o','color',[.5 .5 .5])
+    ylabel('Mean bump magnitude'); xlabel('Yaw speed (deg/s)');
+    ylim([0 1.2]);
+    
+    hold on
+end
+
+subplot(1,2,2)
+for fly = 1:size(data,2)
+    for_vel = abs(data(fly).for_vel);
+    maxBinFV = min([max(for_vel),nanmean(for_vel)+3*nanstd(for_vel)]);
+    binWidthFV = maxBinFV/nbins;
+    FVBins = [0:binWidthFV:maxBinFV];
+    
+    %getting binned means
+    for bin = 1:length(FVBins)-1
+        meanBin(bin) = nanmean(data(fly).bump_magnitude((for_vel(1:length(data(fly).bump_magnitude)) > FVBins(bin)) & (for_vel(1:length(data(fly).bump_magnitude)) < FVBins(bin+1))));
+    end
+    
+    %create axes for plot
+    FVAxes = FVBins - binWidthFV;
+    FVAxes = FVAxes(2:end);
+    FVAxes(end) = FVAxes(end-1)+binWidthFV;
+    
+    %Plot
+    plot(FVAxes,meanBin,'-o','color',[.5 .5 .5])
+    ylabel('Mean bump magnitude'); xlabel('Forward velocity (mm/s)');
+    ylim([0 1.2]);
+    
+    hold on
+end
+
+if answer == 1
+    saveas(gcf,[path,'\globalPlots\vel_vs_BM.png']);
+else
+    saveas(gcf,[path,'\globalPlots\vel_vs_BM_ov.png']);
+end
 
 %% Combine all the data without zscoring
 
@@ -144,3 +204,6 @@ if answer == 1
 else
     saveas(gcf,[path,'\globalPlots\zscored_vel_BM_heatmap_ov.png']);
 end
+
+%%
+close all; clear all
