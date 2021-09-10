@@ -99,6 +99,48 @@ for fly = 1:length(data_dirs)
             
             %Save figure
             saveas(gcf,[fly_files(file).folder,'\plots\Offset_stabilizer_block_heatmap.png']);
+            
+            
+            %% Plot relationship between velocities and BM
+            
+            nbins = 20;
+            yaw_speed = abs(data.vel_yaw_ds);
+            maxBinYS = min([max(yaw_speed),nanmean(yaw_speed)+3*nanstd(yaw_speed)]);
+            binWidthYS = maxBinYS/nbins;
+            YSBins = [0:binWidthYS:maxBinYS];
+            for_vel = abs(data.vel_for_ds');
+            maxBinFV = min([max(for_vel),nanmean(for_vel)+3*nanstd(for_vel)]);
+            binWidthFV = maxBinFV/nbins;
+            FVBins = [0:binWidthFV:maxBinFV];
+            
+            %getting binned means
+            for ys_bin = 1:length(YSBins)-1
+                for fv_bin = 1:length(FVBins)-1
+                    doubleBin(ys_bin,fv_bin) = nanmean(data.bump_magnitude((yaw_speed(1:length(data.bump_magnitude)) > YSBins(ys_bin)) & (yaw_speed(1:length(data.bump_magnitude)) < YSBins(ys_bin+1)) & (for_vel(1:length(data.bump_magnitude)) > FVBins(fv_bin)) & (for_vel(1:length(data.bump_magnitude)) < FVBins(fv_bin+1))));
+                end
+            end
+            
+            %flip the data such that high forward velocity values are at the top
+            binned_data = flip(doubleBin);
+            
+            figure,
+            imagesc(binned_data)
+            xticks([1:4:20])
+            set(gca, 'XTickLabel', round(FVBins(1:4:20)))
+            xlabel('Forward velocity (mm/s)','fontsize',12,'fontweight','bold');
+            ylabel('Yaw speed (deg/sec)','fontsize',12,'fontweight','bold');
+            yticks([1:4:20])
+            set(gca, 'YTickLabel', round(YSBins(20:-4:1)))
+            c = colorbar;
+            ylabel(c, 'Bump magnitude')
+            
+            %Save figure
+            saveas(gcf,[fly_files(file).folder,'\plots\Offset_stabilizer_block_bm_heatmap.png']);
+            
+            %Save velocity and bump magnitude data
+            bump_magnitude = data.bump_magnitude;
+            save([fly_files(file).folder,'\vel_bm_data.mat'],'for_vel','yaw_speed','bump_magnitude');
+                          
             close all
             
         end

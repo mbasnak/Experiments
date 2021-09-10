@@ -5,7 +5,7 @@ clear all; close all;
 
 %% Load data
 
-path = uigetdir('Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp25\data\Experimental');
+path = 'Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp28\data';
 %Get folder names
 folderContents = dir(path);
 
@@ -15,13 +15,17 @@ answer = input(prompt);
 
 %Load the summary data of the folder that correspond to experimental flies
 for content = 1:length(folderContents)
-   if contains(folderContents(content).name,'60D05')
-       if answer == 1
-        data(content) = load([folderContents(content).folder,'\',folderContents(content).name,'\analysis\vel_bm_data.mat']);
-       else
-        data(content) = load([folderContents(content).folder,'\',folderContents(content).name,'\analysis\vel_bm_data_ov.mat']);           
-       end
-   end
+    if contains(folderContents(content).name,'60D05')
+        if answer == 1
+            data(content) = load([folderContents(content).folder,'\',folderContents(content).name,'\analysis\vel_bm_data.mat']);
+        else
+            load([folderContents(content).folder,'\',folderContents(content).name,'\sessions_info.mat']);
+            if (sessions_info.empty_trial ~= [])
+                data(content) = load([folderContents(content).folder,'\',folderContents(content).name,'\analysis\vel_bm_data_et.mat']);
+            else
+            end
+        end
+    end
 end
 
 %Remove empty rows
@@ -52,7 +56,7 @@ for fly = 1:size(data,2)
     %Plot
     plot(YSAxes,meanBin,'-o','color',[.5 .5 .5])
     ylabel('Mean bump magnitude'); xlabel('Yaw speed (deg/s)');
-    ylim([0 1.2]);
+    ylim([0 1.5]);
     
     hold on
 end
@@ -77,15 +81,15 @@ for fly = 1:size(data,2)
     %Plot
     plot(FVAxes,meanBin,'-o','color',[.5 .5 .5])
     ylabel('Mean bump magnitude'); xlabel('Forward velocity (mm/s)');
-    ylim([0 1.2]);
+    ylim([0 1.5]);
     
     hold on
 end
 
 if answer == 1
-    saveas(gcf,[path,'\globalPlots\vel_vs_BM.png']);
+    saveas(gcf,[path,'\groupPlots\vel_vs_BM.png']);
 else
-    saveas(gcf,[path,'\globalPlots\vel_vs_BM_ov.png']);
+    saveas(gcf,[path,'\groupPlots\vel_vs_BM_et.png']);    
 end
 
 %% Combine all the data without zscoring
@@ -131,9 +135,9 @@ c = colorbar;
 ylabel(c, 'Bump magnitude')
 
 if answer == 1
-    saveas(gcf,[path,'\globalPlots\vel_BM_heatmap.png']);
+    saveas(gcf,[path,'\groupPlots\vel_BM_heatmap.png']);
 else
-    saveas(gcf,[path,'\globalPlots\vel_BM_heatmap_ov.png']);
+    saveas(gcf,[path,'\groupPlots\vel_BM_heatmap_et.png']);
 end
 
 %% Zscoring the data
@@ -200,10 +204,10 @@ c = colorbar;
 ylabel(c, 'Zscored bump magnitude')
 
 if answer == 1
-    saveas(gcf,[path,'\globalPlots\zscored_vel_BM_heatmap.png']);
+    saveas(gcf,[path,'\groupPlots\zscored_vel_BM_heatmap.png']);
 else
-    saveas(gcf,[path,'\globalPlots\zscored_vel_BM_heatmap_ov.png']);
-end
+    saveas(gcf,[path,'\groupPlots\zscored_vel_BM_heatmap_et.png']);
+end    
 
 %%
 
