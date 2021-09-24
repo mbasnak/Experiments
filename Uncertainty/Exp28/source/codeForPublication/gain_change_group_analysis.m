@@ -74,11 +74,50 @@ xlabel('window #');
 [m I1] = max(Rsquared_BM_type1);
 mdl_BM_type1{I1}
 
+%% Repeat with yaw speed instead of total movement
+
+%Fit mixed linear model using fly number as a random variable
+for window = 1:6
+    mdl_BM_type1{window} = fitlme(allType1Data{window},'BumpMagnitude~HeadingOffsetVariability+YawSpeed+(1|Fly)');
+    %Model Rsquared
+    Rsquared_BM_type1(window) = mdl_BM_type1{window}.Rsquared.Adjusted;
+end
+
+figure,
+plot(Rsquared_BM_type1,'-o')
+title('Bump magnitude');
+ylabel('Rsquared');
+xlabel('window #');
+
+%show coefficients for max Rsquared model
+[m I1] = max(Rsquared_BM_type1);
+mdl_BM_type1{I1}
+
 %% Repeat for bump width at half max
 
 %Fit mixed linear model using fly number as a random variable
 for window = 1:6
     mdl_BW_type1{window} = fitlme(allType1Data{window},'BumpWidth~HeadingOffsetVariability+TotalMovement+(1|Fly)');
+    %Model Rsquared
+    Rsquared_BW_type1(window) = mdl_BW_type1{window}.Rsquared.Adjusted;
+end
+
+figure,
+plot(Rsquared_BW_type1,'-o')
+title('Bump width');
+ylabel('Rsquared');
+xlabel('window #');
+
+%show coefficients for max Rsquared model
+[m Iw1] = max(Rsquared_BW_type1);
+mdl_BW_type1{Iw1}
+
+
+%% Repeat using yaw speed instead of total movement 
+
+%Fit mixed linear model using fly number as a random variable
+for window = 1:6
+    mdl_BW_type1{window} = fitlme(allType1Data{window},'BumpWidth~HeadingOffsetVariability+YawSpeed+(1|Fly)');
     %Model Rsquared
     Rsquared_BW_type1(window) = mdl_BW_type1{window}.Rsquared.Adjusted;
 end
@@ -131,8 +170,45 @@ saveas(gcf,'Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp28\data\groupPlots\mode
 
 %show coefficients for max Rsquared model
 [m Iw2] = max(Rsquared_BW_type2);
-mdl_BW_type1{Iw2}
+mdl_BW_type2{Iw2}
 
+%% BM for type 2 flies with bar offset variability
+
+%Fit mixed linear model using fly number as a random variable
+for window = 1:6
+    mdl_BM_type2{window} = fitlme(allType2Data{window},'BumpMagnitude~BarOffsetVariability+TotalMovement+(1|Fly)');
+    %Model Rsquared
+    Rsquared_BM_type2(window) = mdl_BM_type2{window}.Rsquared.Adjusted;
+end
+
+figure,
+plot(Rsquared_BM_type2,'-o')
+title('Bump magnitude');
+ylabel('Rsquared');
+xlabel('window #');
+
+%show coefficients for max Rsquared model
+[m I2] = max(Rsquared_BM_type2);
+mdl_BM_type2{I2}
+
+%% Repeat for bump width at half max
+
+%Fit mixed linear model using fly number as a random variable
+for window = 1:6
+    mdl_BW_type2{window} = fitlme(allType2Data{window},'BumpWidth~BarOffsetVariability+TotalMovement+(1|Fly)');
+    %Model Rsquared
+    Rsquared_BW_type2(window) = mdl_BW_type2{window}.Rsquared.Adjusted;
+end
+
+figure,
+plot(Rsquared_BW_type2,'-o')
+title('Bump width');
+ylabel('Rsquared');
+xlabel('window #');
+
+%show coefficients for max Rsquared model
+[m Iw2] = max(Rsquared_BW_type2);
+mdl_BW_type2{Iw2}
 
 %% Plot bump magnitude and half width as a function of offset variability per fly and on average
 
@@ -647,7 +723,7 @@ xlabel('window #');
 
 %show coefficients for max Rsquared model
 [m Iw] = max(Rsquared_BW);
-mdl_BW_type1{Iw}
+mdl_BW{Iw}
 
 %% Plot bump magnitude and half width as a function of offset variability per fly and on average
 
@@ -937,6 +1013,26 @@ ylim([0 4]);
 
 %save
 saveas(gcf,'Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp28\data\groupPlots\bumpParAsPredictors.png')
+
+%% Plot bump parameters in the first bout vs ratio of offset variabilities
+
+% for window = 1:6
+%     ratio_offset_var = [];
+%     for fly = 1:length(data)
+%        ratio_offset_var = [ratio_offset_var,mean(data(fly).modelTable{1,window}.BarOffsetVariability)/mean(data(fly).modelTable{1,window}.HeadingOffsetVariability)];
+%     end
+%     figure,
+%     plot(ratio_offset_var,clusterdataBM,'o')
+% end
+
+ratio_offset_var = [];
+for fly = 1:length(data)
+    ratio_offset_var = [ratio_offset_var,mean(data(fly).modelTable{1,1}.BarOffsetVariability)/mean(data(fly).modelTable{1,1}.HeadingOffsetVariability)];
+end
+figure,
+plot(ratio_offset_var,clusterdataBM,'ko')
+xlabel('Mean bar offset variability / mean heading offset variability');
+ylabel('Bump magnitude in the preceding block')
 
 %% Divide the inverted gain portion into quartiles and look at bump parameter evolution
 

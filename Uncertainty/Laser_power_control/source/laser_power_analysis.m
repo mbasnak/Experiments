@@ -167,3 +167,71 @@ for bin_size = 1:length(bins)
     
 end
 
+
+%% Bin the data to have the variability and bump magnitude computed over different
+% bins
+
+%define the possible bins
+bins = [1,5,10,15,20,30,40,50,100];
+clear all_binned_bm
+clear all_binned_bv
+
+%compute relationship between bump stability and bump parameters for each
+%contrast and temporal window
+for bin_amount = 1:length(bins)
+    clear per_bin_bm 
+    clear per_bin_bv
+    clear bin_limits
+    %figure,
+    
+    for fly = 1:length(data)
+        for laser_power = 1:3
+            
+            %Get bin limits
+            bin_number = bins(bin_amount);
+            bin_width = floor(length(data{fly,laser_power}.data.dff_pva)/bin_number)-1;
+            bin_limits{1} = [1,bin_width+1];
+            for bin = 2:bin_number-1
+                bin_limits{bin} = [2+bin_width*(bin-1),1+bin_width*(bin-1)+bin_width];
+            end
+            bin_limits{bin_number} = [length(data{fly,laser_power}.data.dff_pva)-bin_width,length(data{fly,laser_power}.data.dff_pva)];
+            
+            for bin = 1:bin_number
+                %Get bump magnitude and bump variability per bin
+                per_bin_bm{fly,laser_power,bin} = mean(data{fly,laser_power}.data.bump_magnitude(bin_limits{bin}(1):bin_limits{bin}(2)));
+                [~, per_bin_bv{fly,laser_power,bin}] = circ_std(data{fly,laser_power}.data.dff_pva(bin_limits{bin}(1):bin_limits{bin}(2)));            
+            end
+                       
+        end
+            %Get mean binned bump magnitude and bump variability
+            binned_bm = mean(cell2mat(per_bin_bm),3);
+            binned_bv = mean(cell2mat(per_bin_bv),3);
+            all_binned_bm{bin_amount} = mean(cell2mat(per_bin_bm),3);
+            all_binned_bv{bin_amount} = mean(cell2mat(per_bin_bv),3);
+
+    end
+    
+    %Get mean binned bump magnitude and bump variability across flies   
+    %Plot
+    figure,
+    plot(mean(binned_bm),mean(binned_bv),'-ko')
+    xlabel('Bump magnitude');
+    ylabel('Bump variability');
+    ylim([0.2 1.6]);
+    title(['Bin number = ',num2str(bin_number)]);
+
+end
+
+%plot them all in one figure
+figure('Position',[100 100 1000 800]),
+for bin_amount = 1:length(bins)
+    plot(mean(all_binned_bm{bin_amount}),mean(all_binned_bv{bin_amount}),'-o')
+    hold on
+end
+legendCell = strcat('N bins=',string(num2cell(bins)));
+legend(legendCell)
+xlabel('Bump magnitude');
+ylabel('Bump variability');
+ylim([0.2 1.6]);
+
+

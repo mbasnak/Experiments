@@ -1,9 +1,9 @@
-%Code to analyze the imaging and behavior data, with the imaging data
-%analyzed using the new 'continuous' method
-
 function continuous_PB_data_analysis(path,sid)
 
-tid = 0; %I only ever run 1 trial per session
+tid = 0;
+
+%Code to analyze the imaging and behavior data, with the imaging data
+%analyzed using the new 'continuous' method
 
 global slash;
 if isunix() == 1 %if running in Linux or mac
@@ -33,7 +33,7 @@ load(['2p' slash 'sid_' num2str(sid) '_tid_' num2str(tid) slash 'rigid_sid_' num
 
 %% Get the summed GCaMP7f data
 
-summedData = squeeze(sum(regProduct,3)); %add the data across the z layers making up each volume, to obtain 1 PB image per timepoint
+summedData = squeeze(sum(regProduct,3)); %add the data across the 8 z layers making up each volume, to obtain 1 PB image per timepoint
 
 %% Get midline coordinates and PB mask
 

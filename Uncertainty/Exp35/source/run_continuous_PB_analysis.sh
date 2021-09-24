@@ -7,4 +7,4 @@
 #SBATCH --mail-type=ALL
 
 module load matlab/2018b
-matlab -nodesktop -r "addpath('/n/scratch3/users/m/mb491/codes/continuous_PB_analysis'); continuous_PB_data_analysis('/n/scratch3/users/m/mb491/data/${1}',${2})"
+matlab -nodesktop -r "addpath('/n/scratch3/users/m/mb491/codes/'); continuous_PB_data_analysis('/n/scratch3/users/m/mb491/data/${1}',${2})"

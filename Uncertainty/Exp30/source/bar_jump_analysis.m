@@ -340,6 +340,7 @@ suptitle('Shifted offset around the jumps');
 
 saveas(gcf,[path,'plots\AJ_offset_r_and_s.png']);
 
+
 %% Plot a heatmap of the offset around the jump to see the change dynamics
 
 figure,
@@ -393,9 +394,93 @@ xline(26.5,'linewidth',2,'color','r');
 xt = get(gca, 'XTick');                                            
 xtlbl = linspace(min(time_around_jump), max(time_around_jump), numel(xt));                    
 set(gca,'XTick',xt-2.5, 'XTickLabel',round(xtlbl,2))  
-title('Sorted offset around the jumps');
+title('Sorted offset around the jumps'); %says sorted but doesn't seem sorted?
 ylabel('Sorted jump #');
 
+
+
+%% change in offset in lower vs higher bump magnitude pre-jump
+
+%midle jump
+mid_value = median(mean_bm_pre_jump);
+
+%divide into low and high values
+low_pre_jump_bm = mean_bm_pre_jump < median(mean_bm_pre_jump);
+high_pre_jump_bm = mean_bm_pre_jump >= median(mean_bm_pre_jump);
+
+%compute change in offset
+one_sec_offset_change = abs(shifted_offset_AJ_short(:,36));
+one_sec_offset_change_l = mean(one_sec_offset_change(low_pre_jump_bm));
+one_sec_offset_change_h = mean(one_sec_offset_change(high_pre_jump_bm));
+
+figure,
+plot([one_sec_offset_change_l,one_sec_offset_change_h],'-ko')
+xlim([0 3]);
+ylim([0 180]);
+ylabel('abs(Offset one sec after jump - offset right before jump)');
+xticks([1 2])
+xticklabels({'Low pre-jump BM','High pre-jump BM'})
+
+saveas(gcf,[path,'plots\one_sec_offset_change_by_pre_jump_bm.png']);
+
+
+%Combine the data in table
+category = [repelem(1,sum(low_pre_jump_bm)),repelem(2,sum(high_pre_jump_bm))];
+all_pre_offset_change = [one_sec_offset_change(low_pre_jump_bm);one_sec_offset_change(high_pre_jump_bm)];
+
+figure,
+boxplot(all_pre_offset_change,category,'color','k')
+hold on
+scatter(category,all_pre_offset_change,[],[.5 .5 .5],'filled','jitter', 'on', 'jitterAmount', 0.05)
+ylabel('Offset one sec after jump - offset right before jump');
+set(findobj(gca,'type','line'),'linew',2)
+xticks([1 2])
+xticklabels({'Low pre-jump BM','High pre-jump BM'})
+ylim([0 180]);
+
+saveas(gcf,[path,'plots\one_sec_offset_change_by_pre_jump_bm_boxplots.png']);
+
+
+%% change in offset in lower vs higher bump magnitude pre-jump
+
+%midle jump
+mid_value = median(mean_bw_pre_jump);
+
+%divide into low and high values
+low_pre_jump_bw = mean_bw_pre_jump < median(mean_bw_pre_jump);
+high_pre_jump_bw = mean_bw_pre_jump >= median(mean_bw_pre_jump);
+
+%compute change in offset
+one_sec_offset_change = abs(shifted_offset_AJ_short(:,36));
+one_sec_offset_change_l = mean(one_sec_offset_change(low_pre_jump_bw));
+one_sec_offset_change_h = mean(one_sec_offset_change(high_pre_jump_bw));
+
+figure,
+plot([one_sec_offset_change_l,one_sec_offset_change_h],'-ko')
+xlim([0 3]);
+ylim([0 180]);
+ylabel('abs(Offset one sec after jump - offset right before jump)');
+xticks([1 2])
+xticklabels({'Low pre-jump BW','High pre-jump BW'})
+
+saveas(gcf,[path,'plots\one_sec_offset_change_by_pre_jump_bw.png']);
+
+
+%Combine the data in table
+category = [repelem(1,sum(low_pre_jump_bw)),repelem(2,sum(high_pre_jump_bw))];
+all_pre_offset_change = [one_sec_offset_change(low_pre_jump_bw);one_sec_offset_change(high_pre_jump_bw)];
+
+figure,
+boxplot(all_pre_offset_change,category,'color','k')
+hold on
+scatter(category,all_pre_offset_change,[],[.5 .5 .5],'filled','jitter', 'on', 'jitterAmount', 0.05)
+ylabel('Offset one sec after jump - offset right before jump');
+set(findobj(gca,'type','line'),'linew',2)
+xticks([1 2])
+xticklabels({'Low pre-jump BW','High pre-jump BW'})
+ylim([0 180]);
+
+saveas(gcf,[path,'plots\one_sec_offset_change_by_pre_jump_bw_boxplots.png']);
 
 %% Look at the change in offset
 

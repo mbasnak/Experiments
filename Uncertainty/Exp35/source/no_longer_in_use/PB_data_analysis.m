@@ -123,7 +123,7 @@ bdata_time = ballData.trial_time; %get the trial time
 
 % 2)Use an auxiliary function to get the different components of the behavior data
 number_x_px = 96;
-[smoothed, bdata_time_out, stim_pos, flyPosRad,motor_pos] = get_data_360(bdata_time, bdata_raw, number_x_px);
+[smoothed, bdata_time_out, stim_pos, flyPosRad] = get_data_360(bdata_time, bdata_raw, number_x_px);
 
 % 3)Recover relevant movement parameters
 vel_for = smoothed.xVel';
@@ -151,8 +151,6 @@ panel_y_ds = panel_y(round(linspace(1, length(panel_y), volumes)));
 %With this convention, a positive change in panel_angle_ds implies a
 %clockwise change in bar position.
 stim_pos_ds = resample(stim_pos,volumes,length(stim_pos));
-motor_pos_ds = resample(motor_pos,volumes,length(motor_pos));
-
 
 %With this convention, a positive change in flyPosRad_ds implies a
 %clockwise change in heading.
@@ -191,7 +189,6 @@ data.panel_angle = stim_pos_ds;
 data.bar_offset = bar_offset;
 data.heading_offset = heading_offset;
 data.volumes = volumes;
-data.motor_pos = motor_pos_ds;
 
 % imaging data
 data.z_matrix = z_matrix;

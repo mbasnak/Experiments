@@ -28,63 +28,70 @@ for fly = 1:length(summary_data)
 end
 all_data.Properties.VariableNames{'Var6'} = 'Fly';
 
-mean_offset_data = varfun(@mean,all_data,'InputVariables','offset_var',...
+%Sort by stimulus velocity
+all_data = sortrows(all_data,{'Fly','stim_vel'},{'ascend','ascend'});
+%Average data with same stimulus speed
+all_data = varfun(@nanmean,all_data,'InputVariables',{'offset_var','bump_mag','bump_width','total_mvt'},...
+       'GroupingVariables',{'stim_vel','Fly'});
+
+mean_offset_data = varfun(@mean,all_data,'InputVariables','nanmean_offset_var',...
        'GroupingVariables',{'stim_vel'});
-mean_bm_data = varfun(@mean,all_data,'InputVariables','bump_mag',...
+mean_bm_data = varfun(@mean,all_data,'InputVariables','nanmean_bump_mag',...
        'GroupingVariables',{'stim_vel'});
-mean_bw_data = varfun(@mean,all_data,'InputVariables','bump_width',...
+mean_bw_data = varfun(@mean,all_data,'InputVariables','nanmean_bump_width',...
        'GroupingVariables',{'stim_vel'});
-mean_mvt_data = varfun(@nanmedian,all_data,'InputVariables','total_mvt',...
+mean_mvt_data = varfun(@nanmedian,all_data,'InputVariables','nanmean_total_mvt',...
        'GroupingVariables',{'stim_vel'});
    
 %% Plot
 
 figure('Position',[100 100 1400 800]),
     
-for fly = 1:length(summary_data)
+for fly = 3:6
     subplot(1,4,1)
-    plot(all_data.stim_vel(all_data.Fly == fly),all_data.offset_var(all_data.Fly == fly),'o','color',[.5 .5 .5])
+    plot(all_data.stim_vel(all_data.Fly == fly),all_data.nanmean_offset_var(all_data.Fly == fly),'-o','color',[.5 .5 .5])
     hold on
     
     subplot(1,4,2)
-    plot(all_data.stim_vel(all_data.Fly == fly),all_data.bump_mag(all_data.Fly == fly),'o','color',[.5 .5 .5])
+    plot(all_data.stim_vel(all_data.Fly == fly),all_data.nanmean_bump_mag(all_data.Fly == fly),'-o','color',[.5 .5 .5])
     hold on
     
     subplot(1,4,3)
-    plot(all_data.stim_vel(all_data.Fly == fly),all_data.bump_width(all_data.Fly == fly),'o','color',[.5 .5 .5])
+    plot(all_data.stim_vel(all_data.Fly == fly),all_data.nanmean_bump_width(all_data.Fly == fly),'-o','color',[.5 .5 .5])
     hold on
     
     subplot(1,4,4)
-    plot(all_data.stim_vel(all_data.Fly == fly),all_data.total_mvt(all_data.Fly == fly),'o','color',[.5 .5 .5])
+    plot(all_data.stim_vel(all_data.Fly == fly),all_data.nanmean_total_mvt(all_data.Fly == fly),'-o','color',[.5 .5 .5])
     hold on
     
 end
 %Add mean trends
 subplot(1,4,1)
-plot(mean_offset_data.stim_vel,mean_offset_data.mean_offset_var,'-ko','linewidth',2)
+plot(mean_offset_data.stim_vel,mean_offset_data.mean_nanmean_offset_var,'-ko','linewidth',2)
 ylim([0 1.5]);
 title('Offset variability');
 xlabel('Stimulus velocity (deg/s)');
 ylabel('Circular std of offset');
 
 subplot(1,4,2)
-plot(mean_bm_data.stim_vel,mean_bm_data.mean_bump_mag,'-ko','linewidth',2)
+plot(mean_bm_data.stim_vel,mean_bm_data.mean_nanmean_bump_mag,'-ko','linewidth',2)
 ylim([0 2.5]);
 title('Bump magnitude');
 xlabel('Stimulus velocity (deg/s)');
 ylabel('Bump magnitude (from von Mises fit)');
 
 subplot(1,4,3)
-plot(mean_bw_data.stim_vel,mean_bw_data.mean_bump_width,'-ko','linewidth',2)
+plot(mean_bw_data.stim_vel,mean_bw_data.mean_nanmean_bump_width,'-ko','linewidth',2)
 ylim([0 4.5]);
 title('Bump width');
 xlabel('Stimulus velocity (deg/s)');
 ylabel('Bump width');
 
 subplot(1,4,4)
-plot(mean_mvt_data.stim_vel,mean_mvt_data.nanmedian_total_mvt,'-ko','linewidth',2)
-title('Total movement');
+plot(mean_mvt_data.stim_vel,mean_mvt_data.nanmedian_nanmean_total_mvt,'-ko','linewidth',2)
+title('Total fly movement');
 ylim([0 250]);
 xlabel('Stimulus velocity (deg/s)');
-ylabel('Total movement (deg/s)');
+ylabel('Total fly movement (deg/s)');
 
+saveas(gcf,[exp_dir,'\groupPlots\parameters_vs_stim_speed.png'])

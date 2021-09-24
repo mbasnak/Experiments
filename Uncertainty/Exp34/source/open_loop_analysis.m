@@ -114,7 +114,7 @@ for session = 1:length(open_loop_sessions)
     meanBW(session) = mean(BumpWidth{session});
     
     TotalMvt{session} = data{1,session}.continuous_data.total_mvt_ds;
-    total_mvt(session) = mean(TotalMvt{session});
+    total_mvt(session) = nanmean(TotalMvt{session});
 end
 
 

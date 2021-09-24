@@ -62,8 +62,17 @@ title('Bump width')
 
 suptitle('Initial trial with just panels');
 
-
 saveas(gcf,[path,'\analysis\plots\pre_panels.png']);
+
+%get mean bump parameters
+meanBM_pre_panels = mean(continuous_data.bump_magnitude);
+meanBW_pre_panels = mean(continuous_data.bump_width);
+meanBM_thresh_pre_panels = mean(continuous_data.bump_magnitude(continuous_data.adj_rs>=0.5));
+meanBW_thresh_pre_panels = mean(continuous_data.bump_width(continuous_data.adj_rs>=0.5));
+
+%get mean vel
+mean_total_mvt_pre_panels = nanmean(continuous_data.total_mvt_ds);
+mean_total_mvt_thresh_pre_panels = nanmean(continuous_data.total_mvt_ds(continuous_data.adj_rs>=0.5));
 
 %%  Analyze initial closed-loop wind
 
@@ -117,6 +126,15 @@ suptitle('Initial trial with just wind');
 
 saveas(gcf,[path,'\analysis\plots\pre_wind.png']);
 
+%get mean bump parameters
+meanBM_pre_wind = mean(continuous_data.bump_magnitude);
+meanBW_pre_wind = mean(continuous_data.bump_width);
+meanBM_thresh_pre_wind = mean(continuous_data.bump_magnitude(continuous_data.adj_rs>=0.5));
+meanBW_thresh_pre_wind = mean(continuous_data.bump_width(continuous_data.adj_rs>=0.5));
+%get mean vel
+mean_total_mvt_pre_wind = nanmean(continuous_data.total_mvt_ds);
+mean_total_mvt_thresh_pre_wind = nanmean(continuous_data.total_mvt_ds(continuous_data.adj_rs>=0.5));
+
 %% Analyze the cue combination trial
 
 load([path,'\analysis\continuous_analysis_sid_',num2str(sessions.combined),'_tid_0.mat'])
@@ -169,7 +187,16 @@ suptitle('Trial with both cues');
 
 saveas(gcf,[path,'\analysis\plots\cue_combination.png']);
 
-%% Analyze initial closed-loop panels
+%get mean bump parameters
+meanBM_combined = mean(continuous_data.bump_magnitude);
+meanBW_combined = mean(continuous_data.bump_width);
+meanBM_thresh_combined = mean(continuous_data.bump_magnitude(continuous_data.adj_rs>=0.5));
+meanBW_thresh_combined = mean(continuous_data.bump_width(continuous_data.adj_rs>=0.5));
+%get mean vel
+mean_total_mvt_combined = nanmean(continuous_data.total_mvt_ds);
+mean_total_mvt_thresh_combined = nanmean(continuous_data.total_mvt_ds(continuous_data.adj_rs>=0.5));
+
+%% Analyze final closed-loop panels
 
 load([path,'\analysis\continuous_analysis_sid_',num2str(sessions.post_panels),'_tid_0.mat'])
 
@@ -220,6 +247,15 @@ title('Bump width')
 suptitle('Final trial with just panels');
 
 saveas(gcf,[path,'\analysis\plots\post_panels.png']);
+
+%get mean bump parameters
+meanBM_post_panels = mean(continuous_data.bump_magnitude);
+meanBW_post_panels = mean(continuous_data.bump_width);
+meanBM_thresh_post_panels = mean(continuous_data.bump_magnitude(continuous_data.adj_rs>=0.5));
+meanBW_thresh_post_panels = mean(continuous_data.bump_width(continuous_data.adj_rs>=0.5));
+%get fly vel
+mean_total_mvt_post_panels = nanmean(continuous_data.total_mvt_ds);
+mean_total_mvt_thresh_post_panels = nanmean(continuous_data.total_mvt_ds(continuous_data.adj_rs>=0.5));
 
 %%  Analyze final closed-loop wind
 
@@ -273,6 +309,14 @@ suptitle('Final trial with just wind');
 
 saveas(gcf,[path,'\analysis\plots\post_wind.png']);
 
+%get mean bump parameters
+meanBM_post_wind = mean(continuous_data.bump_magnitude);
+meanBW_post_wind = mean(continuous_data.bump_width);
+meanBM_thresh_post_wind = mean(continuous_data.bump_magnitude(continuous_data.adj_rs>=0.5));
+meanBW_thresh_post_wind = mean(continuous_data.bump_width(continuous_data.adj_rs>=0.5));
+%get fly vel
+mean_total_mvt_post_wind = nanmean(continuous_data.total_mvt_ds);
+mean_total_mvt_thresh_post_wind = nanmean(continuous_data.total_mvt_ds(continuous_data.adj_rs>=0.5));
 
 %% Offset evolution
 
@@ -360,5 +404,37 @@ suptitle('Heading evolution');
 
 saveas(gcf,[path,'\analysis\plots\heading_evolution.png']);
 
+%%  Bump parameter evolution using threshold
+
+allBM_thresh = [meanBM_thresh_pre_panels;meanBM_thresh_pre_wind;meanBM_thresh_combined;meanBM_thresh_post_panels;meanBM_thresh_post_wind];
+allBW_thresh = [meanBW_thresh_pre_panels;meanBW_thresh_pre_wind;meanBW_thresh_combined;meanBW_thresh_post_panels;meanBW_thresh_post_wind];
+all_total_mvt_thresh = [mean_total_mvt_pre_panels;mean_total_mvt_pre_wind;mean_total_mvt_combined;mean_total_mvt_post_panels;mean_total_mvt_post_wind];
+
+
+figure('Position',[100 100 1000 600]),
+subplot(1,2,1)
+yyaxis left
+plot(allBM_thresh,'-o')
+ylim([0 3]);
+ylabel('Bump magnitude');
+yyaxis right
+plot(all_total_mvt_thresh,'-o')
+xlim([0 6]);
+ylim([0 300]);
+ylabel('Total movement (deg/s)');
+xlabel('Block #');
+
+subplot(1,2,2)
+yyaxis left
+plot(allBW_thresh,'-o')
+ylim([0 3.5]);
+ylabel('Bump width');
+yyaxis right
+plot(all_total_mvt_thresh,'-o')
+xlim([0 6]);
+ylim([0 300]);
+ylabel('Total movement (deg/s)');
+xlabel('Block #');
+
 %%
-close all; clear all;
+%close all; clear all;
