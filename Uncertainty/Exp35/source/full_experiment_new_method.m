@@ -12,6 +12,31 @@ clear all; close all;
 % Import sessions information
 load([path,'\analysis\sessions_info.mat'])
 
+%% Set colormap
+
+folderNames = dir(path(1:53));
+flyNames = struct();
+for folder = 1:length(folderNames)
+    if (contains(folderNames(folder).name,'60D05') & ~contains(folderNames(folder).name,'txt'))
+        flyNames(folder).name = folderNames(folder).name;
+    end
+end
+%Remove empty rows
+flyNames = flyNames(~cellfun(@isempty,{flyNames.name}));
+
+%Assign fly number
+for fly = 1:length(flyNames)
+    if strcmp(flyNames(fly).name,path(54:end))
+        fly_ID = fly;
+    end
+end
+
+colors_for_plots = [0.2 0.8 0.8 ; 1 0.5 0; 0 0.5 1;...
+    0 0.6 0.3;  1 0.2 0.2; 0.9290 0.6940 0.1250;...
+    0.6350 0.0780 0.1840; 0.4660 0.6740 0.1880];
+
+fly_color = colors_for_plots(fly_ID,:);
+
 %% Analyze initial closed-loop panels
 
 load([path,'\analysis\continuous_analysis_sid_',num2str(sessions.initial_cl_bar),'_tid_0.mat'])
@@ -32,6 +57,7 @@ plot(x_out_bump,bump_to_plot,'LineWidth',1.5)
 hold on
 heading = wrapTo180(-continuous_data.heading_deg);
 pre_panels_heading = deg2rad(heading);
+pre_panels_heading_thresh = pre_panels_heading(continuous_data.adj_rs>=0.5);
 [x_out_heading,heading_to_plot] = removeWrappedLines(continuous_data.time,heading);
 plot(x_out_heading,heading_to_plot,'LineWidth',1.5)
 title('Bump and fly position');
@@ -84,68 +110,72 @@ blockType = repelem(1,1,length(continuous_data.bump_magnitude));
 
 %% Analyze inital open-loop panels
 
-for sid = 1:length(sessions.initial_ol_bar)
+if isfield(sessions,'initial_ol_bar')
     
-    load([path,'\analysis\continuous_analysis_sid_',num2str(sessions.initial_ol_bar(sid)),'_tid_0.mat'])
-    
-    figure('Position',[100 100 1000 800]),
-    subplot(4,5,[1:4])
-    dff = continuous_data.dff_matrix';
-    imagesc(flip(dff))
-    colormap(flipud(gray))
-    title('EPG activity');
-    set(gca,'xticklabel',{[]})
-    
-    subplot(4,5,[6:9])
-    bump_pos = wrapTo180(rad2deg(continuous_data.bump_pos));
-    %Remove wrapped lines to plot
-    [x_out_bump,bump_to_plot] = removeWrappedLines(continuous_data.time,bump_pos');
-    plot(x_out_bump,bump_to_plot,'LineWidth',1.5)
-    hold on
-    stim = wrapTo180(continuous_data.panel_angle);
-    [x_out_stim,stim_to_plot] = removeWrappedLines(continuous_data.time,stim);
-    heading = wrapTo180(-continuous_data.heading_deg);
-    [x_out_heading,heading_to_plot] = removeWrappedLines(continuous_data.time,heading);
-    plot(x_out_stim,stim_to_plot,'LineWidth',1.5)
-    plot(x_out_heading,heading_to_plot,'LineWidth',1.5)
-    legend('Bump estimate','Stim position','Fly position','Location','best');
-    title('Bump and stim position');
-    ylim([-180 180]);
-    set(gca,'xticklabel',{[]})
-    
-    subplot(4,5,[11:14])
-    offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',deg2rad(continuous_data.panel_angle))));
-    [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
-    plot(x_out_offset,offset_to_plot,'LineWidth',1.5,'color','k')
-    title('Stimulus offset');
-    set(gca,'xticklabel',{[]})
-    ylim([-180 180]);
-    
-    subplot(4,5,15)
-    polarhistogram(deg2rad(offset),'FaceColor','k')
-    set(gca,'ThetaZeroLocation','top');
-    Ax = gca; % current axes
-    Ax.RGrid = 'off';
-    Ax.RTickLabel = [];
-    
-    subplot(4,5,[16:19])
-    mvt_offset = wrapTo180(continuous_data.offset);
-    [x_out_mvt_offset,mvt_offset_to_plot] = removeWrappedLines(continuous_data.time,mvt_offset);
-    plot(x_out_mvt_offset,mvt_offset_to_plot,'LineWidth',1.5,'color','k')
-    title('Movement offset');
-    xlabel('Time (sec)');
-    ylim([-180 180]);
-    
-    subplot(4,5,20)
-    polarhistogram(deg2rad(mvt_offset),'FaceColor','k')
-    set(gca,'ThetaZeroLocation','top');
-    Ax = gca; % current axes
-    Ax.RGrid = 'off';
-    Ax.RTickLabel = [];
-    
-    suptitle('Initial OL panels');
-    
-    saveas(gcf,[path,'\analysis\plots\initial_OL_panels_trial',num2str(sid),'.png']);
+    for sid = 1:length(sessions.initial_ol_bar)
+        
+        load([path,'\analysis\continuous_analysis_sid_',num2str(sessions.initial_ol_bar(sid)),'_tid_0.mat'])
+        
+        figure('Position',[100 100 1000 800]),
+        subplot(4,5,[1:4])
+        dff = continuous_data.dff_matrix';
+        imagesc(flip(dff))
+        colormap(flipud(gray))
+        title('EPG activity');
+        set(gca,'xticklabel',{[]})
+        
+        subplot(4,5,[6:9])
+        bump_pos = wrapTo180(rad2deg(continuous_data.bump_pos));
+        %Remove wrapped lines to plot
+        [x_out_bump,bump_to_plot] = removeWrappedLines(continuous_data.time,bump_pos');
+        plot(x_out_bump,bump_to_plot,'LineWidth',1.5)
+        hold on
+        stim = wrapTo180(continuous_data.panel_angle);
+        [x_out_stim,stim_to_plot] = removeWrappedLines(continuous_data.time,stim);
+        heading = wrapTo180(-continuous_data.heading_deg);
+        [x_out_heading,heading_to_plot] = removeWrappedLines(continuous_data.time,heading);
+        plot(x_out_stim,stim_to_plot,'LineWidth',1.5)
+        plot(x_out_heading,heading_to_plot,'LineWidth',1.5)
+        legend('Bump estimate','Stim position','Fly position','Location','best');
+        title('Bump and stim position');
+        ylim([-180 180]);
+        set(gca,'xticklabel',{[]})
+        
+        subplot(4,5,[11:14])
+        offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',deg2rad(continuous_data.panel_angle))));
+        [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
+        plot(x_out_offset,offset_to_plot,'LineWidth',1.5,'color','k')
+        title('Stimulus offset');
+        set(gca,'xticklabel',{[]})
+        ylim([-180 180]);
+        
+        subplot(4,5,15)
+        polarhistogram(deg2rad(offset),'FaceColor','k')
+        set(gca,'ThetaZeroLocation','top');
+        Ax = gca; % current axes
+        Ax.RGrid = 'off';
+        Ax.RTickLabel = [];
+        
+        subplot(4,5,[16:19])
+        mvt_offset = wrapTo180(continuous_data.offset);
+        [x_out_mvt_offset,mvt_offset_to_plot] = removeWrappedLines(continuous_data.time,mvt_offset);
+        plot(x_out_mvt_offset,mvt_offset_to_plot,'LineWidth',1.5,'color','k')
+        title('Movement offset');
+        xlabel('Time (sec)');
+        ylim([-180 180]);
+        
+        subplot(4,5,20)
+        polarhistogram(deg2rad(mvt_offset),'FaceColor','k')
+        set(gca,'ThetaZeroLocation','top');
+        Ax = gca; % current axes
+        Ax.RGrid = 'off';
+        Ax.RTickLabel = [];
+        
+        suptitle('Initial OL panels');
+        
+        saveas(gcf,[path,'\analysis\plots\initial_OL_panels_trial',num2str(sid),'.png']);
+        
+    end
     
 end
 
@@ -169,6 +199,7 @@ plot(x_out_bump,bump_to_plot,'LineWidth',1.5)
 hold on
 heading = wrapTo180(-continuous_data.heading_deg);
 pre_wind_heading = deg2rad(heading);
+pre_wind_heading_thresh = pre_wind_heading(continuous_data.adj_rs>=0.5);
 [x_out_heading,heading_to_plot] = removeWrappedLines(continuous_data.time,heading);
 plot(x_out_heading,heading_to_plot,'LineWidth',1.5)
 title('Bump and fly position');
@@ -221,74 +252,92 @@ blockType = [blockType,repelem(2,1,length(continuous_data.bump_magnitude))];
 
 %% Analyze inital open-loop wind
 
-for sid = 1:length(sessions.initial_ol_wind)
-    
-    load([path,'\analysis\continuous_analysis_sid_',num2str(sessions.initial_ol_wind(sid)),'_tid_0.mat'])
-    
-    figure('Position',[100 100 1000 800]),
-    subplot(4,5,[1:4])
-    dff = continuous_data.dff_matrix';
-    imagesc(flip(dff))
-    colormap(flipud(gray))
-    title('EPG activity');
-    set(gca,'xticklabel',{[]})
-    
-    subplot(4,5,[6:9])
-    bump_pos = wrapTo180(rad2deg(continuous_data.bump_pos));
-    %Remove wrapped lines to plot
-    [x_out_bump,bump_to_plot] = removeWrappedLines(continuous_data.time,bump_pos');
-    plot(x_out_bump,bump_to_plot,'LineWidth',1.5)
-    hold on
-    stim = wrapTo180(rad2deg(continuous_data.motor_pos'));
-    [x_out_stim,stim_to_plot] = removeWrappedLines(continuous_data.time,stim);
-    heading = wrapTo180(-continuous_data.heading_deg);
-    [x_out_heading,heading_to_plot] = removeWrappedLines(continuous_data.time,heading);
-    plot(x_out_stim,stim_to_plot,'LineWidth',1.5)
-    plot(x_out_heading,heading_to_plot,'LineWidth',1.5)
-    legend('Bump estimate','Stim position','Fly position','Location','best');
-    title('Bump and stim position');
-    ylim([-180 180]);
-    set(gca,'xticklabel',{[]})
-    
-    subplot(4,5,[11:14])
-    offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',continuous_data.motor_pos')));
-    [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
-    plot(x_out_offset,offset_to_plot,'LineWidth',1.5,'color','k')
-    title('Stimulus offset');
-    set(gca,'xticklabel',{[]})
-    ylim([-180 180]);
-    
-    subplot(4,5,15)
-    polarhistogram(deg2rad(offset),'FaceColor','k')
-    set(gca,'ThetaZeroLocation','top');
-    Ax = gca; % current axes
-    Ax.RGrid = 'off';
-    Ax.RTickLabel = [];
-    
-    subplot(4,5,[16:19])
-    mvt_offset = wrapTo180(continuous_data.offset);
-    [x_out_mvt_offset,mvt_offset_to_plot] = removeWrappedLines(continuous_data.time,mvt_offset);
-    plot(x_out_mvt_offset,mvt_offset_to_plot,'LineWidth',1.5,'color','k')
-    title('Movement offset');
-    xlabel('Time (sec)');
-    ylim([-180 180]);
-    
-    subplot(4,5,20)
-    polarhistogram(deg2rad(mvt_offset),'FaceColor','k')
-    set(gca,'ThetaZeroLocation','top');
-    Ax = gca; % current axes
-    Ax.RGrid = 'off';
-    Ax.RTickLabel = [];
-    
-    suptitle('Initial OL wind');
-    
-    saveas(gcf,[path,'\analysis\plots\initial_OL_wind_trial',num2str(sid),'.png']);
-
+if isfield(sessions,'initial_old_wind')
+    for sid = 1:length(sessions.initial_ol_wind)
+        
+        load([path,'\analysis\continuous_analysis_sid_',num2str(sessions.initial_ol_wind(sid)),'_tid_0.mat'])
+        
+        figure('Position',[100 100 1000 800]),
+        subplot(4,5,[1:4])
+        dff = continuous_data.dff_matrix';
+        imagesc(flip(dff))
+        colormap(flipud(gray))
+        title('EPG activity');
+        set(gca,'xticklabel',{[]})
+        
+        subplot(4,5,[6:9])
+        bump_pos = wrapTo180(rad2deg(continuous_data.bump_pos));
+        %Remove wrapped lines to plot
+        [x_out_bump,bump_to_plot] = removeWrappedLines(continuous_data.time,bump_pos');
+        plot(x_out_bump,bump_to_plot,'LineWidth',1.5)
+        hold on
+        stim = wrapTo180(rad2deg(continuous_data.motor_pos'));
+        [x_out_stim,stim_to_plot] = removeWrappedLines(continuous_data.time,stim);
+        heading = wrapTo180(-continuous_data.heading_deg);
+        [x_out_heading,heading_to_plot] = removeWrappedLines(continuous_data.time,heading);
+        plot(x_out_stim,stim_to_plot,'LineWidth',1.5)
+        plot(x_out_heading,heading_to_plot,'LineWidth',1.5)
+        legend('Bump estimate','Stim position','Fly position','Location','best');
+        title('Bump and stim position');
+        ylim([-180 180]);
+        set(gca,'xticklabel',{[]})
+        
+        subplot(4,5,[11:14])
+        offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',continuous_data.motor_pos')));
+        [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
+        plot(x_out_offset,offset_to_plot,'LineWidth',1.5,'color','k')
+        title('Stimulus offset');
+        set(gca,'xticklabel',{[]})
+        ylim([-180 180]);
+        
+        subplot(4,5,15)
+        polarhistogram(deg2rad(offset),'FaceColor','k')
+        set(gca,'ThetaZeroLocation','top');
+        Ax = gca; % current axes
+        Ax.RGrid = 'off';
+        Ax.RTickLabel = [];
+        
+        subplot(4,5,[16:19])
+        mvt_offset = wrapTo180(continuous_data.offset);
+        [x_out_mvt_offset,mvt_offset_to_plot] = removeWrappedLines(continuous_data.time,mvt_offset);
+        plot(x_out_mvt_offset,mvt_offset_to_plot,'LineWidth',1.5,'color','k')
+        title('Movement offset');
+        xlabel('Time (sec)');
+        ylim([-180 180]);
+        
+        subplot(4,5,20)
+        polarhistogram(deg2rad(mvt_offset),'FaceColor','k')
+        set(gca,'ThetaZeroLocation','top');
+        Ax = gca; % current axes
+        Ax.RGrid = 'off';
+        Ax.RTickLabel = [];
+        
+        suptitle('Initial OL wind');
+        
+        saveas(gcf,[path,'\analysis\plots\initial_OL_wind_trial',num2str(sid),'.png']);
+        
+    end
 end
-
 %% Analyze the cue combination trial
 
 load([path,'\analysis\continuous_analysis_sid_',num2str(sessions.cue_combination),'_tid_0.mat'])
+
+%Cut the data for the fly for which fictrac failed
+if contains(path, '20210922')
+    frames = find(floor(continuous_data.time) == 600);
+    first_frame = frames(1);
+    continuous_data.dff_matrix = continuous_data.dff_matrix(1:first_frame,:);
+    continuous_data.bump_pos = continuous_data.bump_pos(1:first_frame);
+    continuous_data.heading_deg = continuous_data.heading_deg(1:first_frame);
+    continuous_data.time = continuous_data.time(1:first_frame);
+    continuous_data.heading = continuous_data.heading(1:first_frame);
+    continuous_data.adj_rs = continuous_data.adj_rs(1:first_frame);
+    continuous_data.bump_magnitude = continuous_data.bump_magnitude(1:first_frame);
+    continuous_data.bump_width = continuous_data.bump_width(1:first_frame);
+    continuous_data.total_mvt_ds = continuous_data.total_mvt_ds(1:first_frame);
+    continuous_data.vel_yaw_ds = continuous_data.vel_yaw_ds(1:first_frame);
+    continuous_data.vel_for_ds = continuous_data.vel_for_ds(1:first_frame);
+end
 
 figure('Position',[100 100 1200 800]),
 subplot(5,1,1)
@@ -306,12 +355,14 @@ plot(x_out_bump,bump_to_plot,'LineWidth',1.5)
 hold on
 heading = wrapTo180(-continuous_data.heading_deg);
 combined_heading = deg2rad(heading);
+combined_heading_thresh = combined_heading(continuous_data.adj_rs>=0.5);
 [x_out_heading,heading_to_plot] = removeWrappedLines(continuous_data.time,heading);
 plot(x_out_heading,heading_to_plot,'LineWidth',1.5)
 title('Bump and fly position');
 legend('Bump estimate','Fly position','Location','Best');
 set(gca,'xticklabel',{[]});
 ylim([-180 180]);
+xlim([0 x_out_heading(end)]);
 
 subplot(5,1,3)
 offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',-continuous_data.heading)));
@@ -320,20 +371,24 @@ combined_offset = deg2rad(offset);
 combined_offset_above_thresh = combined_offset(continuous_data.adj_rs>=0.5);
 [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
 plot(x_out_offset,offset_to_plot,'LineWidth',1.5,'color','k')
-title('Offset')
+title('Offset');
 ylim([-180 180]);
+xlim([0 x_out_offset(end)]);
 
 subplot(5,1,4)
 plot(continuous_data.time(continuous_data.adj_rs>=0.5),continuous_data.bump_magnitude(continuous_data.adj_rs>=0.5),'r.')
 hold on
 plot(continuous_data.time(continuous_data.adj_rs<0.5),continuous_data.bump_magnitude(continuous_data.adj_rs<0.5),'k.')
-title('Bump magnitude')
+title('Bump magnitude');
+xlim([0 continuous_data.time(end)]);
 
 subplot(5,1,5)
 plot(continuous_data.time(continuous_data.adj_rs>=0.5),continuous_data.bump_width(continuous_data.adj_rs>=0.5),'r.')
 hold on
 plot(continuous_data.time(continuous_data.adj_rs<0.5),continuous_data.bump_width(continuous_data.adj_rs<0.5),'k.')
-title('Bump width')
+title('Bump width');
+xlim([0 continuous_data.time(end)]);
+
 
 suptitle('Trial with both cues');
 
@@ -424,6 +479,7 @@ plot(x_out_bump,bump_to_plot,'LineWidth',1.5)
 hold on
 heading = wrapTo180(-continuous_data.heading_deg);
 post_panels_heading = deg2rad(heading);
+post_panels_heading_thresh = post_panels_heading(continuous_data.adj_rs>=0.5);
 [x_out_heading,heading_to_plot] = removeWrappedLines(continuous_data.time,heading);
 plot(x_out_heading,heading_to_plot,'LineWidth',1.5)
 title('Bump and fly position');
@@ -475,71 +531,72 @@ blockType = [blockType,repelem(4,1,length(continuous_data.bump_magnitude))];
 
 %% Analyze final open-loop panels
 
-for sid = 1:length(sessions.final_ol_bar)
-    
-    load([path,'\analysis\continuous_analysis_sid_',num2str(sessions.final_ol_bar(sid)),'_tid_0.mat'])
-    
-    figure('Position',[100 100 1000 800]),
-    subplot(4,5,[1:4])
-    dff = continuous_data.dff_matrix';
-    imagesc(flip(dff))
-    colormap(flipud(gray))
-    title('EPG activity');
-    set(gca,'xticklabel',{[]})
-    
-    subplot(4,5,[6:9])
-    bump_pos = wrapTo180(rad2deg(continuous_data.bump_pos));
-    %Remove wrapped lines to plot
-    [x_out_bump,bump_to_plot] = removeWrappedLines(continuous_data.time,bump_pos');
-    plot(x_out_bump,bump_to_plot,'LineWidth',1.5)
-    hold on
-    stim = wrapTo180(continuous_data.panel_angle);
-    [x_out_stim,stim_to_plot] = removeWrappedLines(continuous_data.time,stim);
-    heading = wrapTo180(-continuous_data.heading_deg);
-    [x_out_heading,heading_to_plot] = removeWrappedLines(continuous_data.time,heading);
-    plot(x_out_stim,stim_to_plot,'LineWidth',1.5)
-    plot(x_out_heading,heading_to_plot,'LineWidth',1.5)
-    legend('Bump estimate','Stim position','Fly position','Location','best');
-    title('Bump and stim position');
-    ylim([-180 180]);
-    set(gca,'xticklabel',{[]})
-    
-    subplot(4,5,[11:14])
-    offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',deg2rad(continuous_data.panel_angle))));
-    [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
-    plot(x_out_offset,offset_to_plot,'LineWidth',1.5,'color','k')
-    title('Stimulus offset');
-    set(gca,'xticklabel',{[]})
-    ylim([-180 180]);
-    
-    subplot(4,5,15)
-    polarhistogram(deg2rad(offset),'FaceColor','k')
-    set(gca,'ThetaZeroLocation','top');
-    Ax = gca; % current axes
-    Ax.RGrid = 'off';
-    Ax.RTickLabel = [];
-    
-    subplot(4,5,[16:19])
-    mvt_offset = wrapTo180(continuous_data.offset);
-    [x_out_mvt_offset,mvt_offset_to_plot] = removeWrappedLines(continuous_data.time,mvt_offset);
-    plot(x_out_mvt_offset,mvt_offset_to_plot,'LineWidth',1.5,'color','k')
-    title('Movement offset');
-    xlabel('Time (sec)');
-    ylim([-180 180]);
-    
-    subplot(4,5,20)
-    polarhistogram(deg2rad(mvt_offset),'FaceColor','k')
-    set(gca,'ThetaZeroLocation','top');
-    Ax = gca; % current axes
-    Ax.RGrid = 'off';
-    Ax.RTickLabel = [];
-    
-    suptitle('Final OL panels');
-    
-    saveas(gcf,[path,'\analysis\plots\final_OL_panels_trial',num2str(sid),'.png']);
-    
+if isfield(sessions,'final_ol_bar')
+    for sid = 1:length(sessions.final_ol_bar)
+        
+        load([path,'\analysis\continuous_analysis_sid_',num2str(sessions.final_ol_bar(sid)),'_tid_0.mat'])
+        
+        figure('Position',[100 100 1000 800]),
+        subplot(4,5,[1:4])
+        dff = continuous_data.dff_matrix';
+        imagesc(flip(dff))
+        colormap(flipud(gray))
+        title('EPG activity');
+        set(gca,'xticklabel',{[]})
+        
+        subplot(4,5,[6:9])
+        bump_pos = wrapTo180(rad2deg(continuous_data.bump_pos));
+        %Remove wrapped lines to plot
+        [x_out_bump,bump_to_plot] = removeWrappedLines(continuous_data.time,bump_pos');
+        plot(x_out_bump,bump_to_plot,'LineWidth',1.5)
+        hold on
+        stim = wrapTo180(continuous_data.panel_angle);
+        [x_out_stim,stim_to_plot] = removeWrappedLines(continuous_data.time,stim);
+        heading = wrapTo180(-continuous_data.heading_deg);
+        [x_out_heading,heading_to_plot] = removeWrappedLines(continuous_data.time,heading);
+        plot(x_out_stim,stim_to_plot,'LineWidth',1.5)
+        plot(x_out_heading,heading_to_plot,'LineWidth',1.5)
+        legend('Bump estimate','Stim position','Fly position','Location','best');
+        title('Bump and stim position');
+        ylim([-180 180]);
+        set(gca,'xticklabel',{[]})
+        
+        subplot(4,5,[11:14])
+        offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',deg2rad(continuous_data.panel_angle))));
+        [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
+        plot(x_out_offset,offset_to_plot,'LineWidth',1.5,'color','k')
+        title('Stimulus offset');
+        set(gca,'xticklabel',{[]})
+        ylim([-180 180]);
+        
+        subplot(4,5,15)
+        polarhistogram(deg2rad(offset),'FaceColor','k')
+        set(gca,'ThetaZeroLocation','top');
+        Ax = gca; % current axes
+        Ax.RGrid = 'off';
+        Ax.RTickLabel = [];
+        
+        subplot(4,5,[16:19])
+        mvt_offset = wrapTo180(continuous_data.offset);
+        [x_out_mvt_offset,mvt_offset_to_plot] = removeWrappedLines(continuous_data.time,mvt_offset);
+        plot(x_out_mvt_offset,mvt_offset_to_plot,'LineWidth',1.5,'color','k')
+        title('Movement offset');
+        xlabel('Time (sec)');
+        ylim([-180 180]);
+        
+        subplot(4,5,20)
+        polarhistogram(deg2rad(mvt_offset),'FaceColor','k')
+        set(gca,'ThetaZeroLocation','top');
+        Ax = gca; % current axes
+        Ax.RGrid = 'off';
+        Ax.RTickLabel = [];
+        
+        suptitle('Final OL panels');
+        
+        saveas(gcf,[path,'\analysis\plots\final_OL_panels_trial',num2str(sid),'.png']);
+        
+    end
 end
-
 
 %%  Analyze final closed-loop wind
 
@@ -561,6 +618,7 @@ plot(x_out_bump,bump_to_plot,'LineWidth',1.5)
 hold on
 heading = wrapTo180(-continuous_data.heading_deg);
 post_wind_heading = deg2rad(heading);
+post_wind_heading_thresh = post_wind_heading(continuous_data.adj_rs>=0.5);
 [x_out_heading,heading_to_plot] = removeWrappedLines(continuous_data.time,heading);
 plot(x_out_heading,heading_to_plot,'LineWidth',1.5)
 title('Bump and fly position');
@@ -612,71 +670,75 @@ blockType = [blockType,repelem(5,1,length(continuous_data.bump_magnitude))];
 
 %% Analyze final open-loop wind
 
-for sid = 1:length(sessions.final_ol_wind)
-    
-    load([path,'\analysis\continuous_analysis_sid_',num2str(sessions.final_ol_wind(sid)),'_tid_0.mat'])
-    
-    figure('Position',[100 100 1000 800]),
-    subplot(4,5,[1:4])
-    dff = continuous_data.dff_matrix';
-    imagesc(flip(dff))
-    colormap(flipud(gray))
-    title('EPG activity');
-    set(gca,'xticklabel',{[]})
-    
-    subplot(4,5,[6:9])
-    bump_pos = wrapTo180(rad2deg(continuous_data.bump_pos));
-    %Remove wrapped lines to plot
-    [x_out_bump,bump_to_plot] = removeWrappedLines(continuous_data.time,bump_pos');
-    plot(x_out_bump,bump_to_plot,'LineWidth',1.5)
-    hold on
-    stim = wrapTo180(rad2deg(continuous_data.motor_pos'));
-    [x_out_stim,stim_to_plot] = removeWrappedLines(continuous_data.time,stim);
-    heading = wrapTo180(-continuous_data.heading_deg);
-    [x_out_heading,heading_to_plot] = removeWrappedLines(continuous_data.time,heading);
-    plot(x_out_stim,stim_to_plot,'LineWidth',1.5)
-    plot(x_out_heading,heading_to_plot,'LineWidth',1.5)
-    legend('Bump estimate','Stim position','Fly position','Location','best');
-    title('Bump and stim position');
-    ylim([-180 180]);
-    set(gca,'xticklabel',{[]})
-    
-    subplot(4,5,[11:14])
-    offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',continuous_data.motor_pos')));
-    [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
-    plot(x_out_offset,offset_to_plot,'LineWidth',1.5,'color','k')
-    title('Stimulus offset');
-    set(gca,'xticklabel',{[]})
-    ylim([-180 180]);
-    
-    subplot(4,5,15)
-    polarhistogram(deg2rad(offset),'FaceColor','k')
-    set(gca,'ThetaZeroLocation','top');
-    Ax = gca; % current axes
-    Ax.RGrid = 'off';
-    Ax.RTickLabel = [];
-    
-    subplot(4,5,[16:19])
-    mvt_offset = wrapTo180(continuous_data.offset);
-    [x_out_mvt_offset,mvt_offset_to_plot] = removeWrappedLines(continuous_data.time,mvt_offset);
-    plot(x_out_mvt_offset,mvt_offset_to_plot,'LineWidth',1.5,'color','k')
-    title('Movement offset');
-    xlabel('Time (sec)');
-    ylim([-180 180]);
-    
-    subplot(4,5,20)
-    polarhistogram(deg2rad(mvt_offset),'FaceColor','k')
-    set(gca,'ThetaZeroLocation','top');
-    Ax = gca; % current axes
-    Ax.RGrid = 'off';
-    Ax.RTickLabel = [];
-    
-    suptitle('Final OL wind');
-    
-    saveas(gcf,[path,'\analysis\plots\final_OL_wind_trial',num2str(sid),'.png']);
-    
+if isfield(sessions,'final_ol_wind')
+    for sid = 1:length(sessions.final_ol_wind)
+        
+        load([path,'\analysis\continuous_analysis_sid_',num2str(sessions.final_ol_wind(sid)),'_tid_0.mat'])
+        
+        figure('Position',[100 100 1000 800]),
+        subplot(4,5,[1:4])
+        dff = continuous_data.dff_matrix';
+        imagesc(flip(dff))
+        colormap(flipud(gray))
+        title('EPG activity');
+        set(gca,'xticklabel',{[]})
+        
+        subplot(4,5,[6:9])
+        bump_pos = wrapTo180(rad2deg(continuous_data.bump_pos));
+        %Remove wrapped lines to plot
+        [x_out_bump,bump_to_plot] = removeWrappedLines(continuous_data.time,bump_pos');
+        plot(x_out_bump,bump_to_plot,'LineWidth',1.5)
+        hold on
+        stim = wrapTo180(rad2deg(continuous_data.motor_pos'));
+        [x_out_stim,stim_to_plot] = removeWrappedLines(continuous_data.time,stim);
+        heading = wrapTo180(-continuous_data.heading_deg);
+        [x_out_heading,heading_to_plot] = removeWrappedLines(continuous_data.time,heading);
+        plot(x_out_stim,stim_to_plot,'LineWidth',1.5)
+        plot(x_out_heading,heading_to_plot,'LineWidth',1.5)
+        legend('Bump estimate','Stim position','Fly position','Location','best');
+        title('Bump and stim position');
+        ylim([-180 180]);
+        set(gca,'xticklabel',{[]})
+        
+        subplot(4,5,[11:14])
+        offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',continuous_data.motor_pos')));
+        [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
+        plot(x_out_offset,offset_to_plot,'LineWidth',1.5,'color','k')
+        title('Stimulus offset');
+        set(gca,'xticklabel',{[]})
+        ylim([-180 180]);
+        
+        subplot(4,5,15)
+        polarhistogram(deg2rad(offset),'FaceColor','k')
+        set(gca,'ThetaZeroLocation','top');
+        Ax = gca; % current axes
+        Ax.RGrid = 'off';
+        Ax.RTickLabel = [];
+        
+        subplot(4,5,[16:19])
+        mvt_offset = wrapTo180(continuous_data.offset);
+        [x_out_mvt_offset,mvt_offset_to_plot] = removeWrappedLines(continuous_data.time,mvt_offset);
+        plot(x_out_mvt_offset,mvt_offset_to_plot,'LineWidth',1.5,'color','k')
+        title('Movement offset');
+        xlabel('Time (sec)');
+        ylim([-180 180]);
+        
+        subplot(4,5,20)
+        polarhistogram(deg2rad(mvt_offset),'FaceColor','k')
+        set(gca,'ThetaZeroLocation','top');
+        Ax = gca; % current axes
+        Ax.RGrid = 'off';
+        Ax.RTickLabel = [];
+        
+        suptitle('Final OL wind');
+        
+        saveas(gcf,[path,'\analysis\plots\final_OL_wind_trial',num2str(sid),'.png']);
+        
+    end
 end
 
+%%
+close all
 %% Offset evolution
 
 
@@ -685,27 +747,27 @@ if sessions.initial_cl_wind < sessions.initial_cl_bar
     figure('Position',[100 100 1400 400]),
     
     subplot(1,5,1)
-    polarhistogram(pre_wind_offset)
+    polarhistogram(pre_wind_offset,'FaceColor',fly_color)
     title('Initial wind offset');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,2)
-    polarhistogram(pre_panels_offset)
+    polarhistogram(pre_panels_offset,'FaceColor',fly_color)
     title('Initial panels offset');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,3)
-    polarhistogram(combined_offset)
+    polarhistogram(combined_offset,'FaceColor',fly_color)
     title('Cue combination offset');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,4)
-    polarhistogram(post_wind_offset)
+    polarhistogram(post_wind_offset,'FaceColor',fly_color)
     title('Final wind offset');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,5)
-    polarhistogram(post_panels_offset)
+    polarhistogram(post_panels_offset,'FaceColor',fly_color)
     title('Final panels offset');
     set(gca,'ThetaZeroLocation','top');
     
@@ -716,27 +778,27 @@ elseif sessions.initial_cl_wind > sessions.initial_cl_bar
     figure('Position',[100 100 1400 400]),
     
     subplot(1,5,1)
-    polarhistogram(pre_panels_offset)
+    polarhistogram(pre_panels_offset,'FaceColor',fly_color)
     title('Initial panels offset');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,2)
-    polarhistogram(pre_wind_offset)
+    polarhistogram(pre_wind_offset,'FaceColor',fly_color)
     title('Initial wind offset');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,3)
-    polarhistogram(combined_offset)
+    polarhistogram(combined_offset,'FaceColor',fly_color)
     title('Cue combination offset');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,4)
-    polarhistogram(post_panels_offset)
+    polarhistogram(post_panels_offset,'FaceColor',fly_color)
     title('Final panels offset');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,5)
-    polarhistogram(post_wind_offset)
+    polarhistogram(post_wind_offset,'FaceColor',fly_color)
     title('Final wind offset');
     set(gca,'ThetaZeroLocation','top');
     
@@ -753,27 +815,27 @@ if sessions.initial_cl_wind < sessions.initial_cl_bar
     figure('Position',[100 100 1400 400]),
     
     subplot(1,5,1)
-    polarhistogram(pre_wind_offset_above_thresh)
+    polarhistogram(pre_wind_offset_above_thresh,'FaceColor',fly_color)
     title('Initial wind offset');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,2)
-    polarhistogram(pre_panels_offset_above_thresh)
+    polarhistogram(pre_panels_offset_above_thresh,'FaceColor',fly_color)
     title('Initial panels offset');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,3)
-    polarhistogram(combined_offset_above_thresh)
+    polarhistogram(combined_offset_above_thresh,'FaceColor',fly_color)
     title('Cue combination offset');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,4)
-    polarhistogram(post_wind_offset_above_thresh)
+    polarhistogram(post_wind_offset_above_thresh,'FaceColor',fly_color)
     title('Final wind offset');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,5)
-    polarhistogram(post_panels_offset_above_thresh)
+    polarhistogram(post_panels_offset_above_thresh,'FaceColor',fly_color)
     title('Final panels offset');
     set(gca,'ThetaZeroLocation','top');
     
@@ -784,27 +846,27 @@ elseif sessions.initial_cl_wind > sessions.initial_cl_bar
     figure('Position',[100 100 1400 400]),
     
     subplot(1,5,1)
-    polarhistogram(pre_panels_offset_above_thresh)
+    polarhistogram(pre_panels_offset_above_thresh,'FaceColor',fly_color)
     title('Initial panels offset');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,2)
-    polarhistogram(pre_wind_offset_above_thresh)
+    polarhistogram(pre_wind_offset_above_thresh,'FaceColor',fly_color)
     title('Initial wind offset');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,3)
-    polarhistogram(combined_offset_above_thresh)
+    polarhistogram(combined_offset_above_thresh,'FaceColor',fly_color)
     title('Cue combination offset');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,4)
-    polarhistogram(post_panels_offset_above_thresh)
+    polarhistogram(post_panels_offset_above_thresh,'FaceColor',fly_color)
     title('Final panels offset');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,5)
-    polarhistogram(post_wind_offset_above_thresh)
+    polarhistogram(post_wind_offset_above_thresh,'FaceColor',fly_color)
     title('Final wind offset');
     set(gca,'ThetaZeroLocation','top');
     
@@ -812,6 +874,88 @@ elseif sessions.initial_cl_wind > sessions.initial_cl_bar
 end
 
 saveas(gcf,[path,'\analysis\plots\offset_evolution_thresh.png']);
+
+%% Plot circ_std of offset per block
+
+if sessions.initial_cl_wind < sessions.initial_cl_bar
+    
+    offset_var = [circ_std(pre_wind_offset_above_thresh),circ_std(pre_panels_offset_above_thresh),circ_std(combined_offset_above_thresh),circ_std(post_wind_offset_above_thresh),circ_std(post_panels_offset_above_thresh)];
+    
+elseif sessions.initial_cl_wind > sessions.initial_cl_bar
+    
+    offset_var = [circ_std(pre_panels_offset_above_thresh),circ_std(pre_wind_offset_above_thresh),circ_std(combined_offset_above_thresh),circ_std(post_panels_offset_above_thresh),circ_std(post_wind_offset_above_thresh)];
+     
+end
+
+figure,
+plot(offset_var,'-ko');
+ylabel('circ_std offset');
+xlabel('Block #');
+xlim([0 6]);
+
+saveas(gcf,[path,'\analysis\plots\circ_std_offset_thresh.png']);
+
+
+%% Correct offset variation for the duration of the trial
+
+%To do this, I will randomly sample timepoints in the longest trial to
+%match the length of the shortest ones
+min_frames = min([length(pre_wind_offset_above_thresh),length(pre_panels_offset_above_thresh),length(combined_offset_above_thresh),length(post_wind_offset_above_thresh),length(post_panels_offset_above_thresh)]);
+
+pre_wind_offset_r = randsample(pre_wind_offset_above_thresh,min_frames);
+pre_panels_offset_r = randsample(pre_panels_offset_above_thresh,min_frames);
+combined_offset_r = randsample(combined_offset_above_thresh,min_frames);
+post_wind_offset_r = randsample(post_wind_offset_above_thresh,min_frames);
+post_panels_offset_r = randsample(post_panels_offset_above_thresh,min_frames);
+
+if sessions.initial_cl_wind < sessions.initial_cl_bar
+    
+    offset_var_r = [circ_std(pre_wind_offset_r),circ_std(pre_panels_offset_r),circ_std(combined_offset_r),circ_std(post_wind_offset_r),circ_std(post_panels_offset_r)];
+    
+elseif sessions.initial_cl_wind > sessions.initial_cl_bar
+    
+    offset_var_r = [circ_std(pre_panels_offset_r),circ_std(pre_wind_offset_r),circ_std(combined_offset_r),circ_std(post_panels_offset_r),circ_std(post_wind_offset_r)];
+     
+end
+
+figure,
+plot(offset_var_r,'-ko');
+ylabel('circ_std offset');
+xlabel('Block #');
+xlim([0 6]);
+
+saveas(gcf,[path,'\analysis\plots\circ_std_offset_thresh_equal_length.png']);
+
+%% Plot circ_mean of offset per block
+
+if sessions.initial_cl_wind < sessions.initial_cl_bar
+    
+    offset_mean = [circ_mean(pre_wind_offset_above_thresh),circ_mean(pre_panels_offset_above_thresh),circ_mean(combined_offset_above_thresh),circ_mean(post_wind_offset_above_thresh),circ_mean(post_panels_offset_above_thresh)];
+    
+elseif sessions.initial_cl_wind > sessions.initial_cl_bar
+    
+    offset_mean = [circ_mean(pre_panels_offset_above_thresh),circ_mean(pre_wind_offset_above_thresh),circ_mean(combined_offset_above_thresh),circ_mean(post_panels_offset_above_thresh),circ_mean(post_wind_offset_above_thresh)];
+     
+end
+
+figure,
+subplot(2,1,1)
+plot(rad2deg(offset_mean),'-ko');
+ylabel('circ_mean offset');
+xlabel('Block #');
+xlim([0 6]);
+ylim([-180 180]);
+
+subplot(2,1,2)
+plot([nan,diff(rad2deg(offset_mean))],'-ko');
+ylabel('diff(circ_mean offset)');
+xlabel('Block #');
+xlim([0 6]);
+ylim([-180 180]);
+yline(0,'r','linestyle','--')
+
+saveas(gcf,[path,'\analysis\plots\circ_mean_offset_thresh.png']);
+
 
 %% Heading evolution
 
@@ -821,27 +965,27 @@ if sessions.initial_cl_wind < sessions.initial_cl_bar
     figure('Position',[100 100 1400 400]),
     
     subplot(1,5,1)
-    polarhistogram(pre_wind_heading)
+    polarhistogram(pre_wind_heading,'FaceColor',fly_color)
     title('Initial wind heading');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,2)
-    polarhistogram(pre_panels_heading)
+    polarhistogram(pre_panels_heading,'FaceColor',fly_color)
     title('Initial panels heading');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,3)
-    polarhistogram(combined_heading)
+    polarhistogram(combined_heading,'FaceColor',fly_color)
     title('Cue combination heading');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,4)
-    polarhistogram(post_wind_heading)
+    polarhistogram(post_wind_heading,'FaceColor',fly_color)
     title('Final wind heading');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,5)
-    polarhistogram(post_panels_heading)
+    polarhistogram(post_panels_heading,'FaceColor',fly_color)
     title('Final panels heading');
     set(gca,'ThetaZeroLocation','top');
     
@@ -852,27 +996,27 @@ elseif sessions.initial_cl_wind > sessions.initial_cl_bar
     figure('Position',[100 100 1400 400]),
     
     subplot(1,5,1)
-    polarhistogram(pre_panels_heading)
+    polarhistogram(pre_panels_heading,'FaceColor',fly_color)
     title('Initial panels heading');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,2)
-    polarhistogram(pre_wind_heading)
+    polarhistogram(pre_wind_heading,'FaceColor',fly_color)
     title('Initial wind heading');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,3)
-    polarhistogram(combined_heading)
+    polarhistogram(combined_heading,'FaceColor',fly_color)
     title('Cue combination heading');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,4)
-    polarhistogram(post_panels_heading)
+    polarhistogram(post_panels_heading,'FaceColor',fly_color)
     title('Final panels heading');
     set(gca,'ThetaZeroLocation','top');
     
     subplot(1,5,5)
-    polarhistogram(post_wind_heading)
+    polarhistogram(post_wind_heading,'FaceColor',fly_color)
     title('Final wind heading');
     set(gca,'ThetaZeroLocation','top');
     
@@ -881,44 +1025,103 @@ end
 
 saveas(gcf,[path,'\analysis\plots\heading_evolution.png']);
 
-%% Bump parameter evolution
+%% Thresholded heading evolution
 
 if sessions.initial_cl_wind < sessions.initial_cl_bar
-    allBM = [meanBM_pre_wind;meanBM_pre_panels;meanBM_combined;meanBM_post_wind;meanBM_post_panels];
-    allBW = [meanBW_pre_wind;meanBW_pre_panels;meanBW_combined;meanBW_post_wind;meanBW_post_panels];
-    all_total_mvt = [mean_total_mvt_thresh_pre_wind;mean_total_mvt_thresh_pre_panels;mean_total_mvt_thresh_combined;mean_total_mvt_thresh_post_wind;mean_total_mvt_thresh_post_panels];
+    
+    figure('Position',[100 100 1400 400]),
+    
+    subplot(1,5,1)
+    polarhistogram(pre_wind_heading_thresh,'FaceColor',fly_color)
+    title('Initial wind heading');
+    set(gca,'ThetaZeroLocation','top');
+    
+    subplot(1,5,2)
+    polarhistogram(pre_panels_heading_thresh,'FaceColor',fly_color)
+    title('Initial panels heading');
+    set(gca,'ThetaZeroLocation','top');
+    
+    subplot(1,5,3)
+    polarhistogram(combined_heading_thresh,'FaceColor',fly_color)
+    title('Cue combination heading');
+    set(gca,'ThetaZeroLocation','top');
+    
+    subplot(1,5,4)
+    polarhistogram(post_wind_heading_thresh,'FaceColor',fly_color)
+    title('Final wind heading');
+    set(gca,'ThetaZeroLocation','top');
+    
+    subplot(1,5,5)
+    polarhistogram(post_panels_heading_thresh,'FaceColor',fly_color)
+    title('Final panels heading');
+    set(gca,'ThetaZeroLocation','top');
+    
+    suptitle('Heading evolution');
+
 elseif sessions.initial_cl_wind > sessions.initial_cl_bar
-    allBM = [meanBM_pre_panels;meanBM_pre_wind;meanBM_combined;meanBM_post_panels;meanBM_post_wind];  
-    allBW = [meanBW_pre_panels;meanBW_pre_wind;meanBW_combined;meanBW_post_panels;meanBW_post_wind]; 
-    all_total_mvt = [mean_total_mvt_thresh_pre_panels;mean_total_mvt_thresh_pre_wind;mean_total_mvt_thresh_combined;mean_total_mvt_thresh_post_panels;mean_total_mvt_thresh_post_wind]; 
+    
+    figure('Position',[100 100 1400 400]),
+    
+    subplot(1,5,1)
+    polarhistogram(pre_panels_heading_thresh,'FaceColor',fly_color)
+    title('Initial panels heading');
+    set(gca,'ThetaZeroLocation','top');
+    
+    subplot(1,5,2)
+    polarhistogram(pre_wind_heading_thresh,'FaceColor',fly_color)
+    title('Initial wind heading');
+    set(gca,'ThetaZeroLocation','top');
+    
+    subplot(1,5,3)
+    polarhistogram(combined_heading_thresh,'FaceColor',fly_color)
+    title('Cue combination heading');
+    set(gca,'ThetaZeroLocation','top');
+    
+    subplot(1,5,4)
+    polarhistogram(post_panels_heading_thresh,'FaceColor',fly_color)
+    title('Final panels heading');
+    set(gca,'ThetaZeroLocation','top');
+    
+    subplot(1,5,5)
+    polarhistogram(post_wind_heading_thresh,'FaceColor',fly_color)
+    title('Final wind heading');
+    set(gca,'ThetaZeroLocation','top');
+    
+    suptitle('Heading evolution');
 end
 
-figure('Position',[100 100 1000 600]),
-subplot(1,2,1)
-yyaxis left
-plot(allBM,'-o')
-ylim([0 3]);
-ylabel('Bump magnitude');
-yyaxis right
-plot(all_total_mvt,'-o')
-xlim([0 6]);
-ylim([0 300]);
-ylabel('Total movement (deg/s)');
-xlabel('Block #');
+saveas(gcf,[path,'\analysis\plots\heading_evolution_thresh.png']);
 
-subplot(1,2,2)
-yyaxis left
-plot(allBW,'-o')
-ylim([0 3.5]);
-ylabel('Bump width');
-yyaxis right
-plot(all_total_mvt,'-o')
-xlim([0 6]);
-ylim([0 300]);
-ylabel('Total movement (deg/s)');
-xlabel('Block #');
+%% Plot circ_mean of heading per block
 
-saveas(gcf,[path,'\analysis\plots\bump_params_evolution.png']);
+if sessions.initial_cl_wind < sessions.initial_cl_bar
+    
+    heading_mean = [circ_mean(pre_wind_heading_thresh),circ_mean(pre_panels_heading_thresh),circ_mean(combined_heading_thresh),circ_mean(post_wind_heading_thresh),circ_mean(post_panels_heading_thresh)];
+    
+elseif sessions.initial_cl_wind > sessions.initial_cl_bar
+    
+    heading_mean = [circ_mean(pre_panels_heading_thresh),circ_mean(pre_wind_heading_thresh),circ_mean(combined_heading_thresh),circ_mean(post_panels_heading_thresh),circ_mean(post_wind_heading_thresh)];
+     
+end
+
+figure,
+subplot(2,1,1)
+plot(rad2deg(heading_mean),'-ko');
+ylabel('circ_mean heading');
+xlabel('Block #');
+xlim([0 6]);
+ylim([-180 180]);
+
+subplot(2,1,2)
+plot([nan,diff(rad2deg(heading_mean))],'-ko');
+ylabel('diff(circ_mean heading)');
+xlabel('Block #');
+xlim([0 6]);
+ylim([-180 180]);
+yline(0,'r','linestyle','--')
+
+saveas(gcf,[path,'\analysis\plots\circ_mean_heading.png']);
+
 
 %%  Bump parameter evolution using threshold
 
@@ -954,20 +1157,10 @@ yyaxis right
 plot(all_total_mvt_thresh,'-o')
 xlim([0 6]);
 ylim([0 300]);
-ylabel('Total movement (deg/s)');
-xlabel('Block #');
 
-saveas(gcf,[path,'\analysis\plots\bump_params_evolution_thresh.png']);
+%% Save variables
 
-%% Model bump parameters with respect to block and fly velocity
-
-%crate table with the model's variables
-modelTable = table(blockType',allTotalMvt',allBumpMag',allBumpWidth','VariableNames',{'BlockType','TotalMovement','BumpMagnitude','BumpWidth'});
-
-%fit linear model using contrast level as a categorical variable
-mdl_BM = fitlm(modelTable,'BumpMagnitude~BlockType+TotalMovement','CategoricalVars',1)
-mdl_BW = fitlm(modelTable,'BumpWidth~BlockType+TotalMovement','CategoricalVars',1) 
-
+save([path,'\analysis\data.mat'],'offset_var','offset_var_r','offset_mean','heading_mean','allBM_thresh','allBW_thresh','all_total_mvt_thresh')
 
 %% Clear
 
