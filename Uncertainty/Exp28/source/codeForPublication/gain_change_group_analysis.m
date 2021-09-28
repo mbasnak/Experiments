@@ -1016,23 +1016,30 @@ saveas(gcf,'Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp28\data\groupPlots\bump
 
 %% Plot bump parameters in the first bout vs ratio of offset variabilities
 
-% for window = 1:6
-%     ratio_offset_var = [];
-%     for fly = 1:length(data)
-%        ratio_offset_var = [ratio_offset_var,mean(data(fly).modelTable{1,window}.BarOffsetVariability)/mean(data(fly).modelTable{1,window}.HeadingOffsetVariability)];
-%     end
-%     figure,
-%     plot(ratio_offset_var,clusterdataBM,'o')
-% end
-
-ratio_offset_var = [];
+%focus on last 1/4 of the block
+ratio_offset_var_final = [];
 for fly = 1:length(data)
-    ratio_offset_var = [ratio_offset_var,mean(data(fly).modelTable{1,1}.BarOffsetVariability)/mean(data(fly).modelTable{1,1}.HeadingOffsetVariability)];
+    start_of_period = floor(length(data(fly).modelTable{1,1}.BarOffsetVariability)/4);
+    ratio_offset_var_final = [ratio_offset_var_final,median(data(fly).modelTable{1,1}.BarOffsetVariability(end-start_of_period:end))/median(data(fly).modelTable{1,1}.HeadingOffsetVariability(end-start_of_period:end))];
 end
-figure,
-plot(ratio_offset_var,clusterdataBM,'ko')
+figure('Position',[100 100 1000 800]),
+subplot(1,2,1)
+plot(ratio_offset_var_final(type_of_fly == 1),clusterdataBM(type_of_fly == 1),'ro')
+hold on
+plot(ratio_offset_var_final(type_of_fly == 2),clusterdataBM(type_of_fly == 2),'bo')
+legend({'Type 1','Type 2'},'location','best');
 xlabel('Mean bar offset variability / mean heading offset variability');
 ylabel('Bump magnitude in the preceding block')
+
+subplot(1,2,2)
+plot(ratio_offset_var_final(type_of_fly == 1),clusterdataBW(type_of_fly == 1),'ro')
+hold on
+plot(ratio_offset_var_final(type_of_fly == 2),clusterdataBW(type_of_fly == 2),'bo')
+legend({'Type 1','Type 2'},'location','best');
+xlabel('Mean bar offset variability / mean heading offset variability');
+ylabel('Bump width in the preceding block')
+
+saveas(gcf,'Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp28\data\groupPlots\corrBumpParOffsetVar.png')
 
 %% Divide the inverted gain portion into quartiles and look at bump parameter evolution
 
