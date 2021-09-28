@@ -199,27 +199,69 @@ for jump = 1:length(ds_jump_frames)
    time = data.time-time_zero;
    
    figure('Position',[100 100 1200 500]),
-   subplot(8,1,1)
+   ax(1) = subplot(8,1,1);
    imagesc(bump_mag(:,ds_jump_frames(jump)-25:ds_jump_frames(jump)+26))
    colormap(flipud(gray))
    set(gca,'xtick',[])
    set(gca,'ytick',[])
    title('Bump magnitude');
    
-   subplot(8,1,[2 8])
-   plot(time(ds_jump_frames(jump)-25:ds_jump_frames(jump)+26) , bar_position(ds_jump_frames(jump)-25:ds_jump_frames(jump)+26),'r')
+   ax(2) = subplot(8,1,[2 8]);
+   time_to_plot = time(ds_jump_frames(jump)-25:ds_jump_frames(jump)+26);
+   bar_to_plot = bar_position(ds_jump_frames(jump)-25:ds_jump_frames(jump)+26);
+   [x_out_time,bar_pos_to_plot] = removeWrappedLines(time_to_plot,bar_to_plot);
+   plot(x_out_time,bar_pos_to_plot,'color',[1 0.2 0.2],'linewidth',2)
    hold on
-   plot(time(ds_jump_frames(jump)-25:ds_jump_frames(jump)+26), phase(ds_jump_frames(jump)-25:ds_jump_frames(jump)+26),'b')
+   phase_to_plot = phase(ds_jump_frames(jump)-25:ds_jump_frames(jump)+26);
+   [x_out_time,bump_pos_to_plot] = removeWrappedLines(time_to_plot,phase_to_plot);   
+   plot(x_out_time,bump_pos_to_plot,'color',[0 0.6 0.3],'linewidth',2)
    xline(time(ds_jump_frames(jump)),'k','linestyle','--','linewidth',2)
    ylim([-180 180]);
    xlim([time(ds_jump_frames(jump)-25) time(ds_jump_frames(jump)+26)]);
    ylabel('Heading (deg)');
-   xlabel('Time');
+   xlabel('Time (sec)');
    legend('Bar position','Bump estimate');
+   
+   %cb = colorbar(ax(2),'orientation','horizontal','Location','NorthOutside');
    
    saveas(gcf,[path,'plots\bm_evolution',num2str(jump),'.png'])
 end
 
+%% Repeat with bump width
+
+for jump = 1:length(ds_jump_frames)
+   
+   time_zero = data.time(ds_jump_frames(jump));
+   time = data.time-time_zero;
+   
+   figure('Position',[100 100 1200 500]),
+   ax(1) = subplot(8,1,1);
+   imagesc(half_max_width(:,ds_jump_frames(jump)-25:ds_jump_frames(jump)+26))
+   colormap(flipud(gray))
+   set(gca,'xtick',[])
+   set(gca,'ytick',[])
+   title('Bump width');
+   
+   ax(2) = subplot(8,1,[2 8]);
+   time_to_plot = time(ds_jump_frames(jump)-25:ds_jump_frames(jump)+26);
+   bar_to_plot = bar_position(ds_jump_frames(jump)-25:ds_jump_frames(jump)+26);
+   [x_out_time,bar_pos_to_plot] = removeWrappedLines(time_to_plot,bar_to_plot);
+   plot(x_out_time,bar_pos_to_plot,'color',[1 0.2 0.2],'linewidth',2)
+   hold on
+   phase_to_plot = phase(ds_jump_frames(jump)-25:ds_jump_frames(jump)+26);
+   [x_out_time,bump_pos_to_plot] = removeWrappedLines(time_to_plot,phase_to_plot);   
+   plot(x_out_time,bump_pos_to_plot,'color',[0 0.6 0.3],'linewidth',2)
+   xline(time(ds_jump_frames(jump)),'k','linestyle','--','linewidth',2)
+   ylim([-180 180]);
+   xlim([time(ds_jump_frames(jump)-25) time(ds_jump_frames(jump)+26)]);
+   ylabel('Heading (deg)');
+   xlabel('Time (sec)');
+   legend('Bar position','Bump estimate');
+   
+   %cb = colorbar(ax(2),'orientation','horizontal','Location','NorthOutside');
+   
+   saveas(gcf,[path,'plots\bw_evolution',num2str(jump),'.png'])
+end
 
 %% Plot the bump parameters vs the bump jump magnitude
 
@@ -692,9 +734,60 @@ xticklabels({'pre-jump','post-jump'})
 ylabel('Mean bump magnitude (max-min)');
 saveas(gcf,[path,'plots\AJ_bump_magnitude.png']);
 
+%% Bump width aroung the jumps
+
+for jump = 1:length(ds_jump_frames)
+    
+   figure('Position',[100 100 1200 800]),
+     
+   subplot(3,1,1)
+   imagesc(data.dff_matrix(:,ds_jump_frames(jump)-25:ds_jump_frames(jump)+25))
+   colormap(flipud(gray))
+   hold on
+   xline(26,'linewidth',2,'color','r')
+   title('EPG activity');
+     
+   subplot(3,1,2)
+   plot(offset(ds_jump_frames(jump)-25:ds_jump_frames(jump)+25))
+   xline(26,'linewidth',2,'color','r')
+   title(['Jump #',num2str(jump)]); 
+   xlim([1 51]);
+   ylim([-180 180]);
+   title('Offset (deg)');
+   
+   subplot(3,1,3)
+   %compute the mean bump parameters right before the jump
+   mean_bw_pre_jump(jump) = mean(half_max_width(ds_jump_frames(jump)-25:ds_jump_frames(jump)));
+   mean_bw_post_jump(jump) = mean(half_max_width(ds_jump_frames(jump)+1:ds_jump_frames(jump)+26));
+   bw_around_jump{jump} = [mean_bw_pre_jump(jump),mean_bw_post_jump(jump)];
+   plot(bm_around_jump{jump},'-ko')
+   xlim([0 3]);
+   set(gca,'xticklabel',{[]})
+   %ylim([min(bw_around_jump{jump})-0.5, max(bw_around_jump{jump})+0.5]);  
+   title('Bump width');
+   
+   saveas(gcf,[path,'plots\AJ_bump_width_',num2str(jump),'.png']);
+   
+end
+
+
+%% Combining all the data on bump width around the jumps
+
+figure,
+bw_aj = cell2mat(bw_around_jump);
+bw_aj = reshape(bw_aj,2,length(bw_around_jump));
+plot(bw_aj,'-o','color',[.5 .5 .5])
+hold on
+plot(mean(bw_aj,2),'-ko','linewidth',2)
+xlim([0 3]);
+xticks([1 2])
+xticklabels({'pre-jump','post-jump'})
+ylabel('Mean bump width');
+saveas(gcf,[path,'plots\AJ_bump_width.png']);
+
 %% Save data
 
 save([path,'\offset_change.mat'],'change_in_offset_AJ','time_around_jump','mean_bm_pre_jump','mean_bw_pre_jump','offset_AJ','longer_offset_AJ','first_return_frame');
-save([path,'\bm_change.mat'],'bm_aj')
+save([path,'\bump_parameter_change.mat'],'bm_aj','bw_aj')
 
 close all; clear all;
