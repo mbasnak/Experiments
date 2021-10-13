@@ -27,7 +27,7 @@ ver_offset = ver_offset(~cellfun(@isempty,struct2cell(ver_offset)));
 %combine data
 all_offsets = [];
 for fly = 1:length(data)
-   all_offsets(fly,1) = data(fly).mean_reference_offset2;
+   all_offsets(fly,1) = data(fly).mean_reference_offset;
    all_offsets(fly,2) = ver_offset(fly).mean_verifying_offset;
 end
 
