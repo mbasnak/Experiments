@@ -4,7 +4,7 @@ clear all; close all;
 
 %% Load data
 
-path = 'Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp35\data';
+path = 'Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp35\data\high_reliability';
 
 folderContents = dir(path);
 
@@ -76,6 +76,97 @@ xlabel('Block #');
 ylabel([{'Absolute difference in offset mean'};{'with respect to previous block'}]);
 
 saveas(gcf,[path,'\groupPlots\diff_offset.png']);
+
+%% Comparison in offset between block 1 and 3
+
+figure('Position',[100 100 1000 800]),
+subplot(1,4,[1 3]),
+plot(rad2deg([offset_mean(:,1),offset_mean(:,3)]'),'-o','color',[.5 .5 .5])
+xlim([0 3]);
+ylim([-180 180]);
+xticks([1 2])
+xticklabels({'block 1', 'block 3'});
+title('Mean offset');
+
+diff_offset = rad2deg(abs(circ_dist(offset_mean(:,1),offset_mean(:,3))));
+subplot(1,4,4),
+boxplot(diff_offset)
+title('Abs difference');
+
+saveas(gcf,[path,'\groupPlots\diff_offset_1_and_3.png']);
+
+%% Comparison in offset betwwn block 2 and 4
+
+figure('Position',[100 100 1000 800]),
+subplot(1,4,[1 3]),
+plot(rad2deg([offset_mean(:,2),offset_mean(:,4)]'),'-o','color',[.5 .5 .5])
+xlim([0 3]);
+ylim([-180 180]);
+xticks([1 2])
+xticklabels({'block 2', 'block 4'});
+title('Mean offset');
+
+diff_offset = rad2deg(abs(circ_dist(offset_mean(:,2),offset_mean(:,4))));
+subplot(1,4,4),
+boxplot(diff_offset)
+title('Abs difference');
+
+saveas(gcf,[path,'\groupPlots\diff_offset_2_and_4.png']);
+
+%% Comparison between blocks 3 and 5
+
+figure('Position',[100 100 1000 800]),
+subplot(1,4,[1 3]),
+plot(rad2deg([offset_mean(:,3),offset_mean(:,5)]'),'-o','color',[.5 .5 .5])
+xlim([0 3]);
+ylim([-180 180]);
+xticks([1 2])
+xticklabels({'block 3', 'block 5'});
+title('Mean offset');
+
+diff_offset = rad2deg(abs(circ_dist(offset_mean(:,3),offset_mean(:,5))));
+subplot(1,4,4),
+boxplot(diff_offset)
+title('Abs difference');
+
+saveas(gcf,[path,'\groupPlots\diff_offset_3_and_5.png']);
+
+%% Comparison between blocks 1 and 4 (same cue)
+
+figure('Position',[100 100 1000 800]),
+subplot(1,4,[1 3]),
+plot(rad2deg([offset_mean(:,1),offset_mean(:,4)]'),'-o','color',[.5 .5 .5])
+xlim([0 3]);
+ylim([-180 180]);
+xticks([1 2])
+xticklabels({'block 1', 'block 4'});
+title('Mean offset');
+
+diff_offset = rad2deg(abs(circ_dist(offset_mean(:,1),offset_mean(:,4))));
+subplot(1,4,4),
+boxplot(diff_offset)
+title('Abs difference');
+
+saveas(gcf,[path,'\groupPlots\diff_offset_1_and_4.png']);
+
+
+%% Comparison between blocks 2 and 5 (same cue)
+
+figure('Position',[100 100 1000 800]),
+subplot(1,4,[1 3]),
+plot(rad2deg([offset_mean(:,2),offset_mean(:,5)]'),'-o','color',[.5 .5 .5])
+xlim([0 3]);
+ylim([-180 180]);
+xticks([1 2])
+xticklabels({'block 2', 'block 5'});
+title('Mean offset');
+
+diff_offset = rad2deg(abs(circ_dist(offset_mean(:,2),offset_mean(:,5))));
+subplot(1,4,4),
+boxplot(diff_offset)
+title('Abs difference');
+
+saveas(gcf,[path,'\groupPlots\diff_offset_2_and_5.png']);
 
 %% Plot bump parameters
 
@@ -157,3 +248,6 @@ xlabel('Block #');
 ylabel([{'Absolute difference in heading mean'};{'with respect to previous block'}]);
 
 saveas(gcf,[path,'\groupPlots\diff_heading.png']);
+
+%%
+close all; clear all;
