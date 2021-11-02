@@ -53,10 +53,12 @@ fly_color = colors_for_plots(fly_ID,:);
 
 %% Determine when the stimuli are on
 
-figure,
-plot(continuous_data.fr_y_ds)
-hold on
-plot(continuous_data.wind_valve)
+%Uncomment the below figure to check when the panels and wind are on
+% figure,
+% plot(continuous_data.fr_y_ds)
+% hold on
+% plot(continuous_data.wind_valve)
+% legend('Panels on','Wind on');
 
 panels_on = continuous_data.fr_y_ds>7;
 wind_on = continuous_data.wind_valve>2;
@@ -67,6 +69,119 @@ if mode(panels_on(1:100)) == 1
     configuration = 1; %bar first
 else
     configuration = 2; %wind first
+end
+
+%% Look for change in stimuli
+
+%Find the frames where the stimuli change
+panels_change = abs(diff(panels_on));
+panels_change_frames = find(panels_change>0.5);
+wind_change = abs(diff(wind_on));
+wind_change_frames = find(wind_change>0.5);
+
+%Conversion factors
+sec_to_frames = length(continuous_data.dff_matrix)/continuous_data.time(end);
+frames_to_sec = continuous_data.time(end)/length(continuous_data.dff_matrix);
+
+%% Define block type (1 = bar, 2 = wind, 3 = both pre jump, 4 = both post jump)
+
+block = {};
+
+if configuration == 1
+    block{1} = 1;
+    block{2} = 2;
+    block{3} = 3;
+    block{4} = 1;
+    block{5} = 2;
+    block{6} = 3;
+    block{7} = 4;
+    block{8} = 1;
+    block{9} = 2;
+    block{10} = 3;
+    block{11} = 4;
+    block{12} = 1;
+    block{13} = 2;
+    block{14} = 3;
+    block{15} = 4;
+    block{16} = 1;
+    block{17} = 2;
+else
+    block{1} = 2;
+    block{2} = 1;
+    block{3} = 3;
+    block{4} = 2;
+    block{5} = 1;
+    block{6} = 3;
+    block{7} = 4;
+    block{8} = 2;
+    block{9} = 1;
+    block{10} = 3;
+    block{11} = 4;
+    block{12} = 2;
+    block{13} = 1;
+    block{14} = 3;
+    block{15} = 4;
+    block{16} = 2;
+    block{17} = 1;
+end
+
+%% Define the boundaries for the different blocks
+
+boundaries = {};
+
+if configuration == 1
+    
+    boundaries{1} = [480*sec_to_frames,panels_change_frames(1)];
+    boundaries{2} = [panels_change_frames(2)-120*sec_to_frames,panels_change_frames(2)];
+    boundaries{3} = [panels_change_frames(2),wind_change_frames(2)];
+    boundaries{4} = [wind_change_frames(2),panels_change_frames(3)];
+    boundaries{5} = [panels_change_frames(3),panels_change_frames(4)];
+    both_cues_2_full = wind_change_frames(4) - panels_change_frames(4);
+    boundaries{6} = [panels_change_frames(4),floor(panels_change_frames(4)+0.5*both_cues_2_full)];
+    boundaries{7} = [floor(panels_change_frames(4)+0.5*both_cues_2_full), wind_change_frames(4)];
+    boundaries{8} = [wind_change_frames(4),wind_change_frames(5)];
+    boundaries{9} = [wind_change_frames(5),panels_change_frames(6)];
+    both_cues_3_full = wind_change_frames(6) - panels_change_frames(6);
+    boundaries{10} = [panels_change_frames(6),floor(panels_change_frames(6)+0.5*both_cues_3_full)];
+    boundaries{11} = [floor(panels_change_frames(6)+0.5*both_cues_3_full),wind_change_frames(6)];
+    boundaries{12} = [wind_change_frames(6),wind_change_frames(7)];
+    boundaries{13} = [wind_change_frames(7),panels_change_frames(8)];
+    both_cues_4_full = wind_change_frames(8) - panels_change_frames(8);
+    boundaries{14} = [panels_change_frames(8),floor(panels_change_frames(8)+0.5*both_cues_4_full)];
+    boundaries{15} = [floor(panels_change_frames(8)+0.5*both_cues_4_full),wind_change_frames(8)];
+    boundaries{16} = [wind_change_frames(8),wind_change_frames(9)];
+    if fly_ID > 3
+        boundaries{17} = [wind_change_frames(9),wind_change_frames(10)];
+    else
+        boundaries{17} = [wind_change_frames(9),length(wind_on)];
+    end
+else
+
+    boundaries{1} = [480*sec_to_frames,wind_change_frames(1)];
+    boundaries{2} = [wind_change_frames(1)-120*sec_to_frames,wind_change_frames(2)];
+    boundaries{3} = [wind_change_frames(2),panels_change_frames(2)];
+    boundaries{4} = [panels_change_frames(2),panels_change_frames(3)];
+    boundaries{5} = [panels_change_frames(3),wind_change_frames(4)];
+    both_cues_2_full = panels_change_frames(4) - wind_change_frames(4);
+    boundaries{6} = [wind_change_frames(4),floor(wind_change_frames(4)+0.5*both_cues_2_full)];
+    boundaries{7} = [floor(wind_change_frames(4)+0.5*both_cues_2_full),panels_change_frames(4)];
+    boundaries{8} = [panels_change_frames(4),panels_change_frames(5)];
+    boundaries{9} = [panels_change_frames(5),wind_change_frames(6)];
+    both_cues_3_full = panels_change_frames(6) - wind_change_frames(6);
+    boundaries{10} = [wind_change_frames(6),floor(wind_change_frames(6)+0.5*both_cues_3_full)];
+    boundaries{11} = [floor(wind_change_frames(6)+0.5*both_cues_3_full),panels_change_frames(6)];
+    boundaries{12} = [panels_change_frames(6),panels_change_frames(7)];
+    boundaries{13} = [panels_change_frames(7),wind_change_frames(8)];
+    both_cues_4_full = panels_change_frames(8) - wind_change_frames(8);
+    boundaries{14} = [wind_change_frames(8),floor(wind_change_frames(8)+0.5*both_cues_4_full)];
+    boundaries{15} = [floor(wind_change_frames(8)+0.5*both_cues_4_full),panels_change_frames(8)];
+    boundaries{16} = [panels_change_frames(8),panels_change_frames(9)];
+    if fly_ID > 3
+        boundaries{17} = [panels_change_frames(9),panels_change_frames(10)];
+    else
+        boundaries{17} = [panels_change_frames(9),length(panels_on)];
+    end
+        
 end
 
 %% Import wind data for the first 3 flies
@@ -86,21 +201,32 @@ if fly_ID < 4
     %compute the cross-correlation with respect to the bar, to adjust the time
     %a bit for it to match at its best
     bar_pos = wrapTo180(continuous_data.panel_angle);
-    figure, plot(bar_pos)
-    hold on
-    plot(motor_pos_un)
+    
+    %Uncomment to see what the uncorrected wind data looks like
+%     figure,
+%     plot(bar_pos)
+%     hold on
+%     plot(motor_pos_un)
+%     legend('Bar position', 'Uncorrected wind position');
+    
     [c,lags] = xcorr(motor_pos_un,bar_pos);
-    figure, stem(lags,c)
+    %Uncomment to see the correlation at different lags.
+%     figure,
+%     stem(lags,c)
+%     xlabel('Lag (frames)'); ylabel('Correlation');
     %find max correlation lag
     [~, opt_corr] = max(c);
     opt_lag = lags(opt_corr);
     
     motor_pos = [motor_pos_un(opt_lag+1:end);repelem(NaN,opt_lag,1)];
     motor_pos = motor_pos';
-    figure,
-    plot(bar_pos)
-    hold on
-    plot(motor_pos)
+    
+    %figure to check if the lag is correct
+%     figure,
+%     plot(bar_pos)
+%     hold on
+%     plot(motor_pos)
+%     legend('bar position', 'wind position');
     
 else
     motor_pos = wrapTo180(rad2deg(continuous_data.motor_pos));
@@ -140,7 +266,10 @@ for jump = 1:length(coded_wind_jump_frames)
 end
 %correct for the flies for which the method didn't work well
 if fly_ID == 4
-    real_wind_jump_frames(1) = 12592; 
+    real_wind_jump_frames(1) = 12592;
+elseif fly_ID ==5
+    real_wind_jump_frames(1) = floor(1851*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_bar_jump_frames(2) = floor(2331*length(continuous_data.dff_matrix)/continuous_data.time(end));
 elseif fly_ID == 6
     real_wind_jump_frames(1) = floor(1372*length(continuous_data.dff_matrix)/continuous_data.time(end));
     real_wind_jump_frames(2) = floor(2332*length(continuous_data.dff_matrix)/continuous_data.time(end));
@@ -249,10 +378,42 @@ else
     xline(real_wind_jump_sec,'color',[0.4660 0.6740 0.1880],'linewidth',4,'handlevisibility','off')
     xline(real_bar_jump_sec,'color',[0.4940 0.1840 0.5560],'linewidth',4)
 end
+xlabel('Time (sec)');
 title('Bump width');
 xlim([0 continuous_data.time(end)]);
 
 saveas(gcf,[path,'\plots\full_experiment.png']);
+% 
+% %% Check the boundaries
+% 
+% figure('Position',[100 100 1400 800]),
+% subplot(2,1,1)
+% plot(x_out_bar,bar_to_plot,'.','LineWidth',1.5)
+% hold on
+% plot(x_out_motor,motor_to_plot,'.','LineWidth',1.5)
+% %add boundaries
+% for bout = 1:17
+%    xline(frames_to_sec*boundaries{bout}(1),'b','linewidth',2);
+% end
+% title('Start of bout');
+% legend('Bar position','Wind position')
+% ylim([-180 180]);
+% xlim([0 x_out_bump(end)]);
+% set(gca,'xticklabel',{[]})
+% 
+% subplot(2,1,2)
+% plot(x_out_bar,bar_to_plot,'.','LineWidth',1.5)
+% hold on
+% plot(x_out_motor,motor_to_plot,'.','LineWidth',1.5)
+% %add boundaries
+% for bout = 1:17
+%    xline(frames_to_sec*boundaries{bout}(2),'r','linewidth',2);
+% end
+% title('End of bout');
+% legend('Bar position','Wind position')
+% ylim([-180 180]);
+% xlim([0 x_out_bump(end)]);
+% set(gca,'xticklabel',{[]})
 
 %% Close-up around the jumps
 
@@ -279,7 +440,7 @@ for jump = 1:length(real_bar_jump_frames)
    [x_out_time,bar_pos_to_plot] = removeWrappedLines(time_to_plot,bar_to_plot);
    plot(x_out_time,bar_pos_to_plot,'linewidth',2)
    wind_to_plot = motor_pos(real_bar_jump_frames(jump)-100:real_bar_jump_frames(jump)+101);
-   [x_out_time,wind_pos_to_plot] = removeWrappedLines(time_to_plot,wind_to_plot);
+   [x_out_time,wind_pos_to_plot] = removeWrappedLines(time_to_plot,wind_to_plot');
    plot(x_out_time,wind_pos_to_plot,'linewidth',2)
    xline(time(real_bar_jump_frames(jump)),'k','linestyle','--','linewidth',2)
    ylim([-180 180]);
@@ -327,190 +488,6 @@ for jump = 1:length(real_wind_jump_frames)
 end
 
 
-
-%% Look for change in stimuli
-
-panels_change = abs(diff(panels_on));
-panels_change_frames = find(panels_change>0.5);
-wind_change = abs(diff(wind_on));
-wind_change_frames = find(wind_change>0.5);
-
-sec_to_frames = length(continuous_data.dff_matrix)/continuous_data.time(end);
-
-%% Define block type (1 = bar, 2 = wind, 3 = both)
-block = {};
-if configuration == 1
-    block{1} = 1;
-    block{2} = 2;
-    block{3} = 3;
-    block{4} = 1;
-    block{5} = 2;
-    block{6} = 3;
-    block{7} = 3;
-    block{8} = 1;
-    block{9} = 2;
-    block{10} = 3;
-    block{11} = 3;
-    block{12} = 1;
-    block{13} = 2;
-    block{14} = 3;
-    block{15} = 3;
-    block{16} = 1;
-    block{17} = 2;
-else
-    block{1} = 2;
-    block{2} = 1;
-    block{3} = 3;
-    block{4} = 2;
-    block{5} = 1;
-    block{6} = 3;
-    block{7} = 3;
-    block{8} = 2;
-    block{9} = 1;
-    block{10} = 3;
-    block{11} = 3;
-    block{12} = 2;
-    block{13} = 1;
-    block{14} = 3;
-    block{15} = 3;
-    block{16} = 2;
-    block{17} = 1;
-end
-
-%% Define the boundaries for the different blocks
-
-boundaries = {};
-
-if configuration == 1
-    
-    boundaries{1} = [480*sec_to_frames,panels_change_frames(1)];
-    boundaries{2} = [panels_change_frames(2)-120*sec_to_frames,panels_change_frames(2)];
-    boundaries{3} = [panels_change_frames(2),wind_change_frames(2)];
-    boundaries{4} = [wind_change_frames(2),panels_change_frames(3)];
-    boundaries{5} = [panels_change_frames(3),panels_change_frames(4)];
-    both_cues_2_full = wind_change_frames(4) - panels_change_frames(4);
-    boundaries{6} = [panels_change_frames(4),floor(panels_change_frames(4)+0.5*both_cues_2_full)];
-    boundaries{7} = [floor(panels_change_frames(4)+0.5*both_cues_2_full), wind_change_frames(4)];
-    boundaries{8} = [wind_change_frames(4),wind_change_frames(5)];
-    boundaries{9} = [wind_change_frames(5):panels_change_frames(6)];
-    both_cues_3_full = wind_change_frames(6) - panels_change_frames(6);
-    boundaries{10} = [panels_change_frames(6),floor(panels_change_frames(6)+0.5*both_cues_3_full)];
-    boundaries{11} = [floor(panels_change_frames(6)+0.5*both_cues_3_full),wind_change_frames(6)];
-    boundaries{12} = [wind_change_frames(6):wind_change_frames(7)];
-    boundaries{13} = [wind_change_frames(7):panels_change_frames(8)];
-    both_cues_4_full = wind_change_frames(8) - panels_change_frames(8);
-    boundaries{14} = [panels_change_frames(8),floor(panels_change_frames(8)+0.5*both_cues_4_full)];
-    boundaries{15} = [floor(panels_change_frames(8)+0.5*both_cues_4_full),wind_change_frames(8)];
-    boundaries{16} = [wind_change_frames(8),wind_change_frames(9)];
-    boundaries{17} = [wind_change_frames(9),wind_change_frames(9)];
-else
-
-    boundaries{1} = [480*sec_to_frames,wind_change_frames(1)];
-    boundaries{2} = [wind_change_frames(1)-120*sec_to_frames,wind_change_frames(2)];
-    boundaries{3} = [wind_change_frames(2),panels_change_frames(2)];
-    boundaries{4} = [panels_change_frames(2),panels_change_frames(3)];
-    boundaries{5} = [panels_change_frames(3),wind_change_frames(4)];
-    both_cues_2_full = panels_change_frames(4) - wind_change_frames(4);
-    boundaries{6} = [wind_change_frames(4),floor(wind_change_frames(4)+0.5*both_cues_2_full)];
-    boundaries{7} = [floor(wind_change_frames(4)+0.5*both_cues_2_full),panels_change_frames(4)];
-    boundaries{8} = [panels_change_frames(4),panels_change_frames(5)];
-    boundaries{9} = [panels_change_frames(5),wind_change_frames(6)];
-    both_cues_3_full = panels_change_frames(6) - wind_change_frames(6);
-    boundaries{10} = [wind_change_frames(6),floor(wind_change_frames(6)+0.5*both_cues_3_full)];
-    boundaries{11} = [floor(wind_change_frames(6)+0.5*both_cues_3_full),panels_change_frames(6)];
-    boundaries{12} = [panels_change_frames(6),panels_change_frames(7)];
-    boundaries{13} = [panels_change_frames(7),wind_change_frames(8)];
-    both_cues_4_full = panels_change_frames(8) - wind_change_frames(8);
-    boundaries{14} = [wind_change_frames(8),floor(wind_change_frames(8)+0.5*both_cues_4_full)];
-    boundaries{15} = [floor(wind_change_frames(8)+0.5*both_cues_4_full),panels_change_frames(8)];
-    boundaries{16} = [panels_change_frames(8),panels_change_frames(9)];
-    boundaries{17} = [panels_change_frames(9),panels_change_frames(10)];
-        
-end
-
-
-%% Plot the offset evolution
-
-figure('Position',[0 300 1800 400]),
-
-for i = 1:length(boundaries)
-    subplot(2,length(boundaries),i)
-    if block{i} == 1
-        polarhistogram(deg2rad(bar_offset(boundaries{i}(1):boundaries{i}(2))),15,'FaceColor',[0.8500 0.3250 0.0980])
-        title('Bar');
-    elseif block{i} ==2
-        polarhistogram(deg2rad(bar_offset(boundaries{i}(1):boundaries{i}(2))),15,'FaceColor',[0.9290 0.6940 0.1250])
-        title('Wind');
-    else
-        polarhistogram(deg2rad(bar_offset(boundaries{i}(1):boundaries{i}(2))),15,'FaceColor',[0.4660 0.6740 0.1880])
-        title('Both');
-    end
-    set(gca,'ThetaZeroLocation','top');
-    set(gca,'Thetaticklabels',{});
-    set(gca,'Rticklabels',{});
-    
-    
-    subplot(2,length(boundaries),i+17)
-    if block{i} == 1
-        polarhistogram(deg2rad(wind_offset(boundaries{i}(1):boundaries{i}(2))),15,'FaceColor',[0.8500 0.3250 0.0980])
-        title('Bar');
-    elseif block{i} ==2
-        polarhistogram(deg2rad(wind_offset(boundaries{i}(1):boundaries{i}(2))),15,'FaceColor',[0.9290 0.6940 0.1250])
-        title('Wind');
-    else
-        polarhistogram(deg2rad(wind_offset(boundaries{i}(1):boundaries{i}(2))),15,'FaceColor',[0.4660 0.6740 0.1880])
-        title('Both');
-    end
-    set(gca,'ThetaZeroLocation','top');
-    set(gca,'Thetaticklabels',{});
-    set(gca,'Rticklabels',{});
-    
-end
-
-saveas(gcf,[path,'\plots\offset_evolution.png']);
-
-%% Offset evolution thresholded with model fit
-
-figure('Position',[0 300 1800 400]),
-
-for i = 1:length(boundaries)
-    subplot(2,length(boundaries),i)
-    baroff = bar_offset(boundaries{i}(1):boundaries{i}(2));
-    if block{i} == 1
-        polarhistogram(deg2rad(baroff(continuous_data.adj_rs(boundaries{i}(1):boundaries{i}(2))>0.5)),15,'FaceColor',[0.8500 0.3250 0.0980])
-        title('Bar');
-    elseif block{i} ==2
-        polarhistogram(deg2rad(baroff(continuous_data.adj_rs(boundaries{i}(1):boundaries{i}(2))>0.5)),15,'FaceColor',[0.9290 0.6940 0.1250])
-        title('Wind');
-    else
-        polarhistogram(deg2rad(baroff(continuous_data.adj_rs(boundaries{i}(1):boundaries{i}(2))>0.5)),15,'FaceColor',[0.4660 0.6740 0.1880])
-        title('Both');
-    end
-    set(gca,'ThetaZeroLocation','top');
-    set(gca,'Thetaticklabels',{});
-    set(gca,'Rticklabels',{});
-    
-    
-    subplot(2,length(boundaries),i+17)
-    windoff = wind_offset(boundaries{i}(1):boundaries{i}(2));
-    if block{i} == 1
-        polarhistogram(deg2rad(windoff(continuous_data.adj_rs(boundaries{i}(1):boundaries{i}(2))>0.5)),15,'FaceColor',[0.8500 0.3250 0.0980])
-        title('Bar');
-    elseif block{i} ==2
-        polarhistogram(deg2rad(windoff(continuous_data.adj_rs(boundaries{i}(1):boundaries{i}(2))>0.5)),15,'FaceColor',[0.9290 0.6940 0.1250])
-        title('Wind');
-    else
-        polarhistogram(deg2rad(windoff(continuous_data.adj_rs(boundaries{i}(1):boundaries{i}(2))>0.5)),15,'FaceColor',[0.4660 0.6740 0.1880])
-        title('Both');
-    end
-    set(gca,'ThetaZeroLocation','top');
-    set(gca,'Thetaticklabels',{});
-    set(gca,'Rticklabels',{});
-    
-end
-
-saveas(gcf,[path,'\plots\thresh_offset_evolution.png']);
-
 %% Look at offset variability of last darkness bout
 
 if fly_ID >3
@@ -524,108 +501,18 @@ if fly_ID >3
 end
 
 
-%% Threshold movement data
+%% Threshold movement data and goodness of fit
 
-figure,
-histogram(continuous_data.total_mvt_ds)
+% Uncomment below to see the total movement distribution
+% figure,
+% histogram(continuous_data.total_mvt_ds)
+% xlabel('Total movement (deg/s)');
+% ylabel('Counts');
 mvt_thresh = 25;
 moving = continuous_data.total_mvt_ds>mvt_thresh;
-
-%% Bump parameter distribution
-
-%Bump magnitude per section
 good_fit = continuous_data.adj_rs>0.5;
-bar_only_BM = continuous_data.bump_magnitude(panels_on & ~wind_on & good_fit');
-wind_only_BM = continuous_data.bump_magnitude(~panels_on & wind_on & good_fit');
-both_cues_BM = continuous_data.bump_magnitude(panels_on & wind_on & good_fit');
-allData = [bar_only_BM,wind_only_BM,both_cues_BM];
-stim_ID = [repelem(1,1,length(bar_only_BM)),repelem(2,1,length(wind_only_BM)),repelem(3,1,length(both_cues_BM))];
-alldata_BM = table(allData,stim_ID);
 
-figure('Position',[100 100 1200 800]),
-subplot(1,2,1)
-boxplot(alldata_BM.allData,alldata_BM.stim_ID,'color','k')
-set(findobj(gca,'type','line'),'linew',2)
-ylim([0 4]);
-xticks([1 2 3])
-xticklabels({'Bar only','Wind only','Both cues'})
-ylabel('Bump magnitude');
-
-
-% Bump width per section
-bar_only_BW = continuous_data.bump_width(panels_on & ~wind_on & good_fit');
-wind_only_BW = continuous_data.bump_width(~panels_on & wind_on & good_fit');
-both_cues_BW = continuous_data.bump_width(panels_on & wind_on & good_fit');
-allData_BW = [bar_only_BW,wind_only_BW,both_cues_BW];
-alldata_BW = table(allData_BW,stim_ID);
-
-subplot(1,2,2)
-boxplot(alldata_BW.allData_BW,alldata_BW.stim_ID,'color','k')
-set(findobj(gca,'type','line'),'linew',2)
-ylim([0 5]);
-xticks([1 2 3])
-xticklabels({'Bar only','Wind only','Both cues'})
-ylabel('Bump width');
-
-saveas(gcf,[path,'\plots\bump_parameters.png']);
-
-%% Bump parameter distribution thresholded with movement data
-
-%Bump magnitude per section
-bar_only_BM_mvt_thresh = continuous_data.bump_magnitude(panels_on & ~wind_on & moving');
-wind_only_BM_mvt_thresh = continuous_data.bump_magnitude(~panels_on & wind_on & moving');
-both_cues_BM_mvt_thresh = continuous_data.bump_magnitude(panels_on & wind_on & moving');
-allData_mvt_thresh = [bar_only_BM_mvt_thresh,wind_only_BM_mvt_thresh,both_cues_BM_mvt_thresh];
-stim_ID_mvt_thresh = [repelem(1,1,length(bar_only_BM_mvt_thresh)),repelem(2,1,length(wind_only_BM_mvt_thresh)),repelem(3,1,length(both_cues_BM_mvt_thresh))];
-alldata_BM_mvt_thresh = table(allData_mvt_thresh,stim_ID_mvt_thresh);
-
-figure('Position',[100 100 1200 800]),
-subplot(1,2,1)
-boxplot(alldata_BM_mvt_thresh.allData_mvt_thresh,alldata_BM_mvt_thresh.stim_ID_mvt_thresh,'color','k')
-set(findobj(gca,'type','line'),'linew',2)
-ylim([0 4]);
-xticks([1 2 3])
-xticklabels({'Bar only','Wind only','Both cues'})
-ylabel('Bump magnitude');
-
-
-% Bump width per section
-bar_only_BW_mvt_thresh = continuous_data.bump_width(panels_on & ~wind_on & moving');
-wind_only_BW_mvt_thresh = continuous_data.bump_width(~panels_on & wind_on & moving');
-both_cues_BW_mvt_thresh = continuous_data.bump_width(panels_on & wind_on & moving');
-allData_BW_mvt_thresh = [bar_only_BW_mvt_thresh,wind_only_BW_mvt_thresh,both_cues_BW_mvt_thresh];
-alldata_BW_mvt_thresh = table(allData_BW_mvt_thresh,stim_ID_mvt_thresh);
-
-subplot(1,2,2)
-boxplot(alldata_BW_mvt_thresh.allData_BW_mvt_thresh,alldata_BW_mvt_thresh.stim_ID_mvt_thresh,'color','k')
-set(findobj(gca,'type','line'),'linew',2)
-ylim([0 5]);
-xticks([1 2 3])
-xticklabels({'Bar only','Wind only','Both cues'})
-ylabel('Bump width');
-
-saveas(gcf,[path,'\plots\bump_parameters_mvt_thresh.png']);
-
-%% Bump parameters per block
-
-meanBM_perblock = [];
-meanBW_perblock = [];
-for bout = 1:length(boundaries)
-    bump_mag = continuous_data.bump_magnitude(boundaries{bout}(1):boundaries{bout}(2));
-    bump_width = continuous_data.bump_width(boundaries{bout}(1):boundaries{bout}(2));
-    meanBM_perblock(bout) = nanmean(bump_mag(continuous_data.adj_rs(boundaries{bout}(1):boundaries{bout}(2))>0.5));
-    meanBW_perblock(bout) = nanmean(bump_width(continuous_data.adj_rs(boundaries{bout}(1):boundaries{bout}(2))>0.5));
-end
-
-figure,
-plot(meanBM_perblock,'-ko')
-hold on
-plot(meanBW_perblock,'-ro')
-legend('Bump mag','Bump width');
-saveas(gcf,[path,'\plots\bump_parameters_per_block.png']);
-
-%% Plot the polarhistograms and the bump parameters together
-
+%% Offset and bump parameter analysis thresholding the movement and the fit
 
 figure('Position',[0 300 1800 800]),
 
@@ -633,13 +520,13 @@ for i = 1:length(boundaries)
     subplot(4,length(boundaries),i)
     baroff = bar_offset(boundaries{i}(1):boundaries{i}(2));
     if block{i} == 1
-        polarhistogram(deg2rad(baroff(continuous_data.adj_rs(boundaries{i}(1):boundaries{i}(2))>0.5)),15,'FaceColor',[0.8500 0.3250 0.0980])
+        polarhistogram(deg2rad(baroff(continuous_data.total_mvt_ds(boundaries{i}(1):boundaries{i}(2))>25 & continuous_data.adj_rs(boundaries{i}(1):boundaries{i}(2))>0.5)),15,'FaceColor',[0.8500 0.3250 0.0980])
         title('Bar');
     elseif block{i} ==2
-        polarhistogram(deg2rad(baroff(continuous_data.adj_rs(boundaries{i}(1):boundaries{i}(2))>0.5)),15,'FaceColor',[0.9290 0.6940 0.1250])
+        polarhistogram(deg2rad(baroff(continuous_data.total_mvt_ds(boundaries{i}(1):boundaries{i}(2))>25 & continuous_data.adj_rs(boundaries{i}(1):boundaries{i}(2))>0.5)),15,'FaceColor',[0.9290 0.6940 0.1250])
         title('Wind');
     else
-        polarhistogram(deg2rad(baroff(continuous_data.adj_rs(boundaries{i}(1):boundaries{i}(2))>0.5)),15,'FaceColor',[0.4660 0.6740 0.1880])
+        polarhistogram(deg2rad(baroff(continuous_data.total_mvt_ds(boundaries{i}(1):boundaries{i}(2))>25 & continuous_data.adj_rs(boundaries{i}(1):boundaries{i}(2))>0.5)),15,'FaceColor',[0.4660 0.6740 0.1880])
         title('Both');
     end
     set(gca,'ThetaZeroLocation','top');
@@ -650,62 +537,13 @@ for i = 1:length(boundaries)
     subplot(4,length(boundaries),i+17)
     windoff = wind_offset(boundaries{i}(1):boundaries{i}(2));
     if block{i} == 1
-        polarhistogram(deg2rad(windoff(continuous_data.adj_rs(boundaries{i}(1):boundaries{i}(2))>0.5)),15,'FaceColor',[0.8500 0.3250 0.0980])
+        polarhistogram(deg2rad(windoff(continuous_data.total_mvt_ds(boundaries{i}(1):boundaries{i}(2))>25 & continuous_data.adj_rs(boundaries{i}(1):boundaries{i}(2))>0.5)),15,'FaceColor',[0.8500 0.3250 0.0980])
         title('Bar');
     elseif block{i} ==2
-        polarhistogram(deg2rad(windoff(continuous_data.adj_rs(boundaries{i}(1):boundaries{i}(2))>0.5)),15,'FaceColor',[0.9290 0.6940 0.1250])
+        polarhistogram(deg2rad(windoff(continuous_data.total_mvt_ds(boundaries{i}(1):boundaries{i}(2))>25 & continuous_data.adj_rs(boundaries{i}(1):boundaries{i}(2))>0.5)),15,'FaceColor',[0.9290 0.6940 0.1250])
         title('Wind');
     else
-        polarhistogram(deg2rad(windoff(continuous_data.adj_rs(boundaries{i}(1):boundaries{i}(2))>0.5)),15,'FaceColor',[0.4660 0.6740 0.1880])
-        title('Both');
-    end
-    set(gca,'ThetaZeroLocation','top');
-    set(gca,'Thetaticklabels',{});
-    set(gca,'Rticklabels',{});
-    
-end
-
-%add the bump parameters
-subplot(4,length(boundaries),[35:68])
-plot(meanBM_perblock,'-ko')
-hold on
-plot(meanBW_perblock,'-ro')
-xlim([0.6 17.4]);
-legend('Bump mag','Bump width');
-
-
-%% Repeat offset and bump parameter analysis thresholding the movement
-
-figure('Position',[0 300 1800 800]),
-
-for i = 1:length(boundaries)
-    subplot(4,length(boundaries),i)
-    baroff = bar_offset(boundaries{i}(1):boundaries{i}(2));
-    if block{i} == 1
-        polarhistogram(deg2rad(baroff(continuous_data.total_mvt_ds(boundaries{i}(1):boundaries{i}(2))>25)),15,'FaceColor',[0.8500 0.3250 0.0980])
-        title('Bar');
-    elseif block{i} ==2
-        polarhistogram(deg2rad(baroff(continuous_data.total_mvt_ds(boundaries{i}(1):boundaries{i}(2))>25)),15,'FaceColor',[0.9290 0.6940 0.1250])
-        title('Wind');
-    else
-        polarhistogram(deg2rad(baroff(continuous_data.total_mvt_ds(boundaries{i}(1):boundaries{i}(2))>25)),15,'FaceColor',[0.4660 0.6740 0.1880])
-        title('Both');
-    end
-    set(gca,'ThetaZeroLocation','top');
-    set(gca,'Thetaticklabels',{});
-    set(gca,'Rticklabels',{});
-    
-    
-    subplot(4,length(boundaries),i+17)
-    windoff = wind_offset(boundaries{i}(1):boundaries{i}(2));
-    if block{i} == 1
-        polarhistogram(deg2rad(windoff(continuous_data.total_mvt_ds(boundaries{i}(1):boundaries{i}(2))>25)),15,'FaceColor',[0.8500 0.3250 0.0980])
-        title('Bar');
-    elseif block{i} ==2
-        polarhistogram(deg2rad(windoff(continuous_data.total_mvt_ds(boundaries{i}(1):boundaries{i}(2))>25)),15,'FaceColor',[0.9290 0.6940 0.1250])
-        title('Wind');
-    else
-        polarhistogram(deg2rad(windoff(continuous_data.total_mvt_ds(boundaries{i}(1):boundaries{i}(2))>25)),15,'FaceColor',[0.4660 0.6740 0.1880])
+        polarhistogram(deg2rad(windoff(continuous_data.total_mvt_ds(boundaries{i}(1):boundaries{i}(2))>25 & continuous_data.adj_rs(boundaries{i}(1):boundaries{i}(2))>0.5)),15,'FaceColor',[0.4660 0.6740 0.1880])
         title('Both');
     end
     set(gca,'ThetaZeroLocation','top');
@@ -721,8 +559,8 @@ meanBW_perblock_thresh = [];
 for bout = 1:length(boundaries)
     bump_mag = continuous_data.bump_magnitude(boundaries{bout}(1):boundaries{bout}(2));
     bump_width = continuous_data.bump_width(boundaries{bout}(1):boundaries{bout}(2));
-    meanBM_perblock_thresh(bout) = nanmean(bump_mag(continuous_data.total_mvt_ds(boundaries{bout}(1):boundaries{bout}(2))>25));
-    meanBW_perblock_thresh(bout) = nanmean(bump_width(continuous_data.total_mvt_ds(boundaries{bout}(1):boundaries{bout}(2))>25));
+    meanBM_perblock_thresh(bout) = nanmean(bump_mag(continuous_data.total_mvt_ds(boundaries{bout}(1):boundaries{bout}(2))>25 & continuous_data.adj_rs(boundaries{bout}(1):boundaries{bout}(2))>0.5));
+    meanBW_perblock_thresh(bout) = nanmean(bump_width(continuous_data.total_mvt_ds(boundaries{bout}(1):boundaries{bout}(2))>25 & continuous_data.adj_rs(boundaries{bout}(1):boundaries{bout}(2))>0.5));
 end
 plot(meanBM_perblock_thresh,'-ko')
 hold on
@@ -730,28 +568,90 @@ plot(meanBW_perblock_thresh,'-ro')
 xlim([0.6 17.4]);
 legend('Bump mag','Bump width');
 
-saveas(gcf,[path,'\plots\bump_parameters_and_offset_per_block_mvt_thresh.png']);
-
-%% Compare bump parameters with and without the mvt threshold
-
-figure('Position',[100 100 1000 600]),
-subplot(2,1,1)
-plot(meanBM_perblock,'-o')
-hold on
-plot(meanBM_perblock_thresh,'-o')
-legend('Without thresh','With thresh');
-title('Bump magnitude');
+saveas(gcf,[path,'\plots\bump_parameters_and_offset_per_block_mvt_and_fit_thresh.png']);
 
 
-subplot(2,1,2   )
-plot(meanBW_perblock,'-o')
-hold on
-plot(meanBW_perblock_thresh,'-o')
-legend('Without thresh','With thresh');
-title('Bump width');
+%% Bump parameter distribution thresholded with movement and fit data
 
-saveas(gcf,[path,'\plots\bump_parameters_with_and_without_mvt_thresh.png']);
+%Bump magnitude per section
+bar_only_BM_mvt_thresh = continuous_data.bump_magnitude(panels_on & ~wind_on & moving' & good_fit');
+wind_only_BM_mvt_thresh = continuous_data.bump_magnitude(~panels_on & wind_on & moving' & good_fit');
+both_cues_BM_mvt_thresh = continuous_data.bump_magnitude(panels_on & wind_on & moving' & good_fit');
+allData_mvt_thresh = [bar_only_BM_mvt_thresh,wind_only_BM_mvt_thresh,both_cues_BM_mvt_thresh];
+stim_ID_mvt_thresh = [repelem(1,1,length(bar_only_BM_mvt_thresh)),repelem(2,1,length(wind_only_BM_mvt_thresh)),repelem(3,1,length(both_cues_BM_mvt_thresh))];
+alldata_BM_mvt_thresh = table(allData_mvt_thresh,stim_ID_mvt_thresh);
 
+figure('Position',[100 100 1200 800]),
+subplot(1,2,1)
+boxplot(alldata_BM_mvt_thresh.allData_mvt_thresh,alldata_BM_mvt_thresh.stim_ID_mvt_thresh,'color','k')
+set(findobj(gca,'type','line'),'linew',2)
+ylim([0 4]);
+xticks([1 2 3])
+xticklabels({'Bar only','Wind only','Both cues'})
+ylabel('Bump magnitude');
+
+
+% Bump width per section
+bar_only_BW_mvt_thresh = continuous_data.bump_width(panels_on & ~wind_on & moving' & good_fit');
+wind_only_BW_mvt_thresh = continuous_data.bump_width(~panels_on & wind_on & moving' & good_fit');
+both_cues_BW_mvt_thresh = continuous_data.bump_width(panels_on & wind_on & moving' & good_fit');
+allData_BW_mvt_thresh = [bar_only_BW_mvt_thresh,wind_only_BW_mvt_thresh,both_cues_BW_mvt_thresh];
+alldata_BW_mvt_thresh = table(allData_BW_mvt_thresh,stim_ID_mvt_thresh);
+
+subplot(1,2,2)
+boxplot(alldata_BW_mvt_thresh.allData_BW_mvt_thresh,alldata_BW_mvt_thresh.stim_ID_mvt_thresh,'color','k')
+set(findobj(gca,'type','line'),'linew',2)
+ylim([0 5]);
+xticks([1 2 3])
+xticklabels({'Bar only','Wind only','Both cues'})
+ylabel('Bump width');
+
+saveas(gcf,[path,'\plots\bump_parameters_mvt_and_fit_thresh.png']);
+
+%% Bump parameter distribution, dividing the cue combination bouts into pre and post jump
+
+%pre jump frames
+both_cues_pre_jump_frames = boundaries([block{:}]==3);
+both_cues_pre_jump = [both_cues_pre_jump_frames{1}(1):both_cues_pre_jump_frames{1}(2),both_cues_pre_jump_frames{2}(1):both_cues_pre_jump_frames{2}(2),both_cues_pre_jump_frames{3}(1):both_cues_pre_jump_frames{3}(2),both_cues_pre_jump_frames{4}(1):both_cues_pre_jump_frames{4}(2)];
+both_cues_pre = zeros(length(panels_on),1);
+both_cues_pre(both_cues_pre_jump) = 1;
+
+%post jump frames
+both_cues_post_jump_frames = boundaries([block{:}]==4);
+both_cues_post_jump = [both_cues_post_jump_frames{1}(1):both_cues_post_jump_frames{1}(2),both_cues_post_jump_frames{2}(1):both_cues_post_jump_frames{2}(2),both_cues_post_jump_frames{3}(1):both_cues_post_jump_frames{3}(2)];
+both_cues_post = zeros(length(panels_on),1);
+both_cues_post(both_cues_post_jump) = 1;
+
+both_cues_BM_mvt_thresh_pre = continuous_data.bump_magnitude(panels_on & wind_on & moving' & good_fit' & both_cues_pre);
+both_cues_BM_mvt_thresh_post = continuous_data.bump_magnitude(panels_on & wind_on & moving' & good_fit' & both_cues_post);
+allData_thresh = [bar_only_BM_mvt_thresh,wind_only_BM_mvt_thresh,both_cues_BM_mvt_thresh_pre,both_cues_BM_mvt_thresh_post];
+stim_ID_thresh = [repelem(1,1,length(bar_only_BM_mvt_thresh)),repelem(2,1,length(wind_only_BM_mvt_thresh)),repelem(3,1,length(both_cues_BM_mvt_thresh_pre)),repelem(4,1,length(both_cues_BM_mvt_thresh_post))];
+alldata_BM_thresh = table(allData_thresh,stim_ID_thresh);
+
+both_cues_BW_mvt_thresh_pre = continuous_data.bump_width(panels_on & wind_on & moving' & good_fit' & both_cues_pre);
+both_cues_BW_mvt_thresh_post = continuous_data.bump_width(panels_on & wind_on & moving' & good_fit' & both_cues_post);
+allDataBW_thresh = [bar_only_BW_mvt_thresh,wind_only_BW_mvt_thresh,both_cues_BW_mvt_thresh_pre,both_cues_BW_mvt_thresh_post];
+alldata_BW_thresh = table(allDataBW_thresh,stim_ID_thresh);
+
+
+figure('Position',[100 100 1200 800]),
+subplot(1,2,1)
+boxplot(alldata_BM_thresh.allData_thresh,alldata_BM_thresh.stim_ID_thresh,'color','k')
+set(findobj(gca,'type','line'),'linew',2)
+ylim([0 5]);
+xticks([1 2 3 4])
+xticklabels({'Bar only','Wind only','Both cues pre','Both cues post'})
+ylabel('Bump magnitude');
+
+subplot(1,2,2)
+boxplot(alldata_BW_thresh.allDataBW_thresh,alldata_BW_thresh.stim_ID_thresh,'color','k')
+set(findobj(gca,'type','line'),'linew',2)
+ylim([0 5]);
+xticks([1 2 3 4])
+xticklabels({'Bar only','Wind only','Both cues pre','Both cues post'})
+ylabel('Bump width');
+
+saveas(gcf,[path,'\plots\bump_parameters_mvt_and_fit_thresh_four_blocks.png']);
 
 %% Compute the wind plasticity 
 %We will quantify the plasticity here as the difference in the mean offset
@@ -761,30 +661,30 @@ wind_blocks = find([block{:}] == 2);
 
 for bout = 1:length(wind_blocks)-1
     
-    initial_windoff = wind_offset(boundaries{wind_blocks(bout)}(1):boundaries{wind_blocks(bout)}(2));
+    initial_windoff = deg2rad(wind_offset(boundaries{wind_blocks(bout)}(1):boundaries{wind_blocks(bout)}(2)));
     i_thresh_wind_off = initial_windoff(continuous_data.total_mvt_ds(boundaries{wind_blocks(bout)}(1):boundaries{wind_blocks(bout)}(2))>25);
-    final_windoff = wind_offset(boundaries{wind_blocks(bout+1)}(1):boundaries{wind_blocks(bout+1)}(2));
+    final_windoff = deg2rad(wind_offset(boundaries{wind_blocks(bout+1)}(1):boundaries{wind_blocks(bout+1)}(2)));
     f_thresh_wind_off = final_windoff(continuous_data.total_mvt_ds(boundaries{wind_blocks(bout+1)}(1):boundaries{wind_blocks(bout+1)}(2))>25);
     
-    wind_offset_diff(bout) = rad2deg(circ_dist(deg2rad(mean(f_thresh_wind_off)),deg2rad(mean(i_thresh_wind_off))));
+    wind_offset_diff(bout) = rad2deg(circ_dist(circ_mean(f_thresh_wind_off(~isnan(f_thresh_wind_off)),[],2),circ_mean(i_thresh_wind_off(~isnan(i_thresh_wind_off)),[],2)));
 
     figure,
     subplot(2,2,1)
-    plot(i_thresh_wind_off)
-    hold on
+    plot(rad2deg(i_thresh_wind_off),'color',[0.9290 0.6940 0.1250])
+    title(['Initial wind offset = ',num2str(round(rad2deg(circ_mean(i_thresh_wind_off(~isnan(i_thresh_wind_off)),[],2)))),'deg']);
     
     subplot(2,2,2)
-    polarhistogram(deg2rad(i_thresh_wind_off),15)
+    polarhistogram(i_thresh_wind_off,15,'FaceColor',[0.9290 0.6940 0.1250])
     set(gca,'ThetaZeroLocation','top');
     set(gca,'Thetaticklabels',{});
     set(gca,'Rticklabels',{});
     
     subplot(2,2,3)
-    plot(f_thresh_wind_off)
-    hold on
+    plot(rad2deg(f_thresh_wind_off),'color',[0.9290 0.6940 0.1250])
+    title(['Final wind offset = ',num2str(round(rad2deg(circ_mean(f_thresh_wind_off(~isnan(f_thresh_wind_off)),[],2)))),'deg']);
     
     subplot(2,2,4)
-    polarhistogram(deg2rad(f_thresh_wind_off),15)
+    polarhistogram(f_thresh_wind_off,15,'FaceColor',[0.9290 0.6940 0.1250])
     set(gca,'ThetaZeroLocation','top');
     set(gca,'Thetaticklabels',{});
     set(gca,'Rticklabels',{});
@@ -813,12 +713,18 @@ for bout = 1:length(wind_blocks)-1
 end
 
 %Scatter plot of wind plasticity and bump parameters
-figure,
+figure('Position',[100 100 1000 800]),
 subplot(1,2,1)
 plot(pre_wind_BM,abs(wind_offset_diff),'o')
+xlabel('Bump magnitude in preceding cue combination'); ylabel('Wind offset difference');
+ylim([0 180]); xlim([0 3]);
+
 subplot(1,2,2)
 plot(pre_wind_BW,abs(wind_offset_diff),'o')
-    
+xlabel('Bump width in preceding cue combination');
+ylim([0 180]); xlim([0 3]);
+
+saveas(gcf,[path,'\plots\wind_offset_diff_and_bump_par.png']);
 
 
 %% Compute the bar plasticity 
@@ -829,30 +735,30 @@ bar_blocks = find([block{:}] == 1);
 
 for bout = 1:length(bar_blocks)-1
     
-    initial_baroff = bar_offset(boundaries{bar_blocks(bout)}(1):boundaries{bar_blocks(bout)}(2));
+    initial_baroff = deg2rad(bar_offset(boundaries{bar_blocks(bout)}(1):boundaries{bar_blocks(bout)}(2)));
     i_thresh_bar_off = initial_baroff(continuous_data.total_mvt_ds(boundaries{bar_blocks(bout)}(1):boundaries{bar_blocks(bout)}(2))>25);
-    final_baroff = bar_offset(boundaries{bar_blocks(bout+1)}(1):boundaries{bar_blocks(bout+1)}(2));
+    final_baroff = deg2rad(bar_offset(boundaries{bar_blocks(bout+1)}(1):boundaries{bar_blocks(bout+1)}(2)));
     f_thresh_bar_off = final_baroff(continuous_data.total_mvt_ds(boundaries{bar_blocks(bout+1)}(1):boundaries{bar_blocks(bout+1)}(2))>25);
     
-    bar_offset_diff(bout) = rad2deg(circ_dist(deg2rad(mean(f_thresh_bar_off)),deg2rad(mean(i_thresh_bar_off))));
+    bar_offset_diff(bout) = rad2deg(circ_dist(circ_mean(f_thresh_bar_off(~isnan(f_thresh_bar_off))),circ_mean(i_thresh_bar_off(~isnan(i_thresh_bar_off)))));
 
     figure,
     subplot(2,2,1)
-    plot(i_thresh_bar_off)
-    hold on
+    plot(rad2deg(i_thresh_bar_off),'color',[0.8500 0.3250 0.0980])
+    title(['Initial bar offset = ',num2str(round(rad2deg(circ_mean(i_thresh_bar_off(~isnan(i_thresh_bar_off)))))),'deg']);
     
     subplot(2,2,2)
-    polarhistogram(deg2rad(i_thresh_bar_off),15)
+    polarhistogram(i_thresh_bar_off,15,'FaceColor',[0.8500 0.3250 0.0980])
     set(gca,'ThetaZeroLocation','top');
     set(gca,'Thetaticklabels',{});
     set(gca,'Rticklabels',{});
     
     subplot(2,2,3)
-    plot(f_thresh_bar_off)
-    hold on
+    plot(rad2deg(f_thresh_bar_off),'color',[0.8500 0.3250 0.0980])
+    title(['Final wind offset = ',num2str(round(rad2deg(circ_mean(f_thresh_bar_off(~isnan(f_thresh_bar_off)))))),'deg']);
     
     subplot(2,2,4)
-    polarhistogram(deg2rad(f_thresh_bar_off),15)
+    polarhistogram(f_thresh_bar_off,15,'FaceColor',[0.8500 0.3250 0.0980])
     set(gca,'ThetaZeroLocation','top');
     set(gca,'Thetaticklabels',{});
     set(gca,'Rticklabels',{});
@@ -878,12 +784,24 @@ for bout = 1:length(bar_blocks)-1
     end
 end
 
-%Scatter plot of bar plasticity and bump parameters
-figure,
+%Scatter plot of wind plasticity and bump parameters
+figure('Position',[100 100 1000 800]),
 subplot(1,2,1)
 plot(pre_bar_BM,abs(bar_offset_diff),'o')
+xlabel('Bump magnitude in preceding cue combination'); ylabel('Bar offset difference');
+ylim([0 180]); xlim([0 3]);
+
 subplot(1,2,2)
 plot(pre_bar_BW,abs(bar_offset_diff),'o')
+xlabel('Bump width in preceding cue combination');
+ylim([0 180]); xlim([0 3]);
+
+saveas(gcf,[path,'\plots\bar_offset_diff_and_bump_par.png']);
+
+%% Plot the wind plasticity as a function of the difference between the bar and wind offset
+
+
+%% Plot the bar plasticity as a function of the difference between the bar and wind offset
 
 
 %% Get mean total movement for the different blocks
@@ -898,6 +816,7 @@ end
 %% Reproduce Exp35 analysis (focus only on first 5 blocks)
 
 figure('Position',[100 100 1000 600]),
+
 subplot(1,2,1)
 yyaxis left
 plot(meanBM_perblock_thresh(1:5),'-o')
@@ -920,6 +839,7 @@ plot(mean_total_mvt(1:5),'-o')
 xlim([0 6]);
 ylim([0 300]);
 
+saveas(gcf,[path,'\plots\Exp35_rep.png']);
 
 %% Close
 
