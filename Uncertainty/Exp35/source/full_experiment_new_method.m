@@ -73,6 +73,12 @@ offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',-continuous_data.
 %store offset for later
 pre_panels_offset = deg2rad(offset);
 pre_panels_offset_above_thresh = pre_panels_offset(continuous_data.adj_rs>=0.5);
+%get the last 120 sec, and threshold by movement as well
+sec_to_frames = length(continuous_data.time)/continuous_data.time(end);
+moving = continuous_data.total_mvt_ds(end-120*sec_to_frames:end) > 25;
+good_fit = continuous_data.adj_rs(end-120*sec_to_frames:end) >= 0.5;
+pre_panels_offset_final = pre_panels_offset(end-120*sec_to_frames:end);
+pre_panels_offset_final = pre_panels_offset(moving & good_fit);
 [~, offset_var_pre_panels_offset_above_thresh] = circ_std(pre_panels_offset_above_thresh);
 [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
 plot(x_out_offset,offset_to_plot,'LineWidth',1.5,'color','k')
@@ -216,6 +222,12 @@ offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',-continuous_data.
 %store offset for later
 pre_wind_offset = deg2rad(offset);
 pre_wind_offset_above_thresh = pre_wind_offset(continuous_data.adj_rs>=0.5);
+%get the last 120 sec, and threshold by movement as well
+sec_to_frames = length(continuous_data.time)/continuous_data.time(end);
+moving = continuous_data.total_mvt_ds(end-120*sec_to_frames:end) > 25;
+good_fit = continuous_data.adj_rs(end-120*sec_to_frames:end) >= 0.5;
+pre_wind_offset_final = pre_wind_offset(end-120*sec_to_frames:end);
+pre_wind_offset_final = pre_wind_offset(moving & good_fit);
 [~, offset_var_pre_wind_offset_above_thresh] = circ_std(pre_wind_offset_above_thresh);
 [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
 plot(x_out_offset,offset_to_plot,'LineWidth',1.5,'color','k')
@@ -374,6 +386,12 @@ offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',-continuous_data.
 %store offset for later
 combined_offset = deg2rad(offset);
 combined_offset_above_thresh = combined_offset(continuous_data.adj_rs>=0.5);
+%get the last 120 sec, and threshold by movement as well
+sec_to_frames = length(continuous_data.time)/continuous_data.time(end);
+moving = continuous_data.total_mvt_ds(end-120*sec_to_frames:end) > 25;
+good_fit = continuous_data.adj_rs(end-120*sec_to_frames:end) >= 0.5;
+combined_offset_final = combined_offset(end-120*sec_to_frames:end);
+combined_offset_final = combined_offset(moving & good_fit);
 [~, offset_var_combined_offset_above_thresh] = circ_std(combined_offset_above_thresh);
 [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
 plot(x_out_offset,offset_to_plot,'LineWidth',1.5,'color','k')
@@ -498,6 +516,12 @@ offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',-continuous_data.
 %store offset for later
 post_panels_offset = deg2rad(offset);
 post_panels_offset_above_thresh = post_panels_offset(continuous_data.adj_rs>=0.5);
+%get the last 120 sec, and threshold by movement as well
+sec_to_frames = length(continuous_data.time)/continuous_data.time(end);
+moving = continuous_data.total_mvt_ds(end-120*sec_to_frames:end) > 25;
+good_fit = continuous_data.adj_rs(end-120*sec_to_frames:end) >= 0.5;
+post_panels_offset_final = post_panels_offset(end-120*sec_to_frames:end);
+post_panels_offset_final = post_panels_offset(moving & good_fit);
 [~, offset_var_post_panels_offset_above_thresh] = circ_std(post_panels_offset_above_thresh);
 [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
 plot(x_out_offset,offset_to_plot,'LineWidth',1.5,'color','k')
@@ -638,6 +662,12 @@ offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',-continuous_data.
 %store offset for later
 post_wind_offset = deg2rad(offset);
 post_wind_offset_above_thresh = post_wind_offset(continuous_data.adj_rs>=0.5);
+%get the last 120 sec, and threshold by movement as well
+sec_to_frames = length(continuous_data.time)/continuous_data.time(end);
+moving = continuous_data.total_mvt_ds(end-120*sec_to_frames:end) > 25;
+good_fit = continuous_data.adj_rs(end-120*sec_to_frames:end) >= 0.5;
+post_wind_offset_final = post_wind_offset(end-120*sec_to_frames:end);
+post_wind_offset_final = post_wind_offset(moving & good_fit);
 [~, offset_var_post_wind_offset_above_thresh] = circ_std(post_wind_offset_above_thresh);
 [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
 plot(x_out_offset,offset_to_plot,'LineWidth',1.5,'color','k')
@@ -882,7 +912,6 @@ elseif sessions.initial_cl_wind > sessions.initial_cl_bar
 end
 
 saveas(gcf,[path,'\analysis\plots\offset_evolution_thresh.png']);
-saveas(gcf,'C:\Users\Melanie\Desktop\figures\offset_evolution_fly7.svg');
 
 %% Plot circ_std of offset per block
 
@@ -1175,6 +1204,10 @@ xlim([0 6]);
 ylim([0 300]);
 
 saveas(gcf,[path,'\analysis\plots\bump_par_evolution.png']);
+
+
+%% Bump parameter evolution focusing on last 120 sec per bout, and thresholding with movement and fit
+
 
 
 %% Save variables
