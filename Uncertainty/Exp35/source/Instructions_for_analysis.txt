@@ -1,0 +1,2 @@
+in the data folder starting 20211102, the channels of the nidaq have been changed, such that the data should be analyzed with a different file
+(the 'continuous_PB_data_analysis' script should be taken from Exp38 on).
