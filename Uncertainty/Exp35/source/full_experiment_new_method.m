@@ -36,7 +36,7 @@ end
 colors_for_plots = [0.2 0.8 0.8 ; 1 0.5 0; 0 0.5 1;...
     0 0.6 0.3;  1 0.2 0.2; 0.9290 0.6940 0.1250;...
     0.6350 0.0780 0.1840; 0.4660 0.6740 0.1880;...
-    0 0.4470 0.7410; 0.75, 0.1, 0.75; 0.75, 0.75, 0];
+    0 0.4470 0.7410; 0.75, 0.1, 0.75; 0.75, 0.75, 0; 0 0.75 0.75];
 
 fly_color = colors_for_plots(fly_ID,:);
 
@@ -75,9 +75,14 @@ pre_panels_offset = deg2rad(offset);
 pre_panels_offset_above_thresh = pre_panels_offset(continuous_data.adj_rs>=0.5);
 %get the last 120 sec, and threshold by movement as well
 sec_to_frames = length(continuous_data.time)/continuous_data.time(end);
-moving = continuous_data.total_mvt_ds(end-120*sec_to_frames:end) > 25;
-good_fit = continuous_data.adj_rs(end-120*sec_to_frames:end) >= 0.5;
-pre_panels_offset_final = pre_panels_offset(end-120*sec_to_frames:end);
+if length(continuous_data.total_mvt_ds) > 120*sec_to_frames
+    moving = continuous_data.total_mvt_ds(end-120*sec_to_frames:end) > 25;
+    good_fit = continuous_data.adj_rs(end-120*sec_to_frames:end) >= 0.5;
+    pre_panels_offset_final = pre_panels_offset(end-120*sec_to_frames:end);
+else
+    moving = continuous_data.total_mvt_ds > 25;
+    good_fit = continuous_data.adj_rs>= 0.5;
+end
 pre_panels_offset_final = pre_panels_offset(moving & good_fit);
 [~, offset_var_pre_panels_offset_above_thresh] = circ_std(pre_panels_offset_above_thresh);
 [x_out_offset,offset_to_plot] = removeWrappedLines(continuous_data.time,offset);
@@ -107,10 +112,22 @@ meanBM_pre_panels = mean(continuous_data.bump_magnitude);
 meanBW_pre_panels = mean(continuous_data.bump_width);
 meanBM_thresh_pre_panels = mean(continuous_data.bump_magnitude(continuous_data.adj_rs>=0.5));
 meanBW_thresh_pre_panels = mean(continuous_data.bump_width(continuous_data.adj_rs>=0.5));
+%get mean bump parameters using both threholds and focusing on the last 120
+%sec
+if length(continuous_data.total_mvt_ds) > 120*sec_to_frames
+    final_pre_panels_BM = continuous_data.bump_magnitude(end-120*sec_to_frames:end);
+    final_pre_panels_BW = continuous_data.bump_width(end-120*sec_to_frames:end);
+else
+    final_pre_panels_BM = continuous_data.bump_magnitude;
+    final_pre_panels_BW = continuous_data.bump_width;
+end
+mean_BM_pre_panels_final = nanmean(final_pre_panels_BM(moving & good_fit));
+mean_BW_pre_panels_final = nanmean(final_pre_panels_BW(moving & good_fit));
 
 %get mean vel
 mean_total_mvt_pre_panels = nanmean(continuous_data.total_mvt_ds);
 mean_total_mvt_thresh_pre_panels = nanmean(continuous_data.total_mvt_ds(continuous_data.adj_rs>=0.5));
+mean_total_mvt_pre_panels_final = nanmean(continuous_data.total_mvt_ds(moving & good_fit));
 
 %store all bump param and mvt values
 allBumpMag = continuous_data.bump_magnitude;
@@ -257,9 +274,18 @@ meanBM_pre_wind = mean(continuous_data.bump_magnitude);
 meanBW_pre_wind = mean(continuous_data.bump_width);
 meanBM_thresh_pre_wind = mean(continuous_data.bump_magnitude(continuous_data.adj_rs>=0.5));
 meanBW_thresh_pre_wind = mean(continuous_data.bump_width(continuous_data.adj_rs>=0.5));
+%get mean bump parameters using both threholds and focusing on the last 120
+%sec
+final_pre_wind_BM = continuous_data.bump_magnitude(end-120*sec_to_frames:end);
+mean_BM_pre_wind_final = nanmean(final_pre_wind_BM(moving & good_fit));
+final_pre_wind_BW = continuous_data.bump_width(end-120*sec_to_frames:end);
+mean_BW_pre_wind_final = nanmean(final_pre_wind_BW(moving & good_fit));
+
 %get mean vel
 mean_total_mvt_pre_wind = nanmean(continuous_data.total_mvt_ds);
 mean_total_mvt_thresh_pre_wind = nanmean(continuous_data.total_mvt_ds(continuous_data.adj_rs>=0.5));
+mean_total_mvt_pre_wind_final = nanmean(continuous_data.total_mvt_ds(moving & good_fit));
+
 
 %store all bump param and mvt values
 allBumpMag = [allBumpMag,continuous_data.bump_magnitude];
@@ -423,9 +449,17 @@ meanBM_combined = mean(continuous_data.bump_magnitude);
 meanBW_combined = mean(continuous_data.bump_width);
 meanBM_thresh_combined = mean(continuous_data.bump_magnitude(continuous_data.adj_rs>=0.5));
 meanBW_thresh_combined = mean(continuous_data.bump_width(continuous_data.adj_rs>=0.5));
+%get mean bump parameters using both threholds and focusing on the last 120
+%sec
+final_combined_BM = continuous_data.bump_magnitude(end-120*sec_to_frames:end);
+mean_BM_combined_final = nanmean(final_combined_BM(moving & good_fit));
+final_combined_BW = continuous_data.bump_width(end-120*sec_to_frames:end);
+mean_BW_combined_final = nanmean(final_combined_BW(moving & good_fit));
+
 %get mean vel
 mean_total_mvt_combined = nanmean(continuous_data.total_mvt_ds);
 mean_total_mvt_thresh_combined = nanmean(continuous_data.total_mvt_ds(continuous_data.adj_rs>=0.5));
+mean_total_mvt_combined_final = nanmean(continuous_data.total_mvt_ds(moving & good_fit));
 
 
 %store all bump param and mvt values
@@ -433,55 +467,55 @@ allBumpMag = [allBumpMag,continuous_data.bump_magnitude];
 allBumpWidth = [allBumpWidth,continuous_data.bump_width];
 allTotalMvt = [allTotalMvt,continuous_data.total_mvt_ds];
 blockType = [blockType,repelem(3,1,length(continuous_data.bump_magnitude))];
-
-%% Relationship between bump parameters and velocity for the cue combination trial
-
-nbins = 20;
-yaw_speed = abs(continuous_data.vel_yaw_ds);
-maxBinYS = min([max(yaw_speed),nanmean(yaw_speed)+3*nanstd(yaw_speed)]);
-binWidthYS = maxBinYS/nbins;
-YSBins = [0:binWidthYS:maxBinYS];
-for_vel = abs(continuous_data.vel_for_ds');
-maxBinFV = min([max(for_vel),nanmean(for_vel)+3*nanstd(for_vel)]);
-binWidthFV = maxBinFV/nbins;
-FVBins = [0:binWidthFV:maxBinFV];
-
-%getting binned means
-for ys_bin = 1:length(YSBins)-1
-    for fv_bin = 1:length(FVBins)-1
-        doubleBinBM(ys_bin,fv_bin) = nanmean(continuous_data.bump_magnitude((yaw_speed(1:length(continuous_data.bump_magnitude)) > YSBins(ys_bin)) & (yaw_speed(1:length(continuous_data.bump_magnitude)) < YSBins(ys_bin+1)) & (for_vel(1:length(continuous_data.bump_magnitude)) > FVBins(fv_bin)) & (for_vel(1:length(continuous_data.bump_magnitude)) < FVBins(fv_bin+1))));
-        doubleBinBW(ys_bin,fv_bin) = nanmean(continuous_data.bump_width((yaw_speed(1:length(continuous_data.bump_width)) > YSBins(ys_bin)) & (yaw_speed(1:length(continuous_data.bump_width)) < YSBins(ys_bin+1)) & (for_vel(1:length(continuous_data.bump_width)) > FVBins(fv_bin)) & (for_vel(1:length(continuous_data.bump_width)) < FVBins(fv_bin+1))));        
-    end
-end
-
-%flip the data such that high forward velocity values are at the top
-binned_data_BM = flip(doubleBinBM);
-binned_data_BW = flip(doubleBinBW);
-
-figure('Position',[100 100 1400 500]),
-subplot(1,2,1)
-imagesc(binned_data_BM)
-xticks([1:4:20])
-set(gca, 'XTickLabel', round(FVBins(1:4:20)))
-xlabel('Forward velocity (mm/s)','fontsize',12,'fontweight','bold');
-ylabel('Yaw speed (deg/sec)','fontsize',12,'fontweight','bold');
-yticks([1:4:20])
-set(gca, 'YTickLabel', round(YSBins(20:-4:1)))
-c = colorbar;
-ylabel(c, 'Bump magnitude')
-
-subplot(1,2,2)
-imagesc(binned_data_BW)
-xticks([1:4:20])
-set(gca, 'XTickLabel', round(FVBins(1:4:20)))
-xlabel('Forward velocity (mm/s)','fontsize',12,'fontweight','bold');
-ylabel('Yaw speed (deg/sec)','fontsize',12,'fontweight','bold');
-yticks([1:4:20])
-set(gca, 'YTickLabel', round(YSBins(20:-4:1)))
-c = colorbar;
-ylabel(c, 'Bump with')
-
-saveas(gcf,[path,'\analysis\plots\vel_vs_bm_heatmap.png']);
+% 
+% %% Relationship between bump parameters and velocity for the cue combination trial
+% 
+% nbins = 20;
+% yaw_speed = abs(continuous_data.vel_yaw_ds);
+% maxBinYS = min([max(yaw_speed),nanmean(yaw_speed)+3*nanstd(yaw_speed)]);
+% binWidthYS = maxBinYS/nbins;
+% YSBins = [0:binWidthYS:maxBinYS];
+% for_vel = abs(continuous_data.vel_for_ds');
+% maxBinFV = min([max(for_vel),nanmean(for_vel)+3*nanstd(for_vel)]);
+% binWidthFV = maxBinFV/nbins;
+% FVBins = [0:binWidthFV:maxBinFV];
+% 
+% %getting binned means
+% for ys_bin = 1:length(YSBins)-1
+%     for fv_bin = 1:length(FVBins)-1
+%         doubleBinBM(ys_bin,fv_bin) = nanmean(continuous_data.bump_magnitude((yaw_speed(1:length(continuous_data.bump_magnitude)) > YSBins(ys_bin)) & (yaw_speed(1:length(continuous_data.bump_magnitude)) < YSBins(ys_bin+1)) & (for_vel(1:length(continuous_data.bump_magnitude)) > FVBins(fv_bin)) & (for_vel(1:length(continuous_data.bump_magnitude)) < FVBins(fv_bin+1))));
+%         doubleBinBW(ys_bin,fv_bin) = nanmean(continuous_data.bump_width((yaw_speed(1:length(continuous_data.bump_width)) > YSBins(ys_bin)) & (yaw_speed(1:length(continuous_data.bump_width)) < YSBins(ys_bin+1)) & (for_vel(1:length(continuous_data.bump_width)) > FVBins(fv_bin)) & (for_vel(1:length(continuous_data.bump_width)) < FVBins(fv_bin+1))));        
+%     end
+% end
+% 
+% %flip the data such that high forward velocity values are at the top
+% binned_data_BM = flip(doubleBinBM);
+% binned_data_BW = flip(doubleBinBW);
+% 
+% figure('Position',[100 100 1400 500]),
+% subplot(1,2,1)
+% imagesc(binned_data_BM)
+% xticks([1:4:20])
+% set(gca, 'XTickLabel', round(FVBins(1:4:20)))
+% xlabel('Forward velocity (mm/s)','fontsize',12,'fontweight','bold');
+% ylabel('Yaw speed (deg/sec)','fontsize',12,'fontweight','bold');
+% yticks([1:4:20])
+% set(gca, 'YTickLabel', round(YSBins(20:-4:1)))
+% c = colorbar;
+% ylabel(c, 'Bump magnitude')
+% 
+% subplot(1,2,2)
+% imagesc(binned_data_BW)
+% xticks([1:4:20])
+% set(gca, 'XTickLabel', round(FVBins(1:4:20)))
+% xlabel('Forward velocity (mm/s)','fontsize',12,'fontweight','bold');
+% ylabel('Yaw speed (deg/sec)','fontsize',12,'fontweight','bold');
+% yticks([1:4:20])
+% set(gca, 'YTickLabel', round(YSBins(20:-4:1)))
+% c = colorbar;
+% ylabel(c, 'Bump with')
+% 
+% saveas(gcf,[path,'\analysis\plots\vel_vs_bm_heatmap.png']);
 
 %% Analyze final closed-loop panels
 
@@ -550,9 +584,18 @@ meanBM_post_panels = mean(continuous_data.bump_magnitude);
 meanBW_post_panels = mean(continuous_data.bump_width);
 meanBM_thresh_post_panels = mean(continuous_data.bump_magnitude(continuous_data.adj_rs>=0.5));
 meanBW_thresh_post_panels = mean(continuous_data.bump_width(continuous_data.adj_rs>=0.5));
+%get mean bump parameters using both threholds and focusing on the last 120
+%sec
+final_post_panels_BM = continuous_data.bump_magnitude(end-120*sec_to_frames:end);
+mean_BM_post_panels_final = nanmean(final_post_panels_BM(moving & good_fit));
+final_post_panels_BW = continuous_data.bump_width(end-120*sec_to_frames:end);
+mean_BW_post_panels_final = nanmean(final_post_panels_BW(moving & good_fit));
+
 %get fly vel
 mean_total_mvt_post_panels = nanmean(continuous_data.total_mvt_ds);
 mean_total_mvt_thresh_post_panels = nanmean(continuous_data.total_mvt_ds(continuous_data.adj_rs>=0.5));
+mean_total_mvt_post_panels_final = nanmean(continuous_data.total_mvt_ds(moving & good_fit));
+
 
 %store all bump param and mvt values
 allBumpMag = [allBumpMag,continuous_data.bump_magnitude];
@@ -696,9 +739,17 @@ meanBM_post_wind = mean(continuous_data.bump_magnitude);
 meanBW_post_wind = mean(continuous_data.bump_width);
 meanBM_thresh_post_wind = mean(continuous_data.bump_magnitude(continuous_data.adj_rs>=0.5));
 meanBW_thresh_post_wind = mean(continuous_data.bump_width(continuous_data.adj_rs>=0.5));
+%get mean bump parameters using both threholds and focusing on the last 120
+%sec
+final_post_wind_BM = continuous_data.bump_magnitude(end-120*sec_to_frames:end);
+mean_BM_post_wind_final = nanmean(final_post_wind_BM(moving & good_fit));
+final_post_wind_BW = continuous_data.bump_width(end-120*sec_to_frames:end);
+mean_BW_post_wind_final = nanmean(final_post_wind_BW(moving & good_fit));
+
 %get fly vel
 mean_total_mvt_post_wind = nanmean(continuous_data.total_mvt_ds);
 mean_total_mvt_thresh_post_wind = nanmean(continuous_data.total_mvt_ds(continuous_data.adj_rs>=0.5));
+mean_total_mvt_post_wind_final = nanmean(continuous_data.total_mvt_ds(moving & good_fit));
 
 %store all bump param and mvt values
 allBumpMag = [allBumpMag,continuous_data.bump_magnitude];
@@ -913,6 +964,74 @@ end
 
 saveas(gcf,[path,'\analysis\plots\offset_evolution_thresh.png']);
 
+
+%% Final offset evolution (last 120 sec of each bout, and thresholded)
+
+if sessions.initial_cl_wind < sessions.initial_cl_bar
+    
+    figure('Position',[100 100 1400 400]),
+    
+    subplot(1,5,1)
+    polarhistogram(pre_wind_offset_final,20,'FaceColor',fly_color)
+    title('Initial wind offset');
+    set(gca,'ThetaZeroLocation','top');
+    
+    subplot(1,5,2)
+    polarhistogram(pre_panels_offset_final,20,'FaceColor',fly_color)
+    title('Initial panels offset');
+    set(gca,'ThetaZeroLocation','top');
+    
+    subplot(1,5,3)
+    polarhistogram(combined_offset_final,20,'FaceColor',fly_color)
+    title('Cue combination offset');
+    set(gca,'ThetaZeroLocation','top');
+    
+    subplot(1,5,4)
+    polarhistogram(post_wind_offset_final,20,'FaceColor',fly_color)
+    title('Final wind offset');
+    set(gca,'ThetaZeroLocation','top');
+    
+    subplot(1,5,5)
+    polarhistogram(post_panels_offset_final,20,'FaceColor',fly_color)
+    title('Final panels offset');
+    set(gca,'ThetaZeroLocation','top');
+    
+    suptitle('Offset evolution');
+
+elseif sessions.initial_cl_wind > sessions.initial_cl_bar
+    
+    figure('Position',[100 100 1400 400]),
+    
+    subplot(1,5,1)
+    polarhistogram(pre_panels_offset_final,20,'FaceColor',fly_color)
+    title('Initial panels offset');
+    set(gca,'ThetaZeroLocation','top');
+    
+    subplot(1,5,2)
+    polarhistogram(pre_wind_offset_final,20,'FaceColor',fly_color)
+    title('Initial wind offset');
+    set(gca,'ThetaZeroLocation','top');
+    
+    subplot(1,5,3)
+    polarhistogram(combined_offset_final,20,'FaceColor',fly_color)
+    title('Cue combination offset');
+    set(gca,'ThetaZeroLocation','top');
+    
+    subplot(1,5,4)
+    polarhistogram(post_panels_offset_final,20,'FaceColor',fly_color)
+    title('Final panels offset');
+    set(gca,'ThetaZeroLocation','top');
+    
+    subplot(1,5,5)
+    polarhistogram(post_wind_offset_final,20,'FaceColor',fly_color)
+    title('Final wind offset');
+    set(gca,'ThetaZeroLocation','top');
+    
+    suptitle('Offset evolution');
+end
+
+saveas(gcf,[path,'\analysis\plots\offset_evolution_final.png']);
+
 %% Plot circ_std of offset per block
 
 if sessions.initial_cl_wind < sessions.initial_cl_bar
@@ -1003,7 +1122,6 @@ saveas(gcf,[path,'\analysis\plots\circ_mean_offset_thresh.png']);
 
 
 %% Heading evolution
-
 
 if sessions.initial_cl_wind < sessions.initial_cl_bar
     
@@ -1209,10 +1327,44 @@ saveas(gcf,[path,'\analysis\plots\bump_par_evolution.png']);
 %% Bump parameter evolution focusing on last 120 sec per bout, and thresholding with movement and fit
 
 
+if sessions.initial_cl_wind < sessions.initial_cl_bar
+    allBM_thresh_final = [mean_BM_pre_wind_final;mean_BM_pre_panels_final;mean_BM_combined_final;mean_BM_post_wind_final;mean_BM_post_panels_final];
+    allBW_thresh_final = [mean_BW_pre_wind_final;mean_BW_pre_panels_final;mean_BW_combined_final;mean_BW_post_wind_final;mean_BW_post_panels_final];
+    all_total_mvt_thresh_final = [mean_total_mvt_pre_wind_final;mean_total_mvt_pre_panels_final;mean_total_mvt_combined_final;mean_total_mvt_post_wind_final;mean_total_mvt_post_panels_final];
+elseif sessions.initial_cl_wind > sessions.initial_cl_bar
+    allBM_thresh_final = [mean_BM_pre_panels_final;mean_BM_pre_wind_final;mean_BM_combined_final;mean_BM_post_panels_final;mean_BM_post_wind_final];  
+    allBW_thresh_final = [mean_BW_pre_panels_final;mean_BW_pre_wind_final;mean_BW_combined_final;mean_BW_post_panels_final;mean_BW_post_wind_final]; 
+    all_total_mvt_thresh_final = [mean_total_mvt_pre_panels_final;mean_total_mvt_pre_wind_final;mean_total_mvt_combined;mean_total_mvt_post_panels;mean_total_mvt_post_wind]; 
+end
+
+figure('Position',[100 100 1000 600]),
+subplot(1,2,1)
+yyaxis left
+plot(allBM_thresh_final,'-o')
+ylim([0 3]);
+ylabel('Bump magnitude');
+yyaxis right
+plot(all_total_mvt_thresh_final,'-o')
+xlim([0 6]);
+ylim([0 300]);
+ylabel('Total movement (deg/s)');
+xlabel('Block #');
+
+subplot(1,2,2)
+yyaxis left
+plot(allBW_thresh_final,'-o')
+ylim([0 3.5]);
+ylabel('Bump width');
+yyaxis right
+plot(all_total_mvt_thresh_final,'-o')
+xlim([0 6]);
+ylim([0 300]);
+
+saveas(gcf,[path,'\analysis\plots\bump_par_evolution_thresh.png']);
 
 %% Save variables
 
-save([path,'\analysis\data.mat'],'offset_var','offset_var_r','offset_mean','heading_mean','allBM_thresh','allBW_thresh','all_total_mvt_thresh')
+save([path,'\analysis\data.mat'],'offset_var','offset_var_r','offset_mean','heading_mean','allBM_thresh','allBW_thresh','all_total_mvt_thresh','allBM_thresh_final','allBW_thresh_final','all_total_mvt_thresh_final')
 
 %% Clear
 
