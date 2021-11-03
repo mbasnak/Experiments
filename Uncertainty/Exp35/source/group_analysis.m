@@ -25,6 +25,8 @@ offset_mean = [];
 heading_mean = [];
 BM_mean = [];
 BW_mean = [];
+thresh_BM_mean = [];
+thresh_BW_mean = [];
 total_mvt = [];
 
 for fly = 1:length(data)
@@ -34,6 +36,8 @@ for fly = 1:length(data)
     heading_mean = [heading_mean;data(fly).heading_mean];
     BM_mean = [BM_mean;data(fly).allBM_thresh'];
     BW_mean = [BW_mean;data(fly).allBW_thresh'];  
+    thresh_BM_mean = [thresh_BM_mean;data(fly).allBM_thresh_final'];
+    thresh_BW_mean = [thresh_BW_mean;data(fly).allBW_thresh_final'];  
     total_mvt = [total_mvt;data(fly).all_total_mvt_thresh'];
 end
 
@@ -188,6 +192,27 @@ xlabel('Block #');
 ylabel('Mean bump width');
 
 saveas(gcf,[path,'\groupPlots\bump_parameters_evolution.png']);
+
+%% Plot thresholded bump parameters
+
+figure,
+subplot(1,2,1)
+plot(thresh_BM_mean','-o','color',[.5 .5 .5]);
+xlim([0 6]);
+hold on
+plot(nanmean(thresh_BM_mean),'-ko','linewidth',2)
+xlabel('Block #');
+ylabel('Mean bump magnitude');
+
+subplot(1,2,2)
+plot(thresh_BW_mean','-o','color',[.5 .5 .5]);
+xlim([0 6]);
+hold on
+plot(nanmean(thresh_BW_mean),'-ko','linewidth',2)
+xlabel('Block #');
+ylabel('Mean bump width');
+
+saveas(gcf,[path,'\groupPlots\thresh_bump_parameters_evolution.png']);
 
 %% Plot zscored-bump parameters
 
