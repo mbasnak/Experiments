@@ -467,6 +467,25 @@ allBumpMag = [allBumpMag,continuous_data.bump_magnitude];
 allBumpWidth = [allBumpWidth,continuous_data.bump_width];
 allTotalMvt = [allTotalMvt,continuous_data.total_mvt_ds];
 blockType = [blockType,repelem(3,1,length(continuous_data.bump_magnitude))];
+
+
+%% Look at BM and BW evolution in 120 sec bouts
+
+bout_boundaries = 1:floor(120*sec_to_frames):length(continuous_data.bump_magnitude);
+for bout = 1:length(bout_boundaries)-1
+   mean_bout_BM(bout) = nanmean(continuous_data.bump_magnitude(bout_boundaries(bout):bout_boundaries(bout+1))); 
+   mean_bout_BW(bout) = nanmean(continuous_data.bump_width(bout_boundaries(bout):bout_boundaries(bout+1)));
+end
+figure,
+subplot(2,1,1)
+plot(mean_bout_BM,'-o')
+ylim([0 2.5]); ylabel('Mean bump magnitude');
+subplot(2,1,2)
+plot(mean_bout_BW,'-o')
+ylim([0 3]);ylabel('Mean bump width'); xlabel('# 120 sec bout');
+
+saveas(gcf,[path,'\analysis\plots\bump_par_evolution_in_cue_combination.png']);
+
 % 
 % %% Relationship between bump parameters and velocity for the cue combination trial
 % 
@@ -1364,7 +1383,7 @@ saveas(gcf,[path,'\analysis\plots\bump_par_evolution_thresh.png']);
 
 %% Save variables
 
-save([path,'\analysis\data.mat'],'offset_var','offset_var_r','offset_mean','heading_mean','allBM_thresh','allBW_thresh','all_total_mvt_thresh','allBM_thresh_final','allBW_thresh_final','all_total_mvt_thresh_final')
+save([path,'\analysis\data.mat'],'offset_var','offset_var_r','offset_mean','heading_mean','allBM_thresh','allBW_thresh','all_total_mvt_thresh','allBM_thresh_final','allBW_thresh_final','all_total_mvt_thresh_final','mean_bout_BM','mean_bout_BW')
 
 %% Clear
 
