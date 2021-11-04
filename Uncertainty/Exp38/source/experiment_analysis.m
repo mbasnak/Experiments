@@ -703,29 +703,64 @@ end
 for bout = 1:length(wind_blocks)-1
     if configuration == 1
         %Find the bump parameters in the preceding bout (post jump cue combination)
-        pre_wind_BM(bout) = meanBM_perblock_thresh(wind_blocks(bout+1)-2);
-        pre_wind_BW(bout) = meanBW_perblock_thresh(wind_blocks(bout+1)-2);        
+        pre_BM_postjump(bout) = meanBM_perblock_thresh(wind_blocks(bout+1)-2);
+        pre_BW_postjump(bout) = meanBW_perblock_thresh(wind_blocks(bout+1)-2);        
     else
         %Find the bump parameters in the preceding bout (post jump cue combination)
-        pre_wind_BM(bout) = meanBM_perblock_thresh(wind_blocks(bout+1)-1);
-        pre_wind_BW(bout) = meanBW_perblock_thresh(wind_blocks(bout+1)-1);
+        pre_BM_postjump(bout) = meanBM_perblock_thresh(wind_blocks(bout+1)-1);
+        pre_BW_postjump(bout) = meanBW_perblock_thresh(wind_blocks(bout+1)-1);
     end
 end
 
 %Scatter plot of wind plasticity and bump parameters
 figure('Position',[100 100 1000 800]),
 subplot(1,2,1)
-plot(pre_wind_BM,abs(wind_offset_diff),'o')
-xlabel('Bump magnitude in preceding cue combination'); ylabel('Wind offset difference');
+plot(pre_BM_postjump,abs(wind_offset_diff),'o')
+xlabel({'Bump magnitude in preceding cue combination';'post jump'}); ylabel('Wind offset difference');
 ylim([0 180]); xlim([0 3]);
 
 subplot(1,2,2)
-plot(pre_wind_BW,abs(wind_offset_diff),'o')
-xlabel('Bump width in preceding cue combination');
+plot(pre_BW_postjump,abs(wind_offset_diff),'o')
+xlabel({'Bump width in preceding cue combination';'post jump'});
 ylim([0 180]); xlim([0 3]);
 
-saveas(gcf,[path,'\plots\wind_offset_diff_and_bump_par.png']);
+saveas(gcf,[path,'\plots\wind_offset_diff_and_bump_par_postjump.png']);
 
+%% Link the plasticity to the bump parameters in the pre-jump cue combination portion
+
+%for the first bout, take the cue combination portion
+if configuration == 1
+    pre_BM_prejump(1) = meanBM_perblock_thresh(wind_blocks(bout+1)-2);
+    pre_BW_prejump(1) = meanBW_perblock_thresh(wind_blocks(bout+1)-2);            
+else
+    pre_BM_prejump(1) = meanBM_perblock_thresh(wind_blocks(bout+1)-1);
+    pre_BW_prejump(1) = meanBW_perblock_thresh(wind_blocks(bout+1)-1);            
+end
+for bout = 2:length(wind_blocks)-1
+    if configuration == 1
+        %Find the bump parameters in the preceding bout (pre jump cue combination)
+        pre_BM_prejump(bout) = meanBM_perblock_thresh(wind_blocks(bout+1)-3);
+        pre_BW_prejump(bout) = meanBW_perblock_thresh(wind_blocks(bout+1)-3);        
+    else
+        %Find the bump parameters in the preceding bout (pre jump cue combination)
+        pre_BM_prejump(bout) = meanBM_perblock_thresh(wind_blocks(bout+1)-2);
+        pre_BW_prejump(bout) = meanBW_perblock_thresh(wind_blocks(bout+1)-2);
+    end
+end
+
+%Scatter plot of wind plasticity and bump parameters
+figure('Position',[100 100 1000 800]),
+subplot(1,2,1)
+plot(pre_BM_prejump,abs(wind_offset_diff),'o')
+xlabel({'Bump magnitude in preceding cue combination';'pre jump'}); ylabel('Wind offset difference');
+ylim([0 180]); xlim([0 3]);
+
+subplot(1,2,2)
+plot(pre_BW_prejump,abs(wind_offset_diff),'o')
+xlabel({'Bump width in preceding cue combination';'pre jump'});
+ylim([0 180]); xlim([0 3]);
+
+saveas(gcf,[path,'\plots\wind_offset_diff_and_bump_par_prejump.png']);
 
 %% Compute the bar plasticity 
 %We will quantify the plasticity here as the difference in the mean offset
@@ -772,34 +807,36 @@ end
 
 %% Link bar plasticity to bump parameters
 
-%problem: which period to choose, pre-jump and/or post-jump?
-%second problem: what about bouts in which the offset toggles between two?
-for bout = 1:length(bar_blocks)-1
-    if configuration == 1
-        pre_bar_BM(bout) = meanBM_perblock_thresh(wind_blocks(bout+1)-1);
-        pre_bar_BW(bout) = meanBW_perblock_thresh(wind_blocks(bout+1)-1);        
-    else
-        pre_bar_BM(bout) = meanBM_perblock_thresh(wind_blocks(bout+1)-2);
-        pre_bar_BW(bout) = meanBW_perblock_thresh(wind_blocks(bout+1)-2);
-    end
-end
-
-%Scatter plot of wind plasticity and bump parameters
 figure('Position',[100 100 1000 800]),
 subplot(1,2,1)
-plot(pre_bar_BM,abs(bar_offset_diff),'o')
-xlabel('Bump magnitude in preceding cue combination'); ylabel('Bar offset difference');
+plot(pre_BM_postjump,abs(bar_offset_diff),'o')
+xlabel({'Bump magnitude in preceding cue combination';'post jump'}); ylabel('Bar offset difference');
 ylim([0 180]); xlim([0 3]);
 
 subplot(1,2,2)
-plot(pre_bar_BW,abs(bar_offset_diff),'o')
-xlabel('Bump width in preceding cue combination');
+plot(pre_BW_postjump,abs(bar_offset_diff),'o')
+xlabel({'Bump width in preceding cue combination';'post jump'});
 ylim([0 180]); xlim([0 3]);
 
-saveas(gcf,[path,'\plots\bar_offset_diff_and_bump_par.png']);
+saveas(gcf,[path,'\plots\bar_offset_diff_and_bump_par_postjump.png']);
+
+%% Repeat focusing on the pre jump parameters
+
+figure('Position',[100 100 1000 800]),
+subplot(1,2,1)
+plot(pre_BM_prejump,abs(bar_offset_diff),'o')
+xlabel({'Bump magnitude in preceding cue combination';'pre jump'}); ylabel('Bar offset difference');
+ylim([0 180]); xlim([0 3]);
+
+subplot(1,2,2)
+plot(pre_BW_prejump,abs(bar_offset_diff),'o')
+xlabel({'Bump width in preceding cue combination';'pre jump'});
+ylim([0 180]); xlim([0 3]);
+
+saveas(gcf,[path,'\plots\bar_offset_diff_and_bump_par_prejump.png']);
+
 
 %% Plot the wind plasticity as a function of the difference between the bar and wind offset
-
 
 %% Plot the bar plasticity as a function of the difference between the bar and wind offset
 
@@ -840,6 +877,10 @@ xlim([0 6]);
 ylim([0 300]);
 
 saveas(gcf,[path,'\plots\Exp35_rep.png']);
+
+%% Save data
+
+save([path,'data.mat'],'meanBM_perblock_thresh','mean_total_mvt','meanBW_perblock_thresh','alldata_BM_thresh','alldata_BW_thresh','stim_ID_thresh','pre_BM_prejump','pre_BM_postjump','pre_BW_prejump','bar_offset_diff','wind_offset_diff')
 
 %% Close
 
