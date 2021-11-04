@@ -28,7 +28,8 @@ BW_mean = [];
 thresh_BM_mean = [];
 thresh_BW_mean = [];
 total_mvt = [];
-
+mean_bout_BM = {};
+mean_bout_BW = {};
 for fly = 1:length(data)
     offset_var = [offset_var;data(fly).offset_var];
     offset_var_r = [offset_var_r;data(fly).offset_var_r];
@@ -39,6 +40,8 @@ for fly = 1:length(data)
     thresh_BM_mean = [thresh_BM_mean;data(fly).allBM_thresh_final'];
     thresh_BW_mean = [thresh_BW_mean;data(fly).allBW_thresh_final'];  
     total_mvt = [total_mvt;data(fly).all_total_mvt_thresh'];
+    mean_bout_BM{fly} = data(fly).mean_bout_BM;
+    mean_bout_BW{fly} = data(fly).mean_bout_BW;
 end
 
 %% Plot offset variation per block
@@ -273,6 +276,20 @@ xlabel('Block #');
 ylabel([{'Absolute difference in heading mean'};{'with respect to previous block'}]);
 
 saveas(gcf,[path,'\groupPlots\diff_heading.png']);
+
+%% Look at bump parameter evolution in 120 sec bouts in the cue combination block
+
+figure,
+for fly = 1:length(data)
+   subplot(2,1,1)
+   plot(mean_bout_BM{fly},'-o')
+   hold on
+   
+   subplot(2,1,2)
+   plot(mean_bout_BW{fly},'-o')
+   hold on
+end
+
 
 %%
 close all; clear all;
