@@ -243,3 +243,6 @@ plot(mean_total_mvt,'-o')
 ylabel('Mean total movement (deg/s)');
 xlim([0 6]);
 xlabel('Block number');
+
+saveas(gcf,[path,'\analysis\plots\activity_and_mvt_per_block.png']);
+

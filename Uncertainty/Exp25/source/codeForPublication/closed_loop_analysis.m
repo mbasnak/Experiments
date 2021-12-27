@@ -107,14 +107,16 @@ colormap(flipud(gray))
 hold on
 %add the changes in stim
 for change = 1:length(changeContrast)
-    line([changeContrast(change) changeContrast(change)], [0 17], 'LineWidth', 3, 'color', [0, 0.5, 0]);
+    line([changeContrast(change) changeContrast(change)], [0 17], 'LineWidth', 4, 'color', [0.4660 0.6740 0.1880]);
 end
 yticks(1:2:16);
-yticklabels({'8L','6L','4L','2L','1R','3R','5R','7R'});
-ylabel('PB glomerulus','fontweight','bold','fontsize',10);
+%yticklabels({'8L','6L','4L','2L','1R','3R','5R','7R'});
+%ylabel('PB glomerulus','fontweight','bold','fontsize',10);
 title('EPG activity in the PB','fontweight','bold','fontsize',12);
 set(gca,'XTickLabel',[]);
-legend('Change in stimulus');
+set(gca,'YTickLabel',[]);
+legend('Change in stimulus','FontSize',12);
+set(gca,'YTick',[])
 
 % Plot the heading and the EPG phase
 subplot(4,num_subplots,[num_subplots+1 num_subplots*2])
@@ -122,19 +124,19 @@ subplot(4,num_subplots,[num_subplots+1 num_subplots*2])
 heading = wrapTo180(data.heading_deg);
 %Remove wrapped lines to plot
 [x_out_heading,heading_to_plot] = removeWrappedLines(data.time,heading);
-plot(x_out_heading,heading_to_plot,'LineWidth',1.5,'color',[0.2 0.6 0.7])
+plot(x_out_heading,heading_to_plot,'LineWidth',1.5,'color',[0.6350 0.0780 0.1840])
 hold on
 %Get EPG phase to plot
 %I'm now going to negate the phase, since I'm plotting heading instead of
 %bar position, so the bump moves in the other direction
 phase = wrapTo180(rad2deg(-data.dff_pva));
 [x_out_phase,phase_to_plot] = removeWrappedLines(data.time,phase);
-plot(x_out_phase,phase_to_plot,'color',[0.9 0.3 0.4],'LineWidth',1.5)
+plot(x_out_phase,phase_to_plot,'color',[0.4940 0.1840 0.5560],'LineWidth',1.5)
 %add the changes in stim
 for change = 1:length(changeContrast)
-    line([data.time(changeContrast(change)) data.time(changeContrast(change))], [-180 180], 'LineWidth', 3, 'color', [0, 0.5, 0]);
+    line([data.time(changeContrast(change)) data.time(changeContrast(change))], [-180 180], 'LineWidth', 4, 'color', [0.4660 0.6740 0.1880]);
 end
-legend('Fly heading', 'EPG phase');
+legend('Fly heading', 'EPG phase','FontSize',12);
 title('Bar and bump position','fontweight','bold','fontsize',12);
 ylim([-180, 180]);
 if ~isnan(x_out_phase(end))
@@ -154,10 +156,13 @@ offset = wrapTo180(data.offset);
 plot(x_out_offset,offset_to_plot,'LineWidth',1.5,'color','k')
 %Add the changes in stim
 for change = 1:length(changeContrast)
-    line([data.time(changeContrast(change)) data.time(changeContrast(change))], [-180 180], 'LineWidth', 3, 'color', [0, 0.5, 0]);
+    line([data.time(changeContrast(change)) data.time(changeContrast(change))], [-180 180], 'LineWidth', 4, 'color', [0.4660 0.6740 0.1880]);
 end
 ylim([-180 180]);
-ylabel('Deg','fontweight','bold','fontsize',10); xlabel('Time (sec)','fontweight','bold','fontsize',10);
+ylabel('Deg','fontweight','bold','fontsize',10);
+xl = xlabel('Time (sec)','fontweight','bold','fontsize',10);
+% xl.Position(1) = xl.Position(1) + 650;
+% xl.Position(2) = xl.Position(2) + 50;
 title('Offset','fontweight','bold','fontsize',12);
 if ~isnan(x_out_offset(end))
     xlim([1 x_out_offset(end)]);
@@ -173,26 +178,34 @@ subplot(4,num_subplots,num_subplots*3+1)
 polarhistogram(deg2rad(offset(1:changeContrast(1))),15,'FaceColor',color_gradient{Intensities(1)})
 set(gca,'ThetaZeroLocation','top',...
     'ThetaDir','counterclockwise');
-if Intensities(1) == 1
-    title({'Offset distribution','darkness'});
-elseif Intensities(1) == 2
-    title({'Offset distribution','low contrast'});
-else
-    title({'Offset distribution','high contrast'});
-end
+% if Intensities(1) == 1
+%     title({'Offset distribution','darkness'});
+% elseif Intensities(1) == 2
+%     title({'Offset distribution','low contrast'});
+% else
+%     title({'Offset distribution','high contrast'});
+% end
+Ax = gca;
+Ax.RTickLabel = [];
+thetaticks([0 90 180 270])
+thetaticklabels({'0','90','180','270'})
 
 for contrast = 1:length(changeContrast)-1
     subplot(4,num_subplots,num_subplots*3+1+contrast)
     polarhistogram(deg2rad(offset(changeContrast(contrast):changeContrast(contrast+1))),15,'FaceColor',color_gradient{Intensities(contrast+1)})
     set(gca,'ThetaZeroLocation','top',...
         'ThetaDir','counterclockwise');
-    if Intensities(contrast+1) == 1
-        title({'Offset distribution','darkness'});
-    elseif Intensities(contrast+1) == 2
-        title({'Offset distribution','low contrast'});
-    else
-        title({'Offset distribution','high contrast'});
-    end
+%     if Intensities(contrast+1) == 1
+%         title({'Offset distribution','darkness'});
+%     elseif Intensities(contrast+1) == 2
+%         title({'Offset distribution','low contrast'});
+%     else
+%         title({'Offset distribution','high contrast'});
+%     end
+    Ax = gca;
+    Ax.RTickLabel = [];
+    thetaticks([0 90 180 270])
+    thetaticklabels({'0','90','180','270'})
 end
 
 %add last contrast for pos function 197, which appears to have one less
@@ -202,12 +215,16 @@ if pos_function == 197
     polarhistogram(deg2rad(offset(changeContrast(contrast+1):end)),15,'FaceColor',color_gradient{Intensities(num_subplots)})
     set(gca,'ThetaZeroLocation','top',...
         'ThetaDir','counterclockwise');
-    if Intensities(num_subplots) == 3
-        title({'Offset distribution','high contrast'});
-    elseif Intensities(num_subplots) == 2
-        title({'Offset distribution','low contrast'});
-    end
+%     if Intensities(num_subplots) == 3
+%         title({'Offset distribution','high contrast'});
+%     elseif Intensities(num_subplots) == 2
+%         title({'Offset distribution','low contrast'});
+%     end
 end
+Ax = gca;
+Ax.RTickLabel = [];
+thetaticks([0 90 180 270])
+thetaticklabels({'0','90','180','270'})
 
 %save figure
 saveas(gcf,[path,'plots\closedLoopHeatmapAndOffset.png']);

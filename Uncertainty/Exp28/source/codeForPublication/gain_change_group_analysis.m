@@ -1135,27 +1135,100 @@ figure,
 subplot(1,2,1)
 plot(BMqz(type_of_fly'==1,:)','-o','color',[.5 .5 .5])
 hold on
-plot(mean(BMqz(type_of_fly'==1,:)),'-ko','lineWidth',2)
-%set(gca,'yticklabel',{[]});
+plot(mean(BMqz(type_of_fly'==1,:)),'-ko','lineWidth',2,'MarkerFaceColor','k')
 xticks([1:4])
 xlabel('Quartile');
-title('Zscored bump Magnitude');
+ylabel('Zscored bump magnitude')
 xlim([0 5]);
-%ylim([0 1.5]);
 
 subplot(1,2,2)
 plot(BWqz(type_of_fly'==1,:)','-o','color',[.5 .5 .5])
 hold on
-plot(mean(BWqz(type_of_fly'==1,:)),'-ko','lineWidth',2)
-%set(gca,'yticklabel',{[]});
+plot(mean(BWqz(type_of_fly'==1,:)),'-ko','lineWidth',2,'MarkerFaceColor','k')
 xticks([1:4])
 xlabel('Quartile');
-title('Zscored bump Width');
+ylabel('Zscored bump width');
 xlim([0 5]);
 %ylim([0 3.5]);
 
 %Save
 saveas(gcf,'Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp28\data\groupPlots\zBumpParQuartilesType1.png')
+% 
+% %% Repeat breaking into different block sizes
+% 
+% quintile_width = floor(length(data(1).modelTable{1,1}.BumpMagnitude)/5);
+% quintile_changes = [1:quintile_width:length(data(1).modelTable{1,1}.BumpMagnitude)];
+% 
+% for quintile = 1:3
+%     for fly = 1:14
+%         zBM2 = zscore(data(fly).modelTable{1,1}.BumpMagnitude);
+%         BMz2(fly,:) = zBM2(quintile_changes(quintile):quintile_changes(quintile+1));
+%         mvt_q2 = data(fly).modelTable{1,1}.TotalMovement(quintile_changes(quintile):quintile_changes(quintile+1));
+%         BMqz2(fly,quintile) = nanmean(BMz2(fly,mvt_q2 > mvt_thresh));
+%         
+%         zBW2 = zscore(data(fly).modelTable{1,1}.BumpWidth);
+%         BWz2(fly,:) = zBW2(quintile_changes(quintile):quintile_changes(quintile+1));
+%         BWqz2(fly,quintile) = nanmean(BWz2(fly,mvt_q2 > mvt_thresh));
+%     end
+% end
+% 
+% figure,
+% subplot(1,2,1)
+% plot(BMqz2(type_of_fly'==1,:)','-o','color',[.5 .5 .5])
+% hold on
+% plot(mean(BMqz2(type_of_fly'==1,:)),'-ko','lineWidth',2,'MarkerFaceColor','k')
+% xticks([1:4])
+% xlabel('Quartile');
+% ylabel('Zscored bump magnitude')
+% xlim([0 6]);
+% 
+% subplot(1,2,2)
+% plot(BWqz2(type_of_fly'==1,:)','-o','color',[.5 .5 .5])
+% hold on
+% plot(mean(BWqz2(type_of_fly'==1,:)),'-ko','lineWidth',2,'MarkerFaceColor','k')
+% xticks([1:4])
+% xlabel('Quartile');
+% ylabel('Zscored bump width');
+% xlim([0 6]);
+% 
+% 
+% 
+% thirds_width = floor(length(data(1).modelTable{1,1}.BumpMagnitude)/3);
+% third_changes = [1:2448:length(data(1).modelTable{1,1}.BumpMagnitude)];
+% %third_changes = [third_changes,7348];
+% 
+% for third = 1:3
+%     for fly = 1:14
+%         zBM3 = zscore(data(fly).modelTable{1,1}.BumpMagnitude);
+%         BMz3(fly,:) = zBM3(third_changes(third):third_changes(third+1));
+%         mvt_q3 = data(fly).modelTable{1,1}.TotalMovement(third_changes(third):third_changes(third+1));
+%         BMqz3(fly,third) = nanmean(BMz3(fly,mvt_q3 > mvt_thresh));
+% %         
+%         zBW3 = zscore(data(fly).modelTable{1,1}.BumpWidth);
+%         BWz3(fly,:) = zBW3(third_changes(third):third_changes(third+1));
+%         BWqz3(fly,third) = nanmean(BWz3(fly,mvt_q3 > mvt_thresh));
+%     end
+% end
+% 
+% figure,
+% subplot(1,2,1)
+% plot(BMqz3(type_of_fly'==1,:)','-o','color',[.5 .5 .5])
+% hold on
+% plot(mean(BMqz3(type_of_fly'==1,:)),'-ko','lineWidth',2,'MarkerFaceColor','k')
+% xticks([1:3])
+% xlabel('Third');
+% ylabel('Zscored bump magnitude')
+% xlim([0 4]);
+% 
+% subplot(1,2,2)
+% plot(BWqz3(type_of_fly'==1,:)','-o','color',[.5 .5 .5])
+% hold on
+% plot(mean(BWqz3(type_of_fly'==1,:)),'-ko','lineWidth',2,'MarkerFaceColor','k')
+% xticks([1:3])
+% xlabel('Third');
+% ylabel('Zscored bump width');
+% xlim([0 4]);
+
 
 %% Plot parameter evolution for type 2 flies
 

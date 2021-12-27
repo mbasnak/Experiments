@@ -127,8 +127,8 @@ xlim([0 4]);
 xticks(1:3);
 xticklabels({'Darkness','Low contrast','High contrast'});
 a = get(gca,'XTickLabel');  
-set(gca,'XTickLabel',a,'fontsize',12,'FontWeight','bold')
-ylabel('Circular standard deviation of offset','FontSize',12);
+set(gca,'XTickLabel',a,'fontsize',16,'FontWeight','bold')
+ylabel('Circular standard deviation of offset','FontSize',16);
 ylim([min(mean_offset_data_per_fly.mean_offset_var)-0.3 max(mean_offset_data_per_fly.mean_offset_var)+0.3]);
 
 %save figure
@@ -218,8 +218,8 @@ xlim([0 4]);
 xticks(1:3);
 xticklabels({'Darkness','Low contrast','High contrast'});
 a = get(gca,'XTickLabel');  
-set(gca,'XTickLabel',a,'fontsize',12,'FontWeight','bold')
-ylabel('Circular standard deviation of heading','FontSize',12);
+set(gca,'XTickLabel',a,'fontsize',16,'FontWeight','bold')
+ylabel('Circular standard deviation of heading','FontSize',16);
 ylim([min(mean_heading_data_per_fly.mean_heading_var)-0.3 max(mean_heading_data_per_fly.mean_heading_var)+0.3]);
 
 %save figure
@@ -791,7 +791,7 @@ for contrast = 1:3
 end
 ylabel('Mean zscored bump magnitude'); xlabel('Zscored forward velocity (deg/s)');
 xlim([minBinFV-binWidthFV/2 maxBinFV+binWidthFV/2]);
-legend('Darkness','Low contrast','High contrast');
+legend('Darkness','Low contrast','High contrast','Location','northwest');
 
 
 %Side speed
@@ -807,7 +807,7 @@ for contrast = 1:3
 end
 ylabel('Mean zscored bump magnitude'); xlabel('Zscored side speed (deg/s)');
 xlim([minBinSS-binWidthSS/2 maxBinSS+binWidthSS/2]);
-legend('Darkness','Low contrast','High contrast');
+legend('Darkness','Low contrast','High contrast','Location','northwest');
 
 
 %Yaw speed
@@ -823,7 +823,7 @@ for contrast = 1:3
 end
 ylabel('Mean zscored bump magnitude'); xlabel('Zscored yaw speed (deg/s)');
 xlim([minBinYS-binWidthYS/2 maxBinYS+binWidthYS/2]);
-legend('Darkness','Low contrast','High contrast');
+legend('Darkness','Low contrast','High contrast','Location','northwest');
 
 %Total movement
 subplot(1,4,4)
@@ -838,10 +838,34 @@ for contrast = 1:3
 end
 ylabel('Mean zscored bump magnitude'); xlabel('Zscored total movement (deg/s)');
 xlim([minBinTM-binWidthTM/2 maxBinTM+binWidthTM/2]);
-legend('Darkness','Low contrast','High contrast');
+legend('Darkness','Low contrast','High contrast','Location','northwest');
 
 %Save figure
 saveas(gcf,[path,'\globalPlots\zNewBumpMag_vs_mvt_and_contrast.png']);
+
+%% Nicer plot, using only total mvt
+
+color_grad = [0,0,0 ; 0 0 0.6 ; 0.5 0.8 0.9];
+
+figure('Position',[200 200 400 600]),
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(totalMvtBins)-1
+        doubleBinMean(bin,contrast) = nanmean(allzNewBumpMag((ZTotalMvt(1:length(allzNewBumpMag)) > totalMvtBins(bin)) & (ZTotalMvt(1:length(allzNewBumpMag)) < totalMvtBins(bin+1)) & (adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+        doubleBinStd(bin,contrast) = nanstd(allzNewBumpMag((ZTotalMvt(1:length(allzNewBumpMag)) > totalMvtBins(bin)) & (ZTotalMvt(1:length(allzNewBumpMag)) < totalMvtBins(bin+1)) & (adj_rs >= 0.5) & (all_contrast_levels == contrast))); 
+        totalObs(bin,contrast) = length(allzNewBumpMag((ZTotalMvt(1:length(allzNewBumpMag)) > totalMvtBins(bin)) & (ZTotalMvt(1:length(allzNewBumpMag)) < totalMvtBins(bin+1)) & (adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+        doubleBinError(bin,contrast) = doubleBinStd(bin,contrast)/sqrt(totalObs(bin,contrast));
+    end
+    boundedline(totalMvtAxes,doubleBinMean(:,contrast),doubleBinError(:,contrast),'cmap',color_grad(contrast,:))
+end
+ylabel('Mean zscored bump magnitude','fontsize',14);
+xlabel('Zscored total movement (deg/s)','fontsize',14);
+%a = get(gca,'XTickLabel');
+%set(gca,'XTickLabel',a,'fontsize',12)
+% a = get(gca,'YTickLabel');
+% set(gca,'YTickLabel',a,'fontsize',12)
+xlim([minBinTM-binWidthTM/2 maxBinTM+binWidthTM/2]);
+legend('Darkness','Low contrast','High contrast','Location','northwest');
 
 %% Compute model for bump width at half max
 
@@ -894,7 +918,6 @@ saveas(gcf,[path,'\globalPlots\modelComparisonBW.png']);
 
 
 %% Repeat with new method
-
 
 %Fit different models
 mdl_new_HW{1} = fitlme(allModelData(adj_rs >= 0.5,:),'NewBumpWidth~ContrastLevel+(1|Fly)');
@@ -1327,6 +1350,25 @@ legend('Darkness','Low contrast','High contrast');
 
 %Save figure
 saveas(gcf,[path,'\globalPlots\zNewBumpWidth_vs_mvt_and_contrast.png']);
+
+%% Nicer plot focusing just on total movement
+
+
+figure('Position',[200 200 400 600]),
+%Get binned means
+for contrast = 1:3
+    for bin = 1:length(totalMvtBins)-1
+        doubleBinMean(bin,contrast) = nanmean(allzNewBumpWidth((ZTotalMvt(1:length(allzNewBumpWidth)) > totalMvtBins(bin)) & (ZTotalMvt(1:length(allzNewBumpWidth)) < totalMvtBins(bin+1)) & (adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+        doubleBinStd(bin,contrast) = nanstd(allzNewBumpWidth((ZTotalMvt(1:length(allzNewBumpWidth)) > totalMvtBins(bin)) & (ZTotalMvt(1:length(allzNewBumpWidth)) < totalMvtBins(bin+1)) & (adj_rs >= 0.5) & (all_contrast_levels == contrast))); 
+        totalObs(bin,contrast) = length(allzNewBumpWidth((ZTotalMvt(1:length(allzNewBumpWidth)) > totalMvtBins(bin)) & (ZTotalMvt(1:length(allzNewBumpWidth)) < totalMvtBins(bin+1)) & (adj_rs >= 0.5) & (all_contrast_levels == contrast)));
+        doubleBinError(bin,contrast) = doubleBinStd(bin,contrast)/sqrt(totalObs(bin,contrast));
+    end
+    boundedline(totalMvtAxes,doubleBinMean(:,contrast),doubleBinError(:,contrast),'cmap',color_grad(contrast,:))
+end
+ylabel('Mean zscored bump width','fontsize',14);
+xlabel('Zscored total movement (deg/s)','fontsize',14);
+xlim([minBinTM-binWidthTM/2 maxBinTM+binWidthTM/2]);
+legend('Darkness','Low contrast','High contrast');
 
 %% Get and plot total movement per contrast
 

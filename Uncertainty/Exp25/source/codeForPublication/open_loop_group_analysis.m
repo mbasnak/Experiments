@@ -63,10 +63,10 @@ xlim([55 58]);
 xticks(56:57);
 xticklabels({'Low contrast','High contrast'});
 a = get(gca,'XTickLabel');  
-set(gca,'XTickLabel',a,'fontsize',12,'FontWeight','bold')
-ylabel('Circular standard deviation of offset','FontSize',12);
+set(gca,'XTickLabel',a,'fontsize',16,'FontWeight','bold')
+ylabel('Circular standard deviation of offset','FontSize',16);
 ylim([min(mean_offset_data_per_fly.mean_offset_var)-0.3 max(mean_offset_data_per_fly.mean_offset_var)+0.3]);
-
+ylim([0 2]);
 
 %save figure
 saveas(gcf,[path,'\globalPlots\mean_open_loop_stim_offset_var.png']);
@@ -103,9 +103,10 @@ legend(h, 'Low contrast','High Contrast');
 a = get(gca,'XTickLabel');  
 [ax,h2]=suplabel('Stimulus angular velocity','x');
 set(h2,'FontSize',12,'FontWeight','bold')
-set(gca,'XTickLabel',a,'fontsize',12,'FontWeight','bold')
-ylabel('Circular standard deviation of offset','FontSize',12);
+set(gca,'XTickLabel',a,'fontsize',16,'FontWeight','bold')
+ylabel('Circular standard deviation of offset','FontSize',16);
 ylim([min(mean_offset_data_per_speed.mean_offset_var)-0.3 max(mean_offset_data_per_speed.mean_offset_var)+0.3]);
+ylim([0 2]);
 
 %save figure
 saveas(gcf,[path,'\globalPlots\open_loop_offset_var_per_speed.png']);
@@ -156,8 +157,8 @@ xlim([55 58]);
 xticks(56:57);
 xticklabels({'Low contrast','High contrast'});
 a = get(gca,'XTickLabel');  
-set(gca,'XTickLabel',a,'fontsize',12,'FontWeight','bold')
-ylabel({'Mean bump magnitude';'(amplitude of Fourier component)'},'FontSize',12);
+set(gca,'XTickLabel',a,'fontsize',16,'FontWeight','bold')
+ylabel('Mean bump magnitude','FontSize',16);
 ylim([min(mean_bump_data_per_fly.mean_bump_mag)-0.3 max(mean_bump_data_per_fly.mean_bump_mag)+0.3]);
 
 %save figure
@@ -234,9 +235,10 @@ xlim([55 58]);
 xticks(56:57);
 xticklabels({'Low contrast','High contrast'});
 a = get(gca,'XTickLabel');  
-set(gca,'XTickLabel',a,'fontsize',12,'FontWeight','bold')
-ylabel('Mean half width','FontSize',12);
+set(gca,'XTickLabel',a,'fontsize',16,'FontWeight','bold')
+ylabel('Mean half width','FontSize',16);
 ylim([min(mean_half_width_data_per_fly.mean_half_width)-0.3 max(mean_half_width_data_per_fly.mean_half_width)+0.3]);
+%ylim([0 3.6]);
 
 %save figure
 saveas(gcf,[path,'\globalPlots\mean_open_loop_half_width.png']);
