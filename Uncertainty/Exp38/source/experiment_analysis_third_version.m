@@ -112,17 +112,17 @@ for jump = 1:length(coded_bar_jump_frames)
     real_bar_jump_frames(jump) = coded_bar_jump_frames(jump) + I_bar_jump_frames(jump) - 100;
 end
 %correct for the flies for which the method didn't work well
-if fly_ID == 1  
+if fly_ID == 1 
     real_bar_jump_frames(1) = floor(1488.5*length(continuous_data.dff_matrix)/continuous_data.time(end));
     real_bar_jump_frames(2) = floor(2088.5*length(continuous_data.dff_matrix)/continuous_data.time(end));  
     real_bar_jump_frames(3) = floor(2688.5*length(continuous_data.dff_matrix)/continuous_data.time(end));
-    real_bar_jump_frames(4) = floor(3288.5*length(continuous_data.dff_matrix)/continuous_data.time(end));
-elseif fly_ID == 2
+    real_bar_jump_frames(4) = floor(3288.5*length(continuous_data.dff_matrix)/continuous_data.time(end));    
+elseif (fly_ID == 2 | fly_ID == 6)  
     real_bar_jump_frames(1) = floor(1488.7*length(continuous_data.dff_matrix)/continuous_data.time(end));
     real_bar_jump_frames(2) = floor(2088.7*length(continuous_data.dff_matrix)/continuous_data.time(end));  
     real_bar_jump_frames(3) = floor(2688.7*length(continuous_data.dff_matrix)/continuous_data.time(end));
     real_bar_jump_frames(4) = floor(3288.7*length(continuous_data.dff_matrix)/continuous_data.time(end));
-elseif (fly_ID == 3 | fly_ID == 4)
+elseif (fly_ID == 3 | fly_ID == 4 | fly_ID == 5)
     real_bar_jump_frames(1) = floor(1188.7*length(continuous_data.dff_matrix)/continuous_data.time(end));    
     real_bar_jump_frames(2) = floor(1788.7*length(continuous_data.dff_matrix)/continuous_data.time(end));
     real_bar_jump_frames(3) = floor(2388.5*length(continuous_data.dff_matrix)/continuous_data.time(end));  
@@ -145,10 +145,10 @@ if fly_ID == 1
     real_wind_jump_frames(2) = floor(1789*length(continuous_data.dff_matrix)/continuous_data.time(end));  
     real_wind_jump_frames(3) = floor(2389*length(continuous_data.dff_matrix)/continuous_data.time(end));
     real_wind_jump_frames(4) = floor(2989*length(continuous_data.dff_matrix)/continuous_data.time(end));
-elseif fly_ID == 2 
+elseif (fly_ID == 2 | fly_ID == 6)
     real_wind_jump_frames(2) = floor(1789*length(continuous_data.dff_matrix)/continuous_data.time(end));  
     real_wind_jump_frames(4) = floor(2989*length(continuous_data.dff_matrix)/continuous_data.time(end)); 
-elseif(fly_ID == 3 | fly_ID == 4)
+elseif(fly_ID == 3 | fly_ID == 4 | fly_ID == 5)
     real_wind_jump_frames(1) = floor(1489*length(continuous_data.dff_matrix)/continuous_data.time(end));
     real_wind_jump_frames(2) = floor(2089*length(continuous_data.dff_matrix)/continuous_data.time(end));  
     real_wind_jump_frames(3) = floor(2689*length(continuous_data.dff_matrix)/continuous_data.time(end));
@@ -174,7 +174,8 @@ for jump = 2:4
    xline(real_bar_jump_frames(jump),'color',[0.4660 0.6740 0.1880],'linewidth',4,'handlevisibility','off')
 end
 title('EPG activity');
-set(gca,'xticklabel',{[]})
+set(gca,'xticklabel',{[]});
+set(gca,'yticklabel',{[]});
 
 subplot(5,1,2)
 bump_pos = wrapTo180(rad2deg(continuous_data.bump_pos));
@@ -269,72 +270,130 @@ for jump = 1:length(real_bar_jump_frames)
    time_zero = continuous_data.time(real_bar_jump_frames(jump));
    time = continuous_data.time-time_zero;
    
-   figure('Position',[100 100 1200 500]),
+   figure('Position',[100 100 1600 500]),
    ax(1) = subplot(8,1,1);
-   imagesc(continuous_data.bump_magnitude(:,real_bar_jump_frames(jump)-100:real_bar_jump_frames(jump)+101))
+   imagesc(continuous_data.bump_magnitude(:,real_bar_jump_frames(jump)-10*sec_to_frames:real_bar_jump_frames(jump)+10*sec_to_frames))
    colormap(flipud(gray))
    set(gca,'xtick',[])
    set(gca,'ytick',[])
    title('Bump magnitude');
    
-   ax(2) = subplot(8,1,[2 8]);
-   time_to_plot = time(real_bar_jump_frames(jump)-100:real_bar_jump_frames(jump)+101);
-   phase_to_plot = bump_pos(real_bar_jump_frames(jump)-100:real_bar_jump_frames(jump)+101);
+   colormap(ax(1),flipud(gray));
+   pos = get(subplot(8,1,1),'Position');
+   %pos2 = get(subplot(12,1,2),'Position');
+   h = colorbar('Position', [pos(1)+pos(3)+0.02  0.8054  pos(3)/40  pos(4)+0.055]); 
+   
+   ax(2) = subplot(8,1,2);
+   imagesc(continuous_data.bump_width(:,real_bar_jump_frames(jump)-10*sec_to_frames:real_bar_jump_frames(jump)+10*sec_to_frames))
+   set(gca,'xtick',[])
+   set(gca,'ytick',[])
+   title('Bump width');    
+   
+   c2 = colormap(ax(2),flipud(bone));
+   pos2 = get(subplot(8,1,2),'Position');
+   h2 = colorbar('Position', [pos(1)- 0.06  pos2(2)  pos(3)/40  pos(4)+0.055]);
+   
+   ax(3) = subplot(8,1,[3 6]);
+   time_to_plot = time(real_bar_jump_frames(jump)-10*sec_to_frames:real_bar_jump_frames(jump)+10*sec_to_frames);
+   phase_to_plot = bump_pos(real_bar_jump_frames(jump)-10*sec_to_frames:real_bar_jump_frames(jump)+10*sec_to_frames);
    [x_out_time,bump_pos_to_plot] = removeWrappedLines(time_to_plot,phase_to_plot');   
    plot(x_out_time,bump_pos_to_plot,'linewidth',2)
    hold on
-   bar_to_plot = bar_pos(real_bar_jump_frames(jump)-100:real_bar_jump_frames(jump)+101);
+   bar_to_plot = bar_pos(real_bar_jump_frames(jump)-10*sec_to_frames:real_bar_jump_frames(jump)+10*sec_to_frames);
    [x_out_time,bar_pos_to_plot] = removeWrappedLines(time_to_plot,bar_to_plot);
    plot(x_out_time,bar_pos_to_plot,'linewidth',2)
-   wind_to_plot = motor_pos(real_bar_jump_frames(jump)-100:real_bar_jump_frames(jump)+101);
+   wind_to_plot = motor_pos(real_bar_jump_frames(jump)-10*sec_to_frames:real_bar_jump_frames(jump)+10*sec_to_frames);
    [x_out_time,wind_pos_to_plot] = removeWrappedLines(time_to_plot,wind_to_plot');
    plot(x_out_time,wind_pos_to_plot,'linewidth',2)
    xline(time(real_bar_jump_frames(jump)),'k','linestyle','--','linewidth',2)
    ylim([-180 180]);
-   xlim([time(real_bar_jump_frames(jump)-100) time(real_bar_jump_frames(jump)+101)]);
+   xlim([time(real_bar_jump_frames(jump)-floor(10*sec_to_frames)) time(real_bar_jump_frames(jump)+floor(10*sec_to_frames))]);
    ylabel('Deg');
-   xlabel('Time (sec)');
    legend('Bump estimate','Bar position','Wind position','Bar jump');
+   set(gca,'xtick',[]);
    
-   saveas(gcf,[path,'\plots\close-up_bar_jump_',num2str(jump),'.png']);
+   ax(4) = subplot(8,1,[7:8]);
+   bar_offset_to_plot = bar_offset(real_bar_jump_frames(jump)-10*sec_to_frames:real_bar_jump_frames(jump)+10*sec_to_frames);
+   [x_out_time,bar_off_to_plot] = removeWrappedLines(time_to_plot,bar_offset_to_plot);   
+   plot(x_out_time,bar_off_to_plot,'linewidth',2,'color',[0.8500 0.3250 0.0980])
+   hold on
+   wind_offset_to_plot = wind_offset(real_bar_jump_frames(jump)-10*sec_to_frames:real_bar_jump_frames(jump)+10*sec_to_frames);
+   [x_out_time,wind_off_to_plot] = removeWrappedLines(time_to_plot,wind_offset_to_plot');   
+   plot(x_out_time,wind_off_to_plot,'linewidth',2,'color',[0.9290 0.6940 0.1250])
+   xlim([time(real_bar_jump_frames(jump)-floor(10*sec_to_frames)) time(real_bar_jump_frames(jump)+floor(10*sec_to_frames))]);
+   xline(time(real_bar_jump_frames(jump)),'k','linestyle','--','linewidth',2)   
+   legend('Bar offset','Wind offset','Bar jump');
+   xlabel('Time (sec)');ylabel('Offset (deg)');
+   ylim([-180 180]);
+   
+   saveas(gcf,[path,'\plots\closeup_around_bar_jump_',num2str(jump),'.png']);
 end
 
 
-%% Close up around the wind jumps
+%% Repeat for the wind jumps
 
 for jump = 1:length(real_wind_jump_frames)
     
    time_zero = continuous_data.time(real_wind_jump_frames(jump));
    time = continuous_data.time-time_zero;
    
-   figure('Position',[100 100 1200 500]),
+   figure('Position',[100 100 1600 500]),
    ax(1) = subplot(8,1,1);
-   imagesc(continuous_data.bump_magnitude(:,real_wind_jump_frames(jump)-100:real_wind_jump_frames(jump)+101))
+   imagesc(continuous_data.bump_magnitude(:,real_wind_jump_frames(jump)-10*sec_to_frames:real_wind_jump_frames(jump)+10*sec_to_frames))
    colormap(flipud(gray))
    set(gca,'xtick',[])
    set(gca,'ytick',[])
    title('Bump magnitude');
    
-   ax(2) = subplot(8,1,[2 8]);
-   time_to_plot = time(real_wind_jump_frames(jump)-100:real_wind_jump_frames(jump)+101);
-   phase_to_plot = bump_pos(real_wind_jump_frames(jump)-100:real_wind_jump_frames(jump)+101);
+   colormap(ax(1),flipud(gray));
+   pos = get(subplot(8,1,1),'Position');
+   %pos2 = get(subplot(12,1,2),'Position');
+   h = colorbar('Position', [pos(1)+pos(3)+0.02  0.8054  pos(3)/40  pos(4)+0.055]); 
+   
+   ax(2) = subplot(8,1,2);
+   imagesc(continuous_data.bump_width(:,real_wind_jump_frames(jump)-10*sec_to_frames:real_wind_jump_frames(jump)+10*sec_to_frames))
+   set(gca,'xtick',[])
+   set(gca,'ytick',[])
+   title('Bump width');
+         
+   c2 = colormap(ax(2),flipud(bone));
+   pos2 = get(subplot(8,1,2),'Position');
+   h2 = colorbar('Position', [pos(1)- 0.06  pos2(2)  pos(3)/40  pos(4)+0.055]);
+   
+   ax(3) = subplot(8,1,[3 6]);
+   time_to_plot = time(real_wind_jump_frames(jump)-10*sec_to_frames:real_wind_jump_frames(jump)+10*sec_to_frames);
+   phase_to_plot = bump_pos(real_wind_jump_frames(jump)-10*sec_to_frames:real_wind_jump_frames(jump)+10*sec_to_frames);
    [x_out_time,bump_pos_to_plot] = removeWrappedLines(time_to_plot,phase_to_plot');   
    plot(x_out_time,bump_pos_to_plot,'linewidth',2)
    hold on
-   bar_to_plot = bar_pos(real_wind_jump_frames(jump)-100:real_wind_jump_frames(jump)+101);
+   bar_to_plot = bar_pos(real_wind_jump_frames(jump)-10*sec_to_frames:real_wind_jump_frames(jump)+10*sec_to_frames);
    [x_out_time,bar_pos_to_plot] = removeWrappedLines(time_to_plot,bar_to_plot);
    plot(x_out_time,bar_pos_to_plot,'linewidth',2)
-   wind_to_plot = motor_pos(real_wind_jump_frames(jump)-100:real_wind_jump_frames(jump)+101);
+   wind_to_plot = motor_pos(real_wind_jump_frames(jump)-10*sec_to_frames:real_wind_jump_frames(jump)+10*sec_to_frames);
    [x_out_time,wind_pos_to_plot] = removeWrappedLines(time_to_plot,wind_to_plot');
    plot(x_out_time,wind_pos_to_plot,'linewidth',2)
    xline(time(real_wind_jump_frames(jump)),'k','linestyle','--','linewidth',2)
    ylim([-180 180]);
-   xlim([time(real_wind_jump_frames(jump)-100) time(real_wind_jump_frames(jump)+101)]);
+   xlim([time(real_wind_jump_frames(jump)-floor(10*sec_to_frames)) time(real_wind_jump_frames(jump)+floor(10*sec_to_frames))]);
    ylabel('Deg');
-   xlabel('Time (sec)');
+   set(gca,'xtick',[]);
    legend('Bump estimate','Bar position','Wind position','Wind jump');
    
-   saveas(gcf,[path,'\plots\close-up_wind_jump_',num2str(jump),'.png']);
+   ax(4) = subplot(8,1,[7:8]);
+   bar_offset_to_plot = bar_offset(real_wind_jump_frames(jump)-10*sec_to_frames:real_wind_jump_frames(jump)+10*sec_to_frames);
+   [x_out_time,bar_off_to_plot] = removeWrappedLines(time_to_plot,bar_offset_to_plot);   
+   plot(x_out_time,bar_off_to_plot,'linewidth',2,'color',[0.8500 0.3250 0.0980])
+   hold on
+   wind_offset_to_plot = wind_offset(real_wind_jump_frames(jump)-10*sec_to_frames:real_wind_jump_frames(jump)+10*sec_to_frames);
+   [x_out_time,wind_off_to_plot] = removeWrappedLines(time_to_plot,wind_offset_to_plot');   
+   plot(x_out_time,wind_off_to_plot,'linewidth',2,'color',[0.9290 0.6940 0.1250])
+   xlim([time(real_wind_jump_frames(jump)-floor(10*sec_to_frames)) time(real_wind_jump_frames(jump)+floor(10*sec_to_frames))]);
+   xline(time(real_wind_jump_frames(jump)),'k','linestyle','--','linewidth',2)   
+   legend('Bar offset','Wind offset','Wind jump');
+   xlabel('Time (sec)'); ylabel('Offset (deg)');
+   ylim([-180 180]);
+   
+   saveas(gcf,[path,'\plots\closeup_around_wind_jump_',num2str(jump),'.png']);
 end
 
 
@@ -345,8 +404,8 @@ for jump = 1:length(real_bar_jump_frames)
    time_zero = continuous_data.time(real_bar_jump_frames(jump));
    time = continuous_data.time-time_zero;
    
-   figure('Position',[100 100 1300 800]),
-   ax(1) = subplot(12,1,1);
+   figure('Position',[100 100 1600 500]),
+   ax(1) = subplot(8,1,1);
    imagesc(continuous_data.bump_magnitude(:,real_bar_jump_frames(jump)-120*sec_to_frames:real_bar_jump_frames(jump)+120*sec_to_frames))
    colormap(flipud(gray))
    set(gca,'xtick',[])
@@ -354,21 +413,21 @@ for jump = 1:length(real_bar_jump_frames)
    title('Bump magnitude');
    
    colormap(ax(1),flipud(gray));
-   pos = get(subplot(12,1,1),'Position');
+   pos = get(subplot(8,1,1),'Position');
    %pos2 = get(subplot(12,1,2),'Position');
    h = colorbar('Position', [pos(1)+pos(3)+0.02  0.8054  pos(3)/40  pos(4)+0.055]); 
    
-   ax(2) = subplot(12,1,2);
+   ax(2) = subplot(8,1,2);
    imagesc(continuous_data.bump_width(:,real_bar_jump_frames(jump)-120*sec_to_frames:real_bar_jump_frames(jump)+120*sec_to_frames))
    set(gca,'xtick',[])
    set(gca,'ytick',[])
    title('Bump width');    
    
    c2 = colormap(ax(2),flipud(bone));
-   pos2 = get(subplot(12,1,2),'Position');
+   pos2 = get(subplot(8,1,2),'Position');
    h2 = colorbar('Position', [pos(1)- 0.06  pos2(2)  pos(3)/40  pos(4)+0.055]);
    
-   ax(3) = subplot(12,1,[3 9]);
+   ax(3) = subplot(8,1,[3 6]);
    time_to_plot = time(real_bar_jump_frames(jump)-120*sec_to_frames:real_bar_jump_frames(jump)+120*sec_to_frames);
    phase_to_plot = bump_pos(real_bar_jump_frames(jump)-120*sec_to_frames:real_bar_jump_frames(jump)+120*sec_to_frames);
    [x_out_time,bump_pos_to_plot] = removeWrappedLines(time_to_plot,phase_to_plot');   
@@ -387,7 +446,7 @@ for jump = 1:length(real_bar_jump_frames)
    legend('Bump estimate','Bar position','Wind position','Bar jump');
    set(gca,'xtick',[]);
    
-   ax(4) = subplot(12,1,[10:11]);
+   ax(4) = subplot(8,1,[7:8]);
    bar_offset_to_plot = bar_offset(real_bar_jump_frames(jump)-120*sec_to_frames:real_bar_jump_frames(jump)+120*sec_to_frames);
    [x_out_time,bar_off_to_plot] = removeWrappedLines(time_to_plot,bar_offset_to_plot);   
    plot(x_out_time,bar_off_to_plot,'linewidth',2,'color',[0.8500 0.3250 0.0980])
@@ -413,8 +472,8 @@ for jump = 1:length(real_wind_jump_frames)
    time_zero = continuous_data.time(real_wind_jump_frames(jump));
    time = continuous_data.time-time_zero;
    
-   figure('Position',[100 100 1200 800]),
-   ax(1) = subplot(12,1,1);
+   figure('Position',[100 100 1600 500]),
+   ax(1) = subplot(8,1,1);
    imagesc(continuous_data.bump_magnitude(:,real_wind_jump_frames(jump)-120*sec_to_frames:real_wind_jump_frames(jump)+120*sec_to_frames))
    colormap(flipud(gray))
    set(gca,'xtick',[])
@@ -422,21 +481,21 @@ for jump = 1:length(real_wind_jump_frames)
    title('Bump magnitude');
    
    colormap(ax(1),flipud(gray));
-   pos = get(subplot(12,1,1),'Position');
+   pos = get(subplot(8,1,1),'Position');
    %pos2 = get(subplot(12,1,2),'Position');
    h = colorbar('Position', [pos(1)+pos(3)+0.02  0.8054  pos(3)/40  pos(4)+0.055]); 
    
-   ax(2) = subplot(12,1,2);
+   ax(2) = subplot(8,1,2);
    imagesc(continuous_data.bump_width(:,real_wind_jump_frames(jump)-120*sec_to_frames:real_wind_jump_frames(jump)+120*sec_to_frames))
    set(gca,'xtick',[])
    set(gca,'ytick',[])
    title('Bump width');
          
    c2 = colormap(ax(2),flipud(bone));
-   pos2 = get(subplot(12,1,2),'Position');
+   pos2 = get(subplot(8,1,2),'Position');
    h2 = colorbar('Position', [pos(1)- 0.06  pos2(2)  pos(3)/40  pos(4)+0.055]);
    
-   ax(3) = subplot(12,1,[3 9]);
+   ax(3) = subplot(8,1,[3 6]);
    time_to_plot = time(real_wind_jump_frames(jump)-120*sec_to_frames:real_wind_jump_frames(jump)+120*sec_to_frames);
    phase_to_plot = bump_pos(real_wind_jump_frames(jump)-120*sec_to_frames:real_wind_jump_frames(jump)+120*sec_to_frames);
    [x_out_time,bump_pos_to_plot] = removeWrappedLines(time_to_plot,phase_to_plot');   
@@ -455,7 +514,7 @@ for jump = 1:length(real_wind_jump_frames)
    set(gca,'xtick',[]);
    legend('Bump estimate','Bar position','Wind position','Wind jump');
    
-   ax(4) = subplot(12,1,[10:12]);
+   ax(4) = subplot(8,1,[7:8]);
    bar_offset_to_plot = bar_offset(real_wind_jump_frames(jump)-120*sec_to_frames:real_wind_jump_frames(jump)+120*sec_to_frames);
    [x_out_time,bar_off_to_plot] = removeWrappedLines(time_to_plot,bar_offset_to_plot);   
    plot(x_out_time,bar_off_to_plot,'linewidth',2,'color',[0.8500 0.3250 0.0980])
@@ -476,16 +535,17 @@ end
 %% Threshold movement data and goodness of fit
 
 % Uncomment below to see the total movement distribution
-% figure,
-% histogram(continuous_data.total_mvt_ds)
-% xlabel('Total movement (deg/s)');
-% ylabel('Counts');
+figure,
+histogram(continuous_data.total_mvt_ds)
+xlabel('Total movement (deg/s)');
+ylabel('Counts');
 mvt_thresh = 25;
 moving = continuous_data.total_mvt_ds>mvt_thresh;
 good_fit = continuous_data.adj_rs>0.5;
 
+%I'm currently not using this
 
-%% Bump mag before and after bar jumps
+%% Bump par before and after bar jumps
 
 for jump = 1:length(real_bar_jump_frames)
     
@@ -503,7 +563,7 @@ for jump = 1:length(real_bar_jump_frames)
     
 end
 
-figure,
+figure('Position',[100 100 800 1000]),
 subplot(2,2,1)
 plot(short_bm_around_bar_jump','color',[.5 .5 .5])
 hold on
@@ -512,6 +572,8 @@ ylabel('Bump magnitude');
 title('Short timescale');
 xlim([0 3]);
 ylim([0.5 3]);
+xticks([1 2]);
+xticklabels({'pre jump','post jump'});
 
 subplot(2,2,2)
 plot(long_bm_around_bar_jump','color',[.5 .5 .5])
@@ -520,7 +582,8 @@ plot(mean(long_bm_around_bar_jump),'k','linewidth',2)
 title('Long timescale');
 xlim([0 3]);
 ylim([0.5 3]);
-
+xticks([1 2]);
+xticklabels({'pre jump','post jump'});
 
 subplot(2,2,3)
 plot(short_bw_around_bar_jump','color',[.5 .5 .5])
@@ -529,6 +592,8 @@ plot(mean(short_bw_around_bar_jump),'k','linewidth',2)
 ylabel('Bump width');
 xlim([0 3]);
 ylim([1 4]);
+xticks([1 2]);
+xticklabels({'pre jump','post jump'});
 
 subplot(2,2,4)
 plot(long_bw_around_bar_jump','color',[.5 .5 .5])
@@ -536,7 +601,12 @@ hold on
 plot(mean(long_bw_around_bar_jump),'k','linewidth',2)
 xlim([0 3]);
 ylim([1 4]);
+xticks([1 2]);
+xticklabels({'pre jump','post jump'});
 
+suptitle('Bar jumps');
+
+saveas(gcf,[path,'\plots\bump_pars_around_bar_jumps.png']);
 
 %% Repeat for wind
 
@@ -556,7 +626,7 @@ for jump = 1:length(real_wind_jump_frames)
     
 end
 
-figure,
+figure('Position',[100 100 800 1000]),
 subplot(2,2,1)
 plot(short_bm_around_wind_jump','color',[.5 .5 .5])
 hold on
@@ -565,6 +635,8 @@ ylabel('Bump magnitude');
 title('Short timescale');
 xlim([0 3]);
 ylim([0.5 3]);
+xticks([1 2]);
+xticklabels({'pre jump','post jump'});
 
 subplot(2,2,2)
 plot(long_bm_around_wind_jump','color',[.5 .5 .5])
@@ -573,7 +645,8 @@ plot(mean(long_bm_around_wind_jump),'k','linewidth',2)
 title('Long timescale');
 xlim([0 3]);
 ylim([0.5 3]);
-
+xticks([1 2]);
+xticklabels({'pre jump','post jump'});
 
 subplot(2,2,3)
 plot(short_bw_around_bar_jump','color',[.5 .5 .5])
@@ -582,6 +655,8 @@ plot(mean(short_bw_around_bar_jump),'k','linewidth',2)
 ylabel('Bump width');
 xlim([0 3]);
 ylim([1 4]);
+xticks([1 2]);
+xticklabels({'pre jump','post jump'});
 
 subplot(2,2,4)
 plot(long_bw_around_wind_jump','color',[.5 .5 .5])
@@ -589,6 +664,12 @@ hold on
 plot(mean(long_bw_around_wind_jump),'k','linewidth',2)
 xlim([0 3]);
 ylim([1 4]);
+xticks([1 2]);
+xticklabels({'pre jump','post jump'});
+
+suptitle('Wind jumps');
+
+saveas(gcf,[path,'\plots\bump_pars_around_wind_jumps.png']);
 
 %% Raster plots of bump parameters in the short time scale
 
@@ -610,13 +691,17 @@ zscored_short_bw_wind_jump = zscore(short_bw_wind_jump,[],2);
 
 
 %Plot bump magnitude
-figure('Position',[100 100 1200 600]),
+figure('Position',[100 100 1600 600]),
 subplot(2,1,1)
 imagesc(zscored_short_bm_bar_jump)
 hold on
 xline(20,'r','linewidth',2)
 colormap(flipud(gray))
 title('Bar jumps');
+frames = [5 10 15 20 25 30 35]; 
+xticks(frames);
+timestamps = [-37/2*frames_to_sec:0.11:37/2*frames_to_sec];
+xticklabels(num2cell(round(timestamps(frames),1)));
 
 subplot(2,1,2)
 imagesc(zscored_short_bm_wind_jump)
@@ -624,26 +709,51 @@ hold on
 xline(20,'r','linewidth',2)
 colormap(flipud(gray))
 title('Wind jumps');
+frames = [5 10 15 20 25 30 35]; 
+xticks(frames);
+timestamps = [-37/2*frames_to_sec:0.11:37/2*frames_to_sec];
+xticklabels(num2cell(round(timestamps(frames),1)));
+
+suptitle('Bump magnitude');
+
+saveas(gcf,[path,'\plots\short_raster_plots_bump_mag.png']);
+
 
 
 %Plot bump width
-figure('Position',[100 100 1200 600]),
+figure('Position',[100 100 1600 600]),
 subplot(2,1,1)
 imagesc(zscored_short_bw_bar_jump)
 hold on
 xline(20,'r','linewidth',2)
-colormap(flipud(gray))
+colormap(flipud(bone))
 title('Bar jumps');
+frames = [5 10 15 20 25 30 35]; 
+xticks(frames);
+timestamps = [-37/2*frames_to_sec:0.11:37/2*frames_to_sec];
+xticklabels(num2cell(round(timestamps(frames),1)));
 
 subplot(2,1,2)
 imagesc(zscored_short_bw_wind_jump)
 hold on
 xline(20,'r','linewidth',2)
-colormap(flipud(gray))
+colormap(flipud(bone))
 title('Wind jumps');
+frames = [5 10 15 20 25 30 35]; 
+xticks(frames);
+timestamps = [-37/2*frames_to_sec:0.11:37/2*frames_to_sec];
+xticklabels(num2cell(round(timestamps(frames),1)));
 
+suptitle('Bump width');
+
+saveas(gcf,[path,'\plots\short_raster_plots_bump_width.png']);
+
+
+%I'm pretty sure we need to zscore, but is this zscoring correct?
 
 %% Repeat for long time scale
+
+%change timescale for seconds
 
 %Bar jumps
 for jump = 1:length(real_bar_jump_frames)
@@ -663,7 +773,7 @@ zscored_long_bw_wind_jump = zscore(long_bw_wind_jump,[],2);
 
 
 %Plot bump magnitude
-figure('Position',[100 100 1200 600]),
+figure('Position',[100 100 1600 600]),
 subplot(2,1,1)
 imagesc(zscored_long_bm_bar_jump)
 hold on
@@ -678,20 +788,122 @@ xline(120*sec_to_frames,'r','linewidth',2)
 colormap(flipud(gray))
 title('Wind jumps');
 
+suptitle('Bump magnitude');
+
+saveas(gcf,[path,'\plots\long_raster_plots_bump_mag.png']);
+
+
 
 %Plot bump width
-figure('Position',[100 100 1200 600]),
+figure('Position',[100 100 1600 600]),
 subplot(2,1,1)
 imagesc(zscored_long_bw_bar_jump)
 hold on
 xline(120*sec_to_frames,'r','linewidth',2)
-colormap(flipud(gray))
+colormap(flipud(bone))
 title('Bar jumps');
 
 subplot(2,1,2)
 imagesc(zscored_long_bw_wind_jump)
 hold on
 xline(120*sec_to_frames,'r','linewidth',2)
-colormap(flipud(gray))
+colormap(flipud(bone))
 title('Wind jumps');
 
+suptitle('Bump width');
+
+saveas(gcf,[path,'\plots\long_raster_plots_bump_width.png']);
+
+
+%% Compute offset variability pre and post-jump
+
+
+
+%compare to changes in bump parameters.
+
+
+
+%% Offset mean with respect to both stimuli pre and post-jump
+
+%Compute offset mean around bar jumps
+for jump = 1:length(real_bar_jump_frames)
+    
+    short_bar_offset_mean_around_bar_jump(jump,1) = circ_mean(deg2rad(bar_offset(real_bar_jump_frames(jump)-2*sec_to_frames:real_bar_jump_frames(jump)-1)));
+    short_bar_offset_mean_around_bar_jump(jump,2) = circ_mean(deg2rad(bar_offset(real_bar_jump_frames(jump)+1:real_bar_jump_frames(jump)+2*sec_to_frames)));
+    
+    short_wind_offset_mean_around_bar_jump(jump,1) = circ_mean(deg2rad(wind_offset(real_bar_jump_frames(jump)-2*sec_to_frames:real_bar_jump_frames(jump)-1)),[],2);
+    short_wind_offset_mean_around_bar_jump(jump,2) = circ_mean(deg2rad(wind_offset(real_bar_jump_frames(jump)+1:real_bar_jump_frames(jump)+2*sec_to_frames)),[],2);
+    
+    long_bar_offset_mean_around_bar_jump(jump,1) = circ_mean(deg2rad(bar_offset(real_bar_jump_frames(jump)-120*sec_to_frames:real_bar_jump_frames(jump)-1)));
+    long_bar_offset_mean_around_bar_jump(jump,2) = circ_mean(deg2rad(bar_offset(real_bar_jump_frames(jump)+1:real_bar_jump_frames(jump)+120*sec_to_frames)));
+    
+    long_wind_offset_mean_around_bar_jump(jump,1) = circ_mean(deg2rad(wind_offset(real_bar_jump_frames(jump)-120*sec_to_frames:real_bar_jump_frames(jump)-1)),[],2);
+    long_wind_offset_mean_around_bar_jump(jump,2) = circ_mean(deg2rad(wind_offset(real_bar_jump_frames(jump)+1:real_bar_jump_frames(jump)+120*sec_to_frames)),[],2);
+    
+end
+
+%Compute differences in the offset mean pre and post jump
+short_bar_offset_mean_diff_around_bar_jumps = abs(rad2deg(circ_dist(short_bar_offset_mean_around_bar_jump(:,1),short_bar_offset_mean_around_bar_jump(:,2))));
+short_wind_offset_mean_diff_around_bar_jumps = abs(rad2deg(circ_dist(short_wind_offset_mean_around_bar_jump(:,1),short_wind_offset_mean_around_bar_jump(:,2))));
+long_bar_offset_mean_diff_around_bar_jumps = abs(rad2deg(circ_dist(long_bar_offset_mean_around_bar_jump(:,1),long_bar_offset_mean_around_bar_jump(:,2))));
+long_wind_offset_mean_diff_around_bar_jumps = abs(rad2deg(circ_dist(long_wind_offset_mean_around_bar_jump(:,1),long_wind_offset_mean_around_bar_jump(:,2))));
+
+%The short bar offset mean will change quite a bit by design because of the
+%bar jumps, so not sure if it's the best metric.
+
+
+%Repeat for wind jumps
+for jump = 1:length(real_wind_jump_frames)
+    
+    short_bar_offset_mean_around_wind_jump(jump,1) = circ_mean(deg2rad(bar_offset(real_wind_jump_frames(jump)-2*sec_to_frames:real_wind_jump_frames(jump)-1)));
+    short_bar_offset_mean_around_wind_jump(jump,2) = circ_mean(deg2rad(bar_offset(real_wind_jump_frames(jump)+1:real_wind_jump_frames(jump)+2*sec_to_frames)));
+    
+    short_wind_offset_mean_around_wind_jump(jump,1) = circ_mean(deg2rad(wind_offset(real_wind_jump_frames(jump)-2*sec_to_frames:real_wind_jump_frames(jump)-1)),[],2);
+    short_wind_offset_mean_around_wind_jump(jump,2) = circ_mean(deg2rad(wind_offset(real_wind_jump_frames(jump)+1:real_wind_jump_frames(jump)+2*sec_to_frames)),[],2);
+    
+    long_bar_offset_mean_around_wind_jump(jump,1) = circ_mean(deg2rad(bar_offset(real_wind_jump_frames(jump)-120*sec_to_frames:real_wind_jump_frames(jump)-1)));
+    long_bar_offset_mean_around_wind_jump(jump,2) = circ_mean(deg2rad(bar_offset(real_wind_jump_frames(jump)+1:real_wind_jump_frames(jump)+120*sec_to_frames)));
+    
+    long_wind_offset_mean_around_wind_jump(jump,1) = circ_mean(deg2rad(wind_offset(real_wind_jump_frames(jump)-120*sec_to_frames:real_wind_jump_frames(jump)-1)),[],2);
+    long_wind_offset_mean_around_wind_jump(jump,2) = circ_mean(deg2rad(wind_offset(real_wind_jump_frames(jump)+1:real_wind_jump_frames(jump)+120*sec_to_frames)),[],2);
+    
+end
+
+%Compute differences in the offset mean pre and post jump
+short_bar_offset_mean_diff_around_wind_jumps = abs(rad2deg(circ_dist(short_bar_offset_mean_around_wind_jump(:,1),short_wind_offset_mean_around_wind_jump(:,2))));
+short_wind_offset_mean_diff_around_wind_jumps = abs(rad2deg(circ_dist(short_wind_offset_mean_around_wind_jump(:,1),short_wind_offset_mean_around_wind_jump(:,2))));
+long_bar_offset_mean_diff_around_wind_jumps = abs(rad2deg(circ_dist(long_bar_offset_mean_around_wind_jump(:,1),long_wind_offset_mean_around_wind_jump(:,2))));
+long_wind_offset_mean_diff_around_wind_jumps = abs(rad2deg(circ_dist(long_wind_offset_mean_around_wind_jump(:,1),long_wind_offset_mean_around_wind_jump(:,2))));
+
+
+%Plot differences in mean offset
+figure('Position',[100 100 800 800]),
+plot([1,1,1,1],long_bar_offset_mean_diff_around_bar_jumps,'ro')
+hold on
+plot([1,1,1,1],long_bar_offset_mean_diff_around_wind_jumps,'ko')
+plot([2,2,2,2],long_wind_offset_mean_diff_around_bar_jumps,'ro')
+plot([2,2,2,2],long_wind_offset_mean_diff_around_wind_jumps,'ko')
+xlim([0 3]);
+ylim([0 180]);
+xticks([1 2]);
+xticklabels({'Bar offset diff','Wind offset diff'});
+ylabel('Post-pre mean offset difference (deg)','fontsize',12);
+legend('Around bar jumps','Around wind jumps');
+
+
+%Compute the preference index (proxy for which cue the bump is focusing on)
+    %the closer to -1, the more the bar is preferred
+    %the closer to 1, the more the wind is preferred
+pref_index = (mean([long_bar_offset_mean_diff_around_bar_jumps;long_bar_offset_mean_diff_around_wind_jumps])-mean([long_wind_offset_mean_diff_around_bar_jumps;long_wind_offset_mean_diff_around_wind_jumps]))/(mean([long_bar_offset_mean_diff_around_bar_jumps;long_bar_offset_mean_diff_around_wind_jumps]) + mean([long_wind_offset_mean_diff_around_bar_jumps;long_wind_offset_mean_diff_around_wind_jumps]));
+
+title(['Preference index = ',num2str(round(pref_index,2))]);
+
+saveas(gcf,[path,'\plots\change_in_mean_offset.png']);
+
+%% Save data
+
+%save PI, and bump parameters behavior around the jumps
+
+%% Clear space
+
+clear all; close all;
