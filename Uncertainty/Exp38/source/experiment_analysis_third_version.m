@@ -903,6 +903,7 @@ saveas(gcf,[path,'\plots\change_in_mean_offset.png']);
 %% Save data
 
 %save PI, and bump parameters behavior around the jumps
+save([path,'\data.mat'],'zscored_short_bm_bar_jump','zscored_short_bw_bar_jump','zscored_short_bm_wind_jump','zscored_short_bw_wind_jump','zscored_long_bm_bar_jump','zscored_long_bw_bar_jump','zscored_long_bm_wind_jump','zscored_long_bw_wind_jump','pref_index')
 
 %% Clear space
 
