@@ -138,3 +138,22 @@ colormap(flipud(gray))
 title('Wind jumps');
 
 suptitle('Bump width');
+
+%% Mean bump parameters before and after
+
+figure,
+subplot(1,2,1)
+plot([median(short_bm_bar_jump(:,9:18),2),median(short_bm_bar_jump(:,19:27),2)]','color',[.5 .5 .5])
+hold on
+plot(median([median(short_bm_bar_jump(:,9:18),2),median(short_bm_bar_jump(:,19:27),2)]),'k','linewidth',2)
+xlim([0 3]);
+ylabel('Bump magnitude');
+
+subplot(1,2,2)
+plot([median(short_bw_bar_jump(:,9:18),2),median(short_bw_bar_jump(:,19:27),2)]','color',[.5 .5 .5])
+hold on
+plot(median([median(short_bw_bar_jump(:,9:18),2),median(short_bw_bar_jump(:,19:27),2)]),'k','linewidth',2)
+xlim([0 3]);
+ylabel('Bump width');
+
+

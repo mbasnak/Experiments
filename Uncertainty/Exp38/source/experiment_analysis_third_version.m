@@ -141,18 +141,30 @@ for jump = 1:length(coded_wind_jump_frames)
 end
 %correct for the flies for which the method didn't work well
 if fly_ID == 1
-    real_wind_jump_frames(1) = floor(1189*length(continuous_data.dff_matrix)/continuous_data.time(end));
-    real_wind_jump_frames(2) = floor(1789*length(continuous_data.dff_matrix)/continuous_data.time(end));  
-    real_wind_jump_frames(3) = floor(2389*length(continuous_data.dff_matrix)/continuous_data.time(end));
-    real_wind_jump_frames(4) = floor(2989*length(continuous_data.dff_matrix)/continuous_data.time(end));
-elseif (fly_ID == 2 | fly_ID == 6)
-    real_wind_jump_frames(2) = floor(1789*length(continuous_data.dff_matrix)/continuous_data.time(end));  
-    real_wind_jump_frames(4) = floor(2989*length(continuous_data.dff_matrix)/continuous_data.time(end)); 
+    real_wind_jump_frames(1) = floor(1188.6*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(2) = floor(1788.6*length(continuous_data.dff_matrix)/continuous_data.time(end));  
+    real_wind_jump_frames(3) = floor(2388.6*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(4) = floor(2988.6*length(continuous_data.dff_matrix)/continuous_data.time(end));
+elseif fly_ID == 2
+    real_wind_jump_frames(1) = floor(1188.56*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(2) = floor(1788.78*length(continuous_data.dff_matrix)/continuous_data.time(end));  
+    real_wind_jump_frames(3) = floor(2388.66*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(4) = floor(2988.76*length(continuous_data.dff_matrix)/continuous_data.time(end));
+elseif fly_ID == 4
+    real_wind_jump_frames(1) = floor(1488.74*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(2) = floor(2088.7*length(continuous_data.dff_matrix)/continuous_data.time(end));  
+    real_wind_jump_frames(3) = floor(2688.54*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(4) = floor(3288.72*length(continuous_data.dff_matrix)/continuous_data.time(end));   
 elseif(fly_ID == 3 | fly_ID == 4 | fly_ID == 5)
     real_wind_jump_frames(1) = floor(1489*length(continuous_data.dff_matrix)/continuous_data.time(end));
     real_wind_jump_frames(2) = floor(2089*length(continuous_data.dff_matrix)/continuous_data.time(end));  
     real_wind_jump_frames(3) = floor(2689*length(continuous_data.dff_matrix)/continuous_data.time(end));
     real_wind_jump_frames(4) = floor(3289*length(continuous_data.dff_matrix)/continuous_data.time(end));
+elseif fly_ID == 6
+    real_wind_jump_frames(1) = floor(1188.96*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(2) = floor(1788.6*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(3) = floor(2388.26*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(4) = floor(2988.46*length(continuous_data.dff_matrix)/continuous_data.time(end));
 end
 
 real_wind_jump_sec = real_wind_jump_frames*continuous_data.time(end)/length(continuous_data.dff_matrix);
@@ -549,11 +561,11 @@ good_fit = continuous_data.adj_rs>0.5;
 
 for jump = 1:length(real_bar_jump_frames)
     
-    short_bm_around_bar_jump(jump,1) = mean(continuous_data.bump_magnitude(real_bar_jump_frames(jump)-2*sec_to_frames:real_bar_jump_frames(jump)-1));
-    short_bm_around_bar_jump(jump,2) = mean(continuous_data.bump_magnitude(real_bar_jump_frames(jump)+1:real_bar_jump_frames(jump)+2*sec_to_frames));
+    short_bm_around_bar_jump(jump,1) = mean(continuous_data.bump_magnitude(real_bar_jump_frames(jump)-1*sec_to_frames:real_bar_jump_frames(jump)-1));
+    short_bm_around_bar_jump(jump,2) = mean(continuous_data.bump_magnitude(real_bar_jump_frames(jump)+1:real_bar_jump_frames(jump)+1*sec_to_frames));
     
-    short_bw_around_bar_jump(jump,1) = mean(continuous_data.bump_width(real_bar_jump_frames(jump)-2*sec_to_frames:real_bar_jump_frames(jump)-1));
-    short_bw_around_bar_jump(jump,2) = mean(continuous_data.bump_width(real_bar_jump_frames(jump)+1:real_bar_jump_frames(jump)+2*sec_to_frames));
+    short_bw_around_bar_jump(jump,1) = mean(continuous_data.bump_width(real_bar_jump_frames(jump)-1*sec_to_frames:real_bar_jump_frames(jump)-1));
+    short_bw_around_bar_jump(jump,2) = mean(continuous_data.bump_width(real_bar_jump_frames(jump)+1:real_bar_jump_frames(jump)+1*sec_to_frames));
     
     long_bm_around_bar_jump(jump,1) = mean(continuous_data.bump_magnitude(real_bar_jump_frames(jump)-120*sec_to_frames:real_bar_jump_frames(jump)-1));
     long_bm_around_bar_jump(jump,2) = mean(continuous_data.bump_magnitude(real_bar_jump_frames(jump)+1:real_bar_jump_frames(jump)+120*sec_to_frames));
@@ -567,7 +579,7 @@ figure('Position',[100 100 800 1000]),
 subplot(2,2,1)
 plot(short_bm_around_bar_jump','color',[.5 .5 .5])
 hold on
-plot(mean(short_bm_around_bar_jump),'k','linewidth',2)
+plot(median(short_bm_around_bar_jump),'k','linewidth',2)
 ylabel('Bump magnitude');
 title('Short timescale');
 xlim([0 3]);
@@ -578,7 +590,7 @@ xticklabels({'pre jump','post jump'});
 subplot(2,2,2)
 plot(long_bm_around_bar_jump','color',[.5 .5 .5])
 hold on
-plot(mean(long_bm_around_bar_jump),'k','linewidth',2)
+plot(median(long_bm_around_bar_jump),'k','linewidth',2)
 title('Long timescale');
 xlim([0 3]);
 ylim([0.5 3]);
@@ -588,7 +600,7 @@ xticklabels({'pre jump','post jump'});
 subplot(2,2,3)
 plot(short_bw_around_bar_jump','color',[.5 .5 .5])
 hold on
-plot(mean(short_bw_around_bar_jump),'k','linewidth',2)
+plot(median(short_bw_around_bar_jump),'k','linewidth',2)
 ylabel('Bump width');
 xlim([0 3]);
 ylim([1 4]);
@@ -598,7 +610,7 @@ xticklabels({'pre jump','post jump'});
 subplot(2,2,4)
 plot(long_bw_around_bar_jump','color',[.5 .5 .5])
 hold on
-plot(mean(long_bw_around_bar_jump),'k','linewidth',2)
+plot(median(long_bw_around_bar_jump),'k','linewidth',2)
 xlim([0 3]);
 ylim([1 4]);
 xticks([1 2]);
@@ -612,11 +624,11 @@ saveas(gcf,[path,'\plots\bump_pars_around_bar_jumps.png']);
 
 for jump = 1:length(real_wind_jump_frames)
     
-    short_bm_around_wind_jump(jump,1) = mean(continuous_data.bump_magnitude(real_wind_jump_frames(jump)-2*sec_to_frames:real_wind_jump_frames(jump)-1));
-    short_bm_around_wind_jump(jump,2) = mean(continuous_data.bump_magnitude(real_wind_jump_frames(jump)+1:real_wind_jump_frames(jump)+2*sec_to_frames));
+    short_bm_around_wind_jump(jump,1) = mean(continuous_data.bump_magnitude(real_wind_jump_frames(jump)-1*sec_to_frames:real_wind_jump_frames(jump)-1));
+    short_bm_around_wind_jump(jump,2) = mean(continuous_data.bump_magnitude(real_wind_jump_frames(jump)+1:real_wind_jump_frames(jump)+1*sec_to_frames));
     
-    short_bw_around_wind_jump(jump,1) = mean(continuous_data.bump_width(real_wind_jump_frames(jump)-2*sec_to_frames:real_wind_jump_frames(jump)-1));
-    short_bw_around_wind_jump(jump,2) = mean(continuous_data.bump_width(real_wind_jump_frames(jump)+1:real_wind_jump_frames(jump)+2*sec_to_frames));
+    short_bw_around_wind_jump(jump,1) = mean(continuous_data.bump_width(real_wind_jump_frames(jump)-1*sec_to_frames:real_wind_jump_frames(jump)-1));
+    short_bw_around_wind_jump(jump,2) = mean(continuous_data.bump_width(real_wind_jump_frames(jump)+1:real_wind_jump_frames(jump)+1*sec_to_frames));
     
     long_bm_around_wind_jump(jump,1) = mean(continuous_data.bump_magnitude(real_wind_jump_frames(jump)-120*sec_to_frames:real_wind_jump_frames(jump)-1));
     long_bm_around_wind_jump(jump,2) = mean(continuous_data.bump_magnitude(real_wind_jump_frames(jump)+1:real_wind_jump_frames(jump)+120*sec_to_frames));
@@ -630,7 +642,7 @@ figure('Position',[100 100 800 1000]),
 subplot(2,2,1)
 plot(short_bm_around_wind_jump','color',[.5 .5 .5])
 hold on
-plot(mean(short_bm_around_wind_jump),'k','linewidth',2)
+plot(median(short_bm_around_wind_jump),'k','linewidth',2)
 ylabel('Bump magnitude');
 title('Short timescale');
 xlim([0 3]);
@@ -641,7 +653,7 @@ xticklabels({'pre jump','post jump'});
 subplot(2,2,2)
 plot(long_bm_around_wind_jump','color',[.5 .5 .5])
 hold on
-plot(mean(long_bm_around_wind_jump),'k','linewidth',2)
+plot(median(long_bm_around_wind_jump),'k','linewidth',2)
 title('Long timescale');
 xlim([0 3]);
 ylim([0.5 3]);
@@ -651,7 +663,7 @@ xticklabels({'pre jump','post jump'});
 subplot(2,2,3)
 plot(short_bw_around_bar_jump','color',[.5 .5 .5])
 hold on
-plot(mean(short_bw_around_bar_jump),'k','linewidth',2)
+plot(median(short_bw_around_bar_jump),'k','linewidth',2)
 ylabel('Bump width');
 xlim([0 3]);
 ylim([1 4]);
@@ -661,7 +673,7 @@ xticklabels({'pre jump','post jump'});
 subplot(2,2,4)
 plot(long_bw_around_wind_jump','color',[.5 .5 .5])
 hold on
-plot(mean(long_bw_around_wind_jump),'k','linewidth',2)
+plot(median(long_bw_around_wind_jump),'k','linewidth',2)
 xlim([0 3]);
 ylim([1 4]);
 xticks([1 2]);
@@ -695,7 +707,7 @@ figure('Position',[100 100 1600 600]),
 subplot(2,1,1)
 imagesc(zscored_short_bm_bar_jump)
 hold on
-xline(20,'r','linewidth',2)
+xline(19,'r','linewidth',2)
 colormap(flipud(gray))
 title('Bar jumps');
 frames = [5 10 15 20 25 30 35]; 
@@ -706,7 +718,7 @@ xticklabels(num2cell(round(timestamps(frames),1)));
 subplot(2,1,2)
 imagesc(zscored_short_bm_wind_jump)
 hold on
-xline(20,'r','linewidth',2)
+xline(19,'r','linewidth',2)
 colormap(flipud(gray))
 title('Wind jumps');
 frames = [5 10 15 20 25 30 35]; 
@@ -725,7 +737,7 @@ figure('Position',[100 100 1600 600]),
 subplot(2,1,1)
 imagesc(zscored_short_bw_bar_jump)
 hold on
-xline(20,'r','linewidth',2)
+xline(19,'r','linewidth',2)
 colormap(flipud(bone))
 title('Bar jumps');
 frames = [5 10 15 20 25 30 35]; 
@@ -736,7 +748,7 @@ xticklabels(num2cell(round(timestamps(frames),1)));
 subplot(2,1,2)
 imagesc(zscored_short_bw_wind_jump)
 hold on
-xline(20,'r','linewidth',2)
+xline(19,'r','linewidth',2)
 colormap(flipud(bone))
 title('Wind jumps');
 frames = [5 10 15 20 25 30 35]; 
