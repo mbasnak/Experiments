@@ -117,16 +117,45 @@ if fly_ID == 1
     real_bar_jump_frames(2) = floor(2088.5*length(continuous_data.dff_matrix)/continuous_data.time(end));  
     real_bar_jump_frames(3) = floor(2688.5*length(continuous_data.dff_matrix)/continuous_data.time(end));
     real_bar_jump_frames(4) = floor(3288.5*length(continuous_data.dff_matrix)/continuous_data.time(end));    
-elseif (fly_ID == 2 | fly_ID == 6)  
+elseif fly_ID == 2  
     real_bar_jump_frames(1) = floor(1488.7*length(continuous_data.dff_matrix)/continuous_data.time(end));
     real_bar_jump_frames(2) = floor(2088.7*length(continuous_data.dff_matrix)/continuous_data.time(end));  
     real_bar_jump_frames(3) = floor(2688.7*length(continuous_data.dff_matrix)/continuous_data.time(end));
     real_bar_jump_frames(4) = floor(3288.7*length(continuous_data.dff_matrix)/continuous_data.time(end));
-elseif (fly_ID == 3 | fly_ID == 4 | fly_ID == 5)
+elseif fly_ID == 3
+    real_bar_jump_frames(1) = floor(1188.8*length(continuous_data.dff_matrix)/continuous_data.time(end));    
+    real_bar_jump_frames(2) = floor(1788.8*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_bar_jump_frames(3) = floor(2388.5*length(continuous_data.dff_matrix)/continuous_data.time(end));  
+    real_bar_jump_frames(4) = floor(2988.8*length(continuous_data.dff_matrix)/continuous_data.time(end));     
+elseif fly_ID == 4
     real_bar_jump_frames(1) = floor(1188.7*length(continuous_data.dff_matrix)/continuous_data.time(end));    
     real_bar_jump_frames(2) = floor(1788.7*length(continuous_data.dff_matrix)/continuous_data.time(end));
-    real_bar_jump_frames(3) = floor(2388.5*length(continuous_data.dff_matrix)/continuous_data.time(end));  
-    real_bar_jump_frames(4) = floor(2988.7*length(continuous_data.dff_matrix)/continuous_data.time(end));   
+    real_bar_jump_frames(3) = floor(2388.7*length(continuous_data.dff_matrix)/continuous_data.time(end));  
+    real_bar_jump_frames(4) = floor(2988.7*length(continuous_data.dff_matrix)/continuous_data.time(end));    
+elseif fly_ID == 5
+    real_bar_jump_frames(1) = floor(1488.6*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_bar_jump_frames(2) = floor(2088.6*length(continuous_data.dff_matrix)/continuous_data.time(end));  
+    real_bar_jump_frames(3) = floor(2688.6*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_bar_jump_frames(4) = floor(3288.6*length(continuous_data.dff_matrix)/continuous_data.time(end));
+elseif fly_ID == 6
+    real_bar_jump_frames(1) = floor(1488.7*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_bar_jump_frames(2) = floor(2088.6*length(continuous_data.dff_matrix)/continuous_data.time(end));  
+    real_bar_jump_frames(3) = floor(2688.6*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_bar_jump_frames(4) = floor(3288.6*length(continuous_data.dff_matrix)/continuous_data.time(end));
+elseif fly_ID == 7
+    real_bar_jump_frames(1) = floor(1189.3*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_bar_jump_frames(2) = floor(1789.3*length(continuous_data.dff_matrix)/continuous_data.time(end)); 
+    real_bar_jump_frames(4) = floor(2989.35*length(continuous_data.dff_matrix)/continuous_data.time(end));  
+elseif fly_ID == 8
+    real_bar_jump_frames(1) = floor(1188.9*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_bar_jump_frames(2) = floor(1788.9*length(continuous_data.dff_matrix)/continuous_data.time(end)); 
+    real_bar_jump_frames(3) = floor(2388.84*length(continuous_data.dff_matrix)/continuous_data.time(end)); 
+    real_bar_jump_frames(4) = floor(2988.9*length(continuous_data.dff_matrix)/continuous_data.time(end)); 
+elseif fly_ID == 9
+    real_bar_jump_frames(1) = floor(1488.9*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_bar_jump_frames(2) = floor(2088.8*length(continuous_data.dff_matrix)/continuous_data.time(end));  
+    real_bar_jump_frames(3) = floor(2688.8*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_bar_jump_frames(4) = floor(3288.8*length(continuous_data.dff_matrix)/continuous_data.time(end));
 end
 real_bar_jump_sec = real_bar_jump_frames*continuous_data.time(end)/length(continuous_data.dff_matrix);
 
@@ -146,25 +175,45 @@ if fly_ID == 1
     real_wind_jump_frames(3) = floor(2388.6*length(continuous_data.dff_matrix)/continuous_data.time(end));
     real_wind_jump_frames(4) = floor(2988.6*length(continuous_data.dff_matrix)/continuous_data.time(end));
 elseif fly_ID == 2
-    real_wind_jump_frames(1) = floor(1188.56*length(continuous_data.dff_matrix)/continuous_data.time(end));
-    real_wind_jump_frames(2) = floor(1788.78*length(continuous_data.dff_matrix)/continuous_data.time(end));  
-    real_wind_jump_frames(3) = floor(2388.66*length(continuous_data.dff_matrix)/continuous_data.time(end));
-    real_wind_jump_frames(4) = floor(2988.76*length(continuous_data.dff_matrix)/continuous_data.time(end));
-elseif fly_ID == 4
-    real_wind_jump_frames(1) = floor(1488.74*length(continuous_data.dff_matrix)/continuous_data.time(end));
-    real_wind_jump_frames(2) = floor(2088.7*length(continuous_data.dff_matrix)/continuous_data.time(end));  
-    real_wind_jump_frames(3) = floor(2688.54*length(continuous_data.dff_matrix)/continuous_data.time(end));
-    real_wind_jump_frames(4) = floor(3288.72*length(continuous_data.dff_matrix)/continuous_data.time(end));   
-elseif(fly_ID == 3 | fly_ID == 4 | fly_ID == 5)
+    real_wind_jump_frames(1) = floor(1188.76*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(2) = floor(1788.88*length(continuous_data.dff_matrix)/continuous_data.time(end));  
+    real_wind_jump_frames(3) = floor(2388.76*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(4) = floor(2988.76*length(continuous_data.dff_matrix)/continuous_data.time(end)); 
+elseif fly_ID == 3
     real_wind_jump_frames(1) = floor(1489*length(continuous_data.dff_matrix)/continuous_data.time(end));
     real_wind_jump_frames(2) = floor(2089*length(continuous_data.dff_matrix)/continuous_data.time(end));  
-    real_wind_jump_frames(3) = floor(2689*length(continuous_data.dff_matrix)/continuous_data.time(end));
-    real_wind_jump_frames(4) = floor(3289*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(3) = floor(2688.85*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(4) = floor(3288.85*length(continuous_data.dff_matrix)/continuous_data.time(end));    
+elseif fly_ID == 4
+    real_wind_jump_frames(1) = floor(1488.8*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(2) = floor(2088.8*length(continuous_data.dff_matrix)/continuous_data.time(end));  
+    real_wind_jump_frames(3) = floor(2688.6*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(4) = floor(3288.7*length(continuous_data.dff_matrix)/continuous_data.time(end));     
+elseif fly_ID == 5
+    real_wind_jump_frames(1) = floor(1188.7*length(continuous_data.dff_matrix)/continuous_data.time(end));    
+    real_wind_jump_frames(2) = floor(1788.7*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(3) = floor(2388.7*length(continuous_data.dff_matrix)/continuous_data.time(end));  
+    real_wind_jump_frames(4) = floor(2988.7*length(continuous_data.dff_matrix)/continuous_data.time(end));
 elseif fly_ID == 6
-    real_wind_jump_frames(1) = floor(1188.96*length(continuous_data.dff_matrix)/continuous_data.time(end));
-    real_wind_jump_frames(2) = floor(1788.6*length(continuous_data.dff_matrix)/continuous_data.time(end));
-    real_wind_jump_frames(3) = floor(2388.26*length(continuous_data.dff_matrix)/continuous_data.time(end));
-    real_wind_jump_frames(4) = floor(2988.46*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(1) = floor(1188.6*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(2) = floor(1788.8*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(3) = floor(2388.4*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(4) = floor(2988.5*length(continuous_data.dff_matrix)/continuous_data.time(end));
+ elseif fly_ID == 7
+    real_wind_jump_frames(1) = floor(1489.39*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(2) = floor(2089.37*length(continuous_data.dff_matrix)/continuous_data.time(end));  
+    real_wind_jump_frames(3) = floor(2689.22*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(4) = floor(3289.44*length(continuous_data.dff_matrix)/continuous_data.time(end));  
+ elseif fly_ID == 8
+    real_wind_jump_frames(1) = floor(1488.95*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(2) = floor(2088.95*length(continuous_data.dff_matrix)/continuous_data.time(end));  
+    real_wind_jump_frames(3) = floor(2688.9*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(4) = floor(3289*length(continuous_data.dff_matrix)/continuous_data.time(end)); 
+elseif fly_ID == 9
+    real_wind_jump_frames(1) = floor(1189*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(2) = floor(1788.9*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(3) = floor(2388.8*length(continuous_data.dff_matrix)/continuous_data.time(end));
+    real_wind_jump_frames(4) = floor(2988.9*length(continuous_data.dff_matrix)/continuous_data.time(end));
 end
 
 real_wind_jump_sec = real_wind_jump_frames*continuous_data.time(end)/length(continuous_data.dff_matrix);
@@ -557,62 +606,219 @@ good_fit = continuous_data.adj_rs>0.5;
 
 %I'm currently not using this
 
+%% Offset and mean bump parameters for initial bouts (last two min of each cue)
+
+if configuration == 1
+    
+    initial_bar_period = ceil(panels_change_frames(1)-180*sec_to_frames):panels_change_frames(2)-1;
+    initial_bar_moving = continuous_data.total_mvt_ds(initial_bar_period) > 25;
+    initial_bar_good_fit = continuous_data.adj_rs(initial_bar_period) > 0.5;    
+    initial_bar_offset = bar_offset(initial_bar_period);
+    initial_bar_offset = initial_bar_offset(initial_bar_moving & initial_bar_good_fit);
+    initial_bar_bm = continuous_data.bump_magnitude(initial_bar_period);
+    initial_bar_bm = initial_bar_bm(initial_bar_moving & initial_bar_good_fit);
+    initial_bar_bw = continuous_data.bump_width(initial_bar_period);
+    initial_bar_bw = initial_bar_bw(initial_bar_moving & initial_bar_good_fit);
+    
+    initial_wind_period = ceil(panels_change_frames(2)-180*sec_to_frames):panels_change_frames(2)-1;
+    initial_wind_moving = continuous_data.total_mvt_ds(initial_wind_period) > 25;
+    initial_wind_good_fit = continuous_data.adj_rs(initial_wind_period) > 0.5;
+    initial_wind_offset = wind_offset(initial_wind_period);
+    initial_wind_offset = initial_wind_offset(initial_wind_moving & initial_wind_good_fit);
+    initial_wind_bm = continuous_data.bump_magnitude(initial_wind_period);
+    initial_wind_bm = initial_wind_bm(initial_wind_moving & initial_wind_good_fit);
+    initial_wind_bw = continuous_data.bump_width(initial_wind_period);
+    initial_wind_bw = initial_wind_bw(initial_wind_moving & initial_wind_good_fit);
+    
+     %Offset
+    figure,
+    subplot(1,2,1)
+    polarhistogram(deg2rad(initial_wind_offset),15)
+    initial_wind_offset_var = circ_std(deg2rad(initial_wind_offset),[],[],2);
+    title({'Initial wind offset';['Offset var = ',num2str(round(initial_wind_offset_var,2))]});
+    set(gca,'ThetaZeroLocation','top');
+    %set(gca,'Thetaticklabels',{});
+    set(gca,'Rticklabels',{});
+    
+    subplot(1,2,2)
+    polarhistogram(deg2rad(initial_bar_offset),15)
+    initial_bar_offset_var = circ_std(deg2rad(initial_bar_offset));
+    title({'Initial bar offset';['Bar var = ',num2str(round(initial_bar_offset_var,2))]});
+    set(gca,'ThetaZeroLocation','top');
+    %set(gca,'Thetaticklabels',{});
+    set(gca,'Rticklabels',{});
+    
+    saveas(gcf,[path,'\plots\initial_offsets.png']);
+    
+    
+    %Bump parameters
+    figure,
+    subplot(1,2,1)
+    plot([mean(initial_wind_bm), mean(initial_bar_bm)],'-o')
+    title('Bump magnitude');
+    ylim([0 3]);
+    xlim([0 3]);
+    xticks([1 2]);
+    xticklabels({'Wind','Bar'});
+    
+    subplot(1,2,2)
+    plot([mean(initial_wind_bw), mean(initial_bar_bw)],'-o')
+    title('Bump width');
+    ylim([0 3]);
+    xlim([0 3]);
+    xticks([1 2]);
+    xticklabels({'Wind','Bar'});
+    
+    saveas(gcf,[path,'\plots\initial_bump_pars.png']);
+    
+else
+    
+    initial_bar_period = ceil(wind_change_frames(2)-180*sec_to_frames):1:wind_change_frames(2)-1;
+    initial_bar_moving = continuous_data.total_mvt_ds(initial_bar_period) > 25;
+    initial_bar_good_fit = continuous_data.adj_rs(initial_bar_period) > 0.5;    
+    initial_bar_offset = bar_offset(initial_bar_period);
+    initial_bar_offset = initial_bar_offset(initial_bar_moving & initial_bar_good_fit);
+    initial_bar_bm = continuous_data.bump_magnitude(initial_bar_period);
+    initial_bar_bm = initial_bar_bm(initial_bar_moving & initial_bar_good_fit);
+    initial_bar_bw = continuous_data.bump_width(initial_bar_period);
+    initial_bar_bw = initial_bar_bw(initial_bar_moving & initial_bar_good_fit);
+    
+    initial_wind_period = ceil(wind_change_frames(1)-180*sec_to_frames):wind_change_frames(1)-1;
+    initial_wind_moving = continuous_data.total_mvt_ds(initial_wind_period) > 25;
+    initial_wind_good_fit = continuous_data.adj_rs(initial_wind_period) > 0.5;
+    initial_wind_offset = wind_offset(initial_wind_period);
+    initial_wind_offset = initial_wind_offset(initial_wind_moving & initial_wind_good_fit);
+    initial_wind_bm = continuous_data.bump_magnitude(initial_wind_period);
+    initial_wind_bm = initial_wind_bm(initial_wind_moving & initial_wind_good_fit);
+    initial_wind_bw = continuous_data.bump_width(initial_wind_period);
+    initial_wind_bw = initial_wind_bw(initial_wind_moving & initial_wind_good_fit);
+    
+    %Offset
+    figure,
+    subplot(1,2,1)
+    polarhistogram(deg2rad(initial_wind_offset),15)
+    initial_wind_offset_var = circ_std(deg2rad(initial_wind_offset),[],[],2);
+    title({'Initial wind offset';['Offset var = ',num2str(round(initial_wind_offset_var,2))]});
+    set(gca,'ThetaZeroLocation','top');
+    %set(gca,'Thetaticklabels',{});
+    set(gca,'Rticklabels',{});
+    
+    subplot(1,2,2)
+    polarhistogram(deg2rad(initial_bar_offset),15)
+    initial_bar_offset_var = circ_std(deg2rad(initial_bar_offset));
+    title({'Initial bar offset';['Bar var = ',num2str(round(initial_bar_offset_var,2))]});
+    set(gca,'ThetaZeroLocation','top');
+    set(gca,'Rticklabels',{});
+    
+    saveas(gcf,[path,'\plots\initial_offsets.png']);
+    
+    
+    %Bump parameters
+    figure,
+    subplot(1,2,1)
+    plot([mean(initial_wind_bm), mean(initial_bar_bm)],'-o')
+    title('Bump magnitude');
+    ylim([0 3]);
+    xlim([0 3]);
+    xticks([1 2]);
+    xticklabels({'Wind','Bar'});
+    
+    subplot(1,2,2)
+    plot([mean(initial_wind_bw), mean(initial_bar_bw)],'-o')
+    title('Bump width');
+    ylim([0 3]);
+    xlim([0 3]);
+    xticks([1 2]);
+    xticklabels({'Wind','Bar'});
+    
+    saveas(gcf,[path,'\plots\initial_bump_pars.png']);
+        
+end
+
+
 %% Bump par before and after bar jumps
 
 for jump = 1:length(real_bar_jump_frames)
     
-    short_bm_around_bar_jump(jump,1) = mean(continuous_data.bump_magnitude(real_bar_jump_frames(jump)-1*sec_to_frames:real_bar_jump_frames(jump)-1));
-    short_bm_around_bar_jump(jump,2) = mean(continuous_data.bump_magnitude(real_bar_jump_frames(jump)+1:real_bar_jump_frames(jump)+1*sec_to_frames));
+    %short timescale
+    pre_bar_jump_period = ceil(real_bar_jump_frames(jump)-1.5*sec_to_frames):real_bar_jump_frames(jump)-1;
+    pre_bar_jump_moving = continuous_data.total_mvt_ds(pre_bar_jump_period) > 25;
+    pre_bar_jump_good_fit = continuous_data.adj_rs(pre_bar_jump_period) > 0.5;
+    short_bm_pre_bar_jump = continuous_data.bump_magnitude(pre_bar_jump_period);
+    mean_short_bm_around_bar_jump(jump,1) = nanmean(short_bm_pre_bar_jump(pre_bar_jump_moving & pre_bar_jump_good_fit));
     
-    short_bw_around_bar_jump(jump,1) = mean(continuous_data.bump_width(real_bar_jump_frames(jump)-1*sec_to_frames:real_bar_jump_frames(jump)-1));
-    short_bw_around_bar_jump(jump,2) = mean(continuous_data.bump_width(real_bar_jump_frames(jump)+1:real_bar_jump_frames(jump)+1*sec_to_frames));
+    post_bar_jump_period = real_bar_jump_frames(jump)+1:ceil(real_bar_jump_frames(jump)+1.5*sec_to_frames);
+    post_bar_jump_moving = continuous_data.total_mvt_ds(post_bar_jump_period) > 25;
+    post_bar_jump_good_fit = continuous_data.adj_rs(post_bar_jump_period) > 0.5;
+    short_bm_post_bar_jump = continuous_data.bump_magnitude(post_bar_jump_period);
+    mean_short_bm_around_bar_jump(jump,2) = nanmean(short_bm_post_bar_jump(post_bar_jump_moving & post_bar_jump_good_fit));
     
-    long_bm_around_bar_jump(jump,1) = mean(continuous_data.bump_magnitude(real_bar_jump_frames(jump)-120*sec_to_frames:real_bar_jump_frames(jump)-1));
-    long_bm_around_bar_jump(jump,2) = mean(continuous_data.bump_magnitude(real_bar_jump_frames(jump)+1:real_bar_jump_frames(jump)+120*sec_to_frames));
+    short_bw_pre_bar_jump = continuous_data.bump_width(pre_bar_jump_period);
+    mean_short_bw_around_bar_jump(jump,1) = nanmean(short_bw_pre_bar_jump(pre_bar_jump_moving & pre_bar_jump_good_fit));
     
-    long_bw_around_bar_jump(jump,1) = mean(continuous_data.bump_width(real_bar_jump_frames(jump)-120*sec_to_frames:real_bar_jump_frames(jump)-1));
-    long_bw_around_bar_jump(jump,2) = mean(continuous_data.bump_width(real_bar_jump_frames(jump)+1:real_bar_jump_frames(jump)+120*sec_to_frames));
+    short_bw_post_bar_jump = continuous_data.bump_width(post_bar_jump_period);
+    mean_short_bw_around_bar_jump(jump,2) = nanmean(short_bw_post_bar_jump(post_bar_jump_moving & post_bar_jump_good_fit));
+    
+    
+    %long timescale
+    long_pre_bar_jump_period = ceil(real_bar_jump_frames(jump)-120*sec_to_frames):real_bar_jump_frames(jump)-1;
+    long_pre_bar_jump_moving = continuous_data.total_mvt_ds(long_pre_bar_jump_period) > 25;
+    long_pre_bar_jump_good_fit = continuous_data.adj_rs(long_pre_bar_jump_period) > 0.5;
+    long_bm_pre_bar_jump = continuous_data.bump_magnitude(long_pre_bar_jump_period);
+    mean_long_bm_around_bar_jump(jump,1) = nanmean(long_bm_pre_bar_jump(long_pre_bar_jump_moving & long_pre_bar_jump_good_fit));
+    
+    long_post_bar_jump_period = real_bar_jump_frames(jump)+1:ceil(real_bar_jump_frames(jump)+120*sec_to_frames);
+    long_post_bar_jump_moving = continuous_data.total_mvt_ds(long_post_bar_jump_period) > 25;
+    long_post_bar_jump_good_fit = continuous_data.adj_rs(long_post_bar_jump_period) > 0.5;
+    long_bm_post_bar_jump = continuous_data.bump_magnitude(long_post_bar_jump_period);
+    mean_long_bm_around_bar_jump(jump,2) = nanmean(long_bm_post_bar_jump(long_post_bar_jump_moving & long_post_bar_jump_good_fit));
+    
+    long_bw_pre_bar_jump = continuous_data.bump_width(long_pre_bar_jump_period);
+    mean_long_bw_around_bar_jump(jump,1) = nanmean(long_bw_pre_bar_jump(long_pre_bar_jump_moving & long_pre_bar_jump_good_fit));
+    
+    long_bw_post_bar_jump = continuous_data.bump_width(long_post_bar_jump_period);
+    mean_long_bw_around_bar_jump(jump,2) = nanmean(long_bw_post_bar_jump(long_post_bar_jump_moving & long_post_bar_jump_good_fit));
     
 end
 
 figure('Position',[100 100 800 1000]),
 subplot(2,2,1)
-plot(short_bm_around_bar_jump','color',[.5 .5 .5])
+plot(mean_short_bm_around_bar_jump','color',[.5 .5 .5])
 hold on
-plot(median(short_bm_around_bar_jump),'k','linewidth',2)
+plot(nanmean(mean_short_bm_around_bar_jump),'k','linewidth',2)
 ylabel('Bump magnitude');
 title('Short timescale');
 xlim([0 3]);
-ylim([0.5 3]);
+ylim([0 3]);
 xticks([1 2]);
 xticklabels({'pre jump','post jump'});
 
 subplot(2,2,2)
-plot(long_bm_around_bar_jump','color',[.5 .5 .5])
+plot(mean_long_bm_around_bar_jump','color',[.5 .5 .5])
 hold on
-plot(median(long_bm_around_bar_jump),'k','linewidth',2)
+plot(nanmean(mean_long_bm_around_bar_jump),'k','linewidth',2)
 title('Long timescale');
 xlim([0 3]);
-ylim([0.5 3]);
+ylim([0 3]);
 xticks([1 2]);
 xticklabels({'pre jump','post jump'});
 
 subplot(2,2,3)
-plot(short_bw_around_bar_jump','color',[.5 .5 .5])
+plot(mean_short_bw_around_bar_jump','color',[.5 .5 .5])
 hold on
-plot(median(short_bw_around_bar_jump),'k','linewidth',2)
+plot(nanmean(mean_short_bw_around_bar_jump),'k','linewidth',2)
 ylabel('Bump width');
 xlim([0 3]);
-ylim([1 4]);
+ylim([0 3.5]);
 xticks([1 2]);
 xticklabels({'pre jump','post jump'});
 
 subplot(2,2,4)
-plot(long_bw_around_bar_jump','color',[.5 .5 .5])
+plot(mean_long_bw_around_bar_jump','color',[.5 .5 .5])
 hold on
-plot(median(long_bw_around_bar_jump),'k','linewidth',2)
+plot(nanmean(mean_long_bw_around_bar_jump),'k','linewidth',2)
 xlim([0 3]);
-ylim([1 4]);
+ylim([0 3.5]);
 xticks([1 2]);
 xticklabels({'pre jump','post jump'});
 
@@ -624,66 +830,97 @@ saveas(gcf,[path,'\plots\bump_pars_around_bar_jumps.png']);
 
 for jump = 1:length(real_wind_jump_frames)
     
-    short_bm_around_wind_jump(jump,1) = mean(continuous_data.bump_magnitude(real_wind_jump_frames(jump)-1*sec_to_frames:real_wind_jump_frames(jump)-1));
-    short_bm_around_wind_jump(jump,2) = mean(continuous_data.bump_magnitude(real_wind_jump_frames(jump)+1:real_wind_jump_frames(jump)+1*sec_to_frames));
+    %short timescale
+    pre_wind_jump_period = ceil(real_wind_jump_frames(jump)-1.5*sec_to_frames):real_wind_jump_frames(jump)-1;
+    pre_wind_jump_moving = continuous_data.total_mvt_ds(pre_wind_jump_period) > 25;
+    pre_wind_jump_good_fit = continuous_data.adj_rs(pre_wind_jump_period) > 0.5;
+    short_bm_pre_wind_jump = continuous_data.bump_magnitude(pre_wind_jump_period);
+    mean_short_bm_around_wind_jump(jump,1) = nanmean(short_bm_pre_wind_jump(pre_wind_jump_moving & pre_wind_jump_good_fit));
     
-    short_bw_around_wind_jump(jump,1) = mean(continuous_data.bump_width(real_wind_jump_frames(jump)-1*sec_to_frames:real_wind_jump_frames(jump)-1));
-    short_bw_around_wind_jump(jump,2) = mean(continuous_data.bump_width(real_wind_jump_frames(jump)+1:real_wind_jump_frames(jump)+1*sec_to_frames));
+    post_wind_jump_period = real_wind_jump_frames(jump)+1:ceil(real_wind_jump_frames(jump)+1.5*sec_to_frames);
+    post_wind_jump_moving = continuous_data.total_mvt_ds(post_wind_jump_period) > 25;
+    post_wind_jump_good_fit = continuous_data.adj_rs(post_wind_jump_period) > 0.5;
+    short_bm_post_wind_jump = continuous_data.bump_magnitude(post_wind_jump_period);
+    mean_short_bm_around_wind_jump(jump,2) = nanmean(short_bm_post_wind_jump(post_wind_jump_moving & post_wind_jump_good_fit));
     
-    long_bm_around_wind_jump(jump,1) = mean(continuous_data.bump_magnitude(real_wind_jump_frames(jump)-120*sec_to_frames:real_wind_jump_frames(jump)-1));
-    long_bm_around_wind_jump(jump,2) = mean(continuous_data.bump_magnitude(real_wind_jump_frames(jump)+1:real_wind_jump_frames(jump)+120*sec_to_frames));
+    short_bw_pre_wind_jump = continuous_data.bump_width(pre_wind_jump_period);
+    mean_short_bw_around_wind_jump(jump,1) = nanmean(short_bw_pre_wind_jump(pre_wind_jump_moving & pre_wind_jump_good_fit));
     
-    long_bw_around_wind_jump(jump,1) = mean(continuous_data.bump_width(real_wind_jump_frames(jump)-120*sec_to_frames:real_wind_jump_frames(jump)-1));
-    long_bw_around_wind_jump(jump,2) = mean(continuous_data.bump_width(real_wind_jump_frames(jump)+1:real_wind_jump_frames(jump)+120*sec_to_frames));
+    short_bw_post_wind_jump = continuous_data.bump_width(post_wind_jump_period);
+    mean_short_bw_around_wind_jump(jump,2) = nanmean(short_bw_post_wind_jump(post_wind_jump_moving & post_wind_jump_good_fit));
+    
+    
+    %long timescale
+    long_pre_wind_jump_period = ceil(real_wind_jump_frames(jump)-120*sec_to_frames):real_wind_jump_frames(jump)-1;
+    long_pre_wind_jump_moving = continuous_data.total_mvt_ds(long_pre_wind_jump_period) > 25;
+    long_pre_wind_jump_good_fit = continuous_data.adj_rs(long_pre_wind_jump_period) > 0.5;
+    long_bm_pre_wind_jump = continuous_data.bump_magnitude(long_pre_wind_jump_period);
+    mean_long_bm_around_wind_jump(jump,1) = nanmean(long_bm_pre_wind_jump(long_pre_wind_jump_moving & long_pre_wind_jump_good_fit));
+    
+    long_post_wind_jump_period = real_wind_jump_frames(jump)+1:ceil(real_wind_jump_frames(jump)+120*sec_to_frames);
+    long_post_wind_jump_moving = continuous_data.total_mvt_ds(long_post_wind_jump_period) > 25;
+    long_post_wind_jump_good_fit = continuous_data.adj_rs(long_post_wind_jump_period) > 0.5;
+    long_bm_post_wind_jump = continuous_data.bump_magnitude(long_post_wind_jump_period);
+    mean_long_bm_around_wind_jump(jump,2) = nanmean(long_bm_post_wind_jump(long_post_wind_jump_moving & long_post_wind_jump_good_fit));
+    
+    long_bw_pre_wind_jump = continuous_data.bump_width(long_pre_wind_jump_period);
+    mean_long_bw_around_wind_jump(jump,1) = nanmean(long_bw_pre_wind_jump(long_pre_wind_jump_moving & long_pre_wind_jump_good_fit));
+    
+    long_bw_post_wind_jump = continuous_data.bump_width(long_post_wind_jump_period);
+    mean_long_bw_around_wind_jump(jump,2) = nanmean(long_bw_post_wind_jump(long_post_wind_jump_moving & long_post_wind_jump_good_fit));
     
 end
 
 figure('Position',[100 100 800 1000]),
 subplot(2,2,1)
-plot(short_bm_around_wind_jump','color',[.5 .5 .5])
+plot(mean_short_bm_around_wind_jump','color',[.5 .5 .5])
 hold on
-plot(median(short_bm_around_wind_jump),'k','linewidth',2)
+plot(nanmean(mean_short_bm_around_wind_jump),'k','linewidth',2)
 ylabel('Bump magnitude');
 title('Short timescale');
 xlim([0 3]);
-ylim([0.5 3]);
+ylim([0 3]);
 xticks([1 2]);
 xticklabels({'pre jump','post jump'});
 
 subplot(2,2,2)
-plot(long_bm_around_wind_jump','color',[.5 .5 .5])
+plot(mean_long_bm_around_wind_jump','color',[.5 .5 .5])
 hold on
-plot(median(long_bm_around_wind_jump),'k','linewidth',2)
+plot(nanmean(mean_long_bm_around_wind_jump),'k','linewidth',2)
 title('Long timescale');
 xlim([0 3]);
-ylim([0.5 3]);
+ylim([0 3]);
 xticks([1 2]);
 xticklabels({'pre jump','post jump'});
 
 subplot(2,2,3)
-plot(short_bw_around_bar_jump','color',[.5 .5 .5])
+plot(mean_short_bw_around_wind_jump','color',[.5 .5 .5])
 hold on
-plot(median(short_bw_around_bar_jump),'k','linewidth',2)
+plot(nanmean(mean_short_bw_around_wind_jump),'k','linewidth',2)
 ylabel('Bump width');
 xlim([0 3]);
-ylim([1 4]);
+ylim([0 3.5]);
 xticks([1 2]);
 xticklabels({'pre jump','post jump'});
 
 subplot(2,2,4)
-plot(long_bw_around_wind_jump','color',[.5 .5 .5])
+plot(mean_long_bw_around_wind_jump','color',[.5 .5 .5])
 hold on
-plot(median(long_bw_around_wind_jump),'k','linewidth',2)
+plot(nanmean(mean_long_bw_around_wind_jump),'k','linewidth',2)
 xlim([0 3]);
-ylim([1 4]);
+ylim([0 3.5]);
 xticks([1 2]);
 xticklabels({'pre jump','post jump'});
 
 suptitle('Wind jumps');
 
+
 saveas(gcf,[path,'\plots\bump_pars_around_wind_jumps.png']);
 
 %% Raster plots of bump parameters in the short time scale
+
+%I won't threshold by movement of fit since otherwise I can't plot them all
+%together
 
 %Bar jumps
 for jump = 1:length(real_bar_jump_frames)
@@ -762,160 +999,499 @@ saveas(gcf,[path,'\plots\short_raster_plots_bump_width.png']);
 
 
 %I'm pretty sure we need to zscore, but is this zscoring correct?
+% 
+% %% Repeat for long time scale
+% 
+% %change timescale for seconds
+% 
+% %Bar jumps
+% for jump = 1:length(real_bar_jump_frames)
+%     long_bm_bar_jump(jump,:) = continuous_data.bump_magnitude(real_bar_jump_frames(jump)-120*sec_to_frames:real_bar_jump_frames(jump)+120*sec_to_frames);
+%     long_bw_bar_jump(jump,:) = continuous_data.bump_width(real_bar_jump_frames(jump)-120*sec_to_frames:real_bar_jump_frames(jump)+120*sec_to_frames);    
+% end
+% zscored_long_bm_bar_jump = zscore(long_bm_bar_jump,[],2);
+% zscored_long_bw_bar_jump = zscore(long_bw_bar_jump,[],2);
+% 
+% %Wind jumps
+% for jump = 1:length(real_wind_jump_frames)
+%     long_bm_wind_jump(jump,:) = continuous_data.bump_magnitude(real_wind_jump_frames(jump)-120*sec_to_frames:real_wind_jump_frames(jump)+120*sec_to_frames);
+%     long_bw_wind_jump(jump,:) = continuous_data.bump_width(real_wind_jump_frames(jump)-120*sec_to_frames:real_wind_jump_frames(jump)+120*sec_to_frames);    
+% end
+% zscored_long_bm_wind_jump = zscore(long_bm_wind_jump,[],2);
+% zscored_long_bw_wind_jump = zscore(long_bw_wind_jump,[],2);
+% 
+% 
+% %Plot bump magnitude
+% figure('Position',[100 100 1600 600]),
+% subplot(2,1,1)
+% imagesc(zscored_long_bm_bar_jump)
+% hold on
+% xline(120*sec_to_frames,'r','linewidth',2)
+% colormap(flipud(gray))
+% title('Bar jumps');
+% 
+% subplot(2,1,2)
+% imagesc(zscored_long_bm_wind_jump)
+% hold on
+% xline(120*sec_to_frames,'r','linewidth',2)
+% colormap(flipud(gray))
+% title('Wind jumps');
+% 
+% suptitle('Bump magnitude');
+% 
+% saveas(gcf,[path,'\plots\long_raster_plots_bump_mag.png']);
+% 
+% 
+% 
+% %Plot bump width
+% figure('Position',[100 100 1600 600]),
+% subplot(2,1,1)
+% imagesc(zscored_long_bw_bar_jump)
+% hold on
+% xline(120*sec_to_frames,'r','linewidth',2)
+% colormap(flipud(bone))
+% title('Bar jumps');
+% 
+% subplot(2,1,2)
+% imagesc(zscored_long_bw_wind_jump)
+% hold on
+% xline(120*sec_to_frames,'r','linewidth',2)
+% colormap(flipud(bone))
+% title('Wind jumps');
+% 
+% suptitle('Bump width');
+% 
+% saveas(gcf,[path,'\plots\long_raster_plots_bump_width.png']);
+% 
+% 
+% 
 
-%% Repeat for long time scale
+%% Averaged bump parameters around jumps
 
-%change timescale for seconds
+figure('Position',[100 100 1400 1000]),
 
-%Bar jumps
-for jump = 1:length(real_bar_jump_frames)
-    long_bm_bar_jump(jump,:) = continuous_data.bump_magnitude(real_bar_jump_frames(jump)-120*sec_to_frames:real_bar_jump_frames(jump)+120*sec_to_frames);
-    long_bw_bar_jump(jump,:) = continuous_data.bump_width(real_bar_jump_frames(jump)-120*sec_to_frames:real_bar_jump_frames(jump)+120*sec_to_frames);    
-end
-zscored_long_bm_bar_jump = zscore(long_bm_bar_jump,[],2);
-zscored_long_bw_bar_jump = zscore(long_bw_bar_jump,[],2);
-
-%Wind jumps
-for jump = 1:length(real_wind_jump_frames)
-    long_bm_wind_jump(jump,:) = continuous_data.bump_magnitude(real_wind_jump_frames(jump)-120*sec_to_frames:real_wind_jump_frames(jump)+120*sec_to_frames);
-    long_bw_wind_jump(jump,:) = continuous_data.bump_width(real_wind_jump_frames(jump)-120*sec_to_frames:real_wind_jump_frames(jump)+120*sec_to_frames);    
-end
-zscored_long_bm_wind_jump = zscore(long_bm_wind_jump,[],2);
-zscored_long_bw_wind_jump = zscore(long_bw_wind_jump,[],2);
-
-
-%Plot bump magnitude
-figure('Position',[100 100 1600 600]),
-subplot(2,1,1)
-imagesc(zscored_long_bm_bar_jump)
+%bump magnitude around bar jumps
+subplot(2,2,1)
+plot(mean(short_bm_bar_jump),'k','linewidth',2)
 hold on
-xline(120*sec_to_frames,'r','linewidth',2)
-colormap(flipud(gray))
+line([length(short_bm_bar_jump)/2 length(short_bm_bar_jump)/2],[0 3],'color','r','linewidth',3);
+xlim([0 length(short_bm_bar_jump)]);
+xticks([0 length(short_bm_bar_jump)/4 length(short_bm_bar_jump)/2 length(short_bm_bar_jump)*(3/4) length(short_bm_bar_jump)]);
+xticklabels({'-2','-1','0','1','2'});
+ylabel('Bump mangitude');
 title('Bar jumps');
 
-subplot(2,1,2)
-imagesc(zscored_long_bm_wind_jump)
+%bump magnitude around wind jumps
+subplot(2,2,2)
+plot(mean(short_bm_wind_jump),'k','linewidth',2)
 hold on
-xline(120*sec_to_frames,'r','linewidth',2)
-colormap(flipud(gray))
+line([length(short_bm_wind_jump)/2 length(short_bm_wind_jump)/2],[0 3],'color','r','linewidth',3);
+xlim([0 length(short_bm_bar_jump)]);
+xticks([0 length(short_bm_bar_jump)/4 length(short_bm_bar_jump)/2 length(short_bm_bar_jump)*(3/4) length(short_bm_bar_jump)]);
+xticklabels({'-2','-1','0','1','2'});
 title('Wind jumps');
 
-suptitle('Bump magnitude');
-
-saveas(gcf,[path,'\plots\long_raster_plots_bump_mag.png']);
-
-
-
-%Plot bump width
-figure('Position',[100 100 1600 600]),
-subplot(2,1,1)
-imagesc(zscored_long_bw_bar_jump)
+%bump width around bar jumps
+subplot(2,2,3)
+plot(mean(short_bw_bar_jump),'k','linewidth',2)
 hold on
-xline(120*sec_to_frames,'r','linewidth',2)
-colormap(flipud(bone))
-title('Bar jumps');
+line([length(short_bm_wind_jump)/2 length(short_bm_wind_jump)/2],[0 4],'color','r','linewidth',3);
+xlim([0 length(short_bm_bar_jump)]);
+xticks([0 length(short_bm_bar_jump)/4 length(short_bm_bar_jump)/2 length(short_bm_bar_jump)*(3/4) length(short_bm_bar_jump)]);
+xticklabels({'-2','-1','0','1','2'});
+xlabel('Time around jumps (s)');
+ylabel('Bump width');
 
-subplot(2,1,2)
-imagesc(zscored_long_bw_wind_jump)
+%bump width around wind jumps
+subplot(2,2,4)
+plot(mean(short_bw_wind_jump),'k','linewidth',2)
 hold on
-xline(120*sec_to_frames,'r','linewidth',2)
-colormap(flipud(bone))
-title('Wind jumps');
+line([length(short_bm_wind_jump)/2 length(short_bm_wind_jump)/2],[0 4],'color','r','linewidth',3);
+xlim([0 length(short_bm_bar_jump)]);
+xticks([0 length(short_bm_bar_jump)/4 length(short_bm_bar_jump)/2 length(short_bm_bar_jump)*(3/4) length(short_bm_bar_jump)]);
+xticklabels({'-2','-1','0','1','2'});
+xlabel('Time around jumps (s)');
 
-suptitle('Bump width');
-
-saveas(gcf,[path,'\plots\long_raster_plots_bump_width.png']);
-
-
-%% Compute offset variability pre and post-jump
-
-
-
-%compare to changes in bump parameters.
-
-
+saveas(gcf,[path,'\plots\average_bump_pars_aj.png']);
 
 %% Offset mean with respect to both stimuli pre and post-jump
 
-%Compute offset mean around bar jumps
+% Compute means around jumps
+
+%bump offsets
+bar_offset = circ_dist(continuous_data.bump_pos',deg2rad(continuous_data.panel_angle));
+wind_offset = circ_dist(continuous_data.bump_pos,continuous_data.motor_pos);
+
+%behavioral offsets
+bar_heading_offset = circ_dist(continuous_data.heading,deg2rad(continuous_data.panel_angle));
+wind_heading_offset = circ_dist(continuous_data.heading,continuous_data.motor_pos');
+wind_heading_offset = wind_heading_offset';
+                
+%For bar jumps
 for jump = 1:length(real_bar_jump_frames)
+    long_bar_offset_mean_around_bar_jump(jump,1) = circ_mean(bar_offset(real_bar_jump_frames(jump)-120*sec_to_frames:real_bar_jump_frames(jump)-1));
+    long_bar_offset_mean_around_bar_jump(jump,2) = circ_mean(bar_offset(real_bar_jump_frames(jump)+1:real_bar_jump_frames(jump)+120*sec_to_frames));
+    long_wind_offset_mean_around_bar_jump(jump,1) = circ_mean(wind_offset(real_bar_jump_frames(jump)-120*sec_to_frames:real_bar_jump_frames(jump)-1),[],2);
+    long_wind_offset_mean_around_bar_jump(jump,2) = circ_mean(wind_offset(real_bar_jump_frames(jump)+1:real_bar_jump_frames(jump)+120*sec_to_frames),[],2);
     
-    short_bar_offset_mean_around_bar_jump(jump,1) = circ_mean(deg2rad(bar_offset(real_bar_jump_frames(jump)-2*sec_to_frames:real_bar_jump_frames(jump)-1)));
-    short_bar_offset_mean_around_bar_jump(jump,2) = circ_mean(deg2rad(bar_offset(real_bar_jump_frames(jump)+1:real_bar_jump_frames(jump)+2*sec_to_frames)));
-    
-    short_wind_offset_mean_around_bar_jump(jump,1) = circ_mean(deg2rad(wind_offset(real_bar_jump_frames(jump)-2*sec_to_frames:real_bar_jump_frames(jump)-1)),[],2);
-    short_wind_offset_mean_around_bar_jump(jump,2) = circ_mean(deg2rad(wind_offset(real_bar_jump_frames(jump)+1:real_bar_jump_frames(jump)+2*sec_to_frames)),[],2);
-    
-    long_bar_offset_mean_around_bar_jump(jump,1) = circ_mean(deg2rad(bar_offset(real_bar_jump_frames(jump)-120*sec_to_frames:real_bar_jump_frames(jump)-1)));
-    long_bar_offset_mean_around_bar_jump(jump,2) = circ_mean(deg2rad(bar_offset(real_bar_jump_frames(jump)+1:real_bar_jump_frames(jump)+120*sec_to_frames)));
-    
-    long_wind_offset_mean_around_bar_jump(jump,1) = circ_mean(deg2rad(wind_offset(real_bar_jump_frames(jump)-120*sec_to_frames:real_bar_jump_frames(jump)-1)),[],2);
-    long_wind_offset_mean_around_bar_jump(jump,2) = circ_mean(deg2rad(wind_offset(real_bar_jump_frames(jump)+1:real_bar_jump_frames(jump)+120*sec_to_frames)),[],2);
-    
+    long_bar_heading_offset_mean_around_bar_jump(jump,1) = circ_mean(bar_heading_offset(real_bar_jump_frames(jump)-120*sec_to_frames:real_bar_jump_frames(jump)-1));
+    long_bar_heading_offset_mean_around_bar_jump(jump,2) = circ_mean(bar_heading_offset(real_bar_jump_frames(jump)+1:real_bar_jump_frames(jump)+120*sec_to_frames));
+    long_wind_heading_offset_mean_around_bar_jump(jump,1) = circ_mean(wind_heading_offset(real_bar_jump_frames(jump)-120*sec_to_frames:real_bar_jump_frames(jump)-1),[],2);
+    long_wind_heading_offset_mean_around_bar_jump(jump,2) = circ_mean(wind_heading_offset(real_bar_jump_frames(jump)+1:real_bar_jump_frames(jump)+120*sec_to_frames),[],2);
 end
-
-%Compute differences in the offset mean pre and post jump
-short_bar_offset_mean_diff_around_bar_jumps = abs(rad2deg(circ_dist(short_bar_offset_mean_around_bar_jump(:,1),short_bar_offset_mean_around_bar_jump(:,2))));
-short_wind_offset_mean_diff_around_bar_jumps = abs(rad2deg(circ_dist(short_wind_offset_mean_around_bar_jump(:,1),short_wind_offset_mean_around_bar_jump(:,2))));
-long_bar_offset_mean_diff_around_bar_jumps = abs(rad2deg(circ_dist(long_bar_offset_mean_around_bar_jump(:,1),long_bar_offset_mean_around_bar_jump(:,2))));
-long_wind_offset_mean_diff_around_bar_jumps = abs(rad2deg(circ_dist(long_wind_offset_mean_around_bar_jump(:,1),long_wind_offset_mean_around_bar_jump(:,2))));
-
-%The short bar offset mean will change quite a bit by design because of the
-%bar jumps, so not sure if it's the best metric.
-
 
 %Repeat for wind jumps
 for jump = 1:length(real_wind_jump_frames)
+    long_bar_offset_mean_around_wind_jump(jump,1) = circ_mean(bar_offset(real_wind_jump_frames(jump)-120*sec_to_frames:real_wind_jump_frames(jump)-1));
+    long_bar_offset_mean_around_wind_jump(jump,2) = circ_mean(bar_offset(real_wind_jump_frames(jump)+1:real_wind_jump_frames(jump)+120*sec_to_frames));
+    long_wind_offset_mean_around_wind_jump(jump,1) = circ_mean(wind_offset(real_wind_jump_frames(jump)-120*sec_to_frames:real_wind_jump_frames(jump)-1),[],2);
+    long_wind_offset_mean_around_wind_jump(jump,2) = circ_mean(wind_offset(real_wind_jump_frames(jump)+1:real_wind_jump_frames(jump)+120*sec_to_frames),[],2);
     
-    short_bar_offset_mean_around_wind_jump(jump,1) = circ_mean(deg2rad(bar_offset(real_wind_jump_frames(jump)-2*sec_to_frames:real_wind_jump_frames(jump)-1)));
-    short_bar_offset_mean_around_wind_jump(jump,2) = circ_mean(deg2rad(bar_offset(real_wind_jump_frames(jump)+1:real_wind_jump_frames(jump)+2*sec_to_frames)));
-    
-    short_wind_offset_mean_around_wind_jump(jump,1) = circ_mean(deg2rad(wind_offset(real_wind_jump_frames(jump)-2*sec_to_frames:real_wind_jump_frames(jump)-1)),[],2);
-    short_wind_offset_mean_around_wind_jump(jump,2) = circ_mean(deg2rad(wind_offset(real_wind_jump_frames(jump)+1:real_wind_jump_frames(jump)+2*sec_to_frames)),[],2);
-    
-    long_bar_offset_mean_around_wind_jump(jump,1) = circ_mean(deg2rad(bar_offset(real_wind_jump_frames(jump)-120*sec_to_frames:real_wind_jump_frames(jump)-1)));
-    long_bar_offset_mean_around_wind_jump(jump,2) = circ_mean(deg2rad(bar_offset(real_wind_jump_frames(jump)+1:real_wind_jump_frames(jump)+120*sec_to_frames)));
-    
-    long_wind_offset_mean_around_wind_jump(jump,1) = circ_mean(deg2rad(wind_offset(real_wind_jump_frames(jump)-120*sec_to_frames:real_wind_jump_frames(jump)-1)),[],2);
-    long_wind_offset_mean_around_wind_jump(jump,2) = circ_mean(deg2rad(wind_offset(real_wind_jump_frames(jump)+1:real_wind_jump_frames(jump)+120*sec_to_frames)),[],2);
-    
+    long_bar_heading_offset_mean_around_wind_jump(jump,1) = circ_mean(bar_heading_offset(real_wind_jump_frames(jump)-120*sec_to_frames:real_wind_jump_frames(jump)-1));
+    long_bar_heading_offset_mean_around_wind_jump(jump,2) = circ_mean(bar_heading_offset(real_wind_jump_frames(jump)+1:real_wind_jump_frames(jump)+120*sec_to_frames));
+    long_wind_heading_offset_mean_around_wind_jump(jump,1) = circ_mean(wind_heading_offset(real_wind_jump_frames(jump)-120*sec_to_frames:real_wind_jump_frames(jump)-1),[],2);
+    long_wind_heading_offset_mean_around_wind_jump(jump,2) = circ_mean(wind_heading_offset(real_wind_jump_frames(jump)+1:real_wind_jump_frames(jump)+120*sec_to_frames),[],2);
 end
 
-%Compute differences in the offset mean pre and post jump
-short_bar_offset_mean_diff_around_wind_jumps = abs(rad2deg(circ_dist(short_bar_offset_mean_around_wind_jump(:,1),short_wind_offset_mean_around_wind_jump(:,2))));
-short_wind_offset_mean_diff_around_wind_jumps = abs(rad2deg(circ_dist(short_wind_offset_mean_around_wind_jump(:,1),short_wind_offset_mean_around_wind_jump(:,2))));
-long_bar_offset_mean_diff_around_wind_jumps = abs(rad2deg(circ_dist(long_bar_offset_mean_around_wind_jump(:,1),long_wind_offset_mean_around_wind_jump(:,2))));
-long_wind_offset_mean_diff_around_wind_jumps = abs(rad2deg(circ_dist(long_wind_offset_mean_around_wind_jump(:,1),long_wind_offset_mean_around_wind_jump(:,2))));
 
+% Get all_PI_values
 
+%1) For EPG PI
+%Bar jumps
+mean_bar_offset_diff = abs(circ_dist(long_bar_offset_mean_around_bar_jump(:,2), long_bar_offset_mean_around_bar_jump(:,1)));
+mean_wind_offset_diff = abs(circ_dist(long_wind_offset_mean_around_bar_jump(:,2), long_wind_offset_mean_around_bar_jump(:,1)));
 %Plot differences in mean offset
 figure('Position',[100 100 800 800]),
-plot([1,1,1,1],long_bar_offset_mean_diff_around_bar_jumps,'ro')
+plot([rad2deg(mean_bar_offset_diff),rad2deg(mean_wind_offset_diff)]','-ro')
+%compute preference index
+PI = (mean_bar_offset_diff-mean_wind_offset_diff)./(mean_bar_offset_diff+mean_wind_offset_diff);
+
+%Wind jumps
+mean_bar_offset_diff = abs(circ_dist(long_bar_offset_mean_around_wind_jump(:,2), long_bar_offset_mean_around_wind_jump(:,1)));
+mean_wind_offset_diff = abs(circ_dist(long_wind_offset_mean_around_wind_jump(:,2), long_wind_offset_mean_around_wind_jump(:,1)));
+%add to plot
 hold on
-plot([1,1,1,1],long_bar_offset_mean_diff_around_wind_jumps,'ko')
-plot([2,2,2,2],long_wind_offset_mean_diff_around_bar_jumps,'ro')
-plot([2,2,2,2],long_wind_offset_mean_diff_around_wind_jumps,'ko')
+plot([rad2deg(mean_bar_offset_diff),rad2deg(mean_wind_offset_diff)]','-ko')
 xlim([0 3]);
 ylim([0 180]);
 xticks([1 2]);
 xticklabels({'Bar offset diff','Wind offset diff'});
 ylabel('Post-pre mean offset difference (deg)','fontsize',12);
-legend('Around bar jumps','Around wind jumps');
+saveas(gcf,[path,'\plots\change_in_mean_offset.png']);
+%compute preference index
+PI = [PI;(mean_bar_offset_diff-mean_wind_offset_diff)./(mean_bar_offset_diff+mean_wind_offset_diff)];
 
 
-%Compute the preference index (proxy for which cue the bump is focusing on)
+ %1) For heading PI
+ %Bar jumps
+ mean_bar_heading_offset_diff = abs(circ_dist(long_bar_heading_offset_mean_around_bar_jump(:,2),long_bar_heading_offset_mean_around_bar_jump(:,1)));
+ mean_wind_heading_offset_diff = abs(circ_dist(long_wind_heading_offset_mean_around_bar_jump(:,2), long_wind_heading_offset_mean_around_bar_jump(:,1)));
+ PI_heading = (mean_bar_heading_offset_diff-mean_wind_heading_offset_diff)./(mean_bar_heading_offset_diff+mean_wind_heading_offset_diff);
+ %Wind jumps
+ mean_bar_heading_offset_diff = abs(circ_dist(long_bar_heading_offset_mean_around_wind_jump(:,2), long_bar_heading_offset_mean_around_wind_jump(:,1)));
+ mean_wind_heading_offset_diff = abs(circ_dist(long_wind_heading_offset_mean_around_wind_jump(:,2), long_wind_heading_offset_mean_around_wind_jump(:,1)));
+ PI_heading = [PI_heading;(mean_bar_heading_offset_diff-mean_wind_heading_offset_diff)./(mean_bar_heading_offset_diff+mean_wind_heading_offset_diff)];
+ 
+ 
+ % Compute the stickiness index
+ %Bar moves
+ mean_move_cue_offset_diff = abs( circ_dist(long_bar_offset_mean_around_bar_jump(:,2), long_bar_offset_mean_around_bar_jump(:,1)));
+ mean_stay_cue_offset_diff = abs(circ_dist(long_wind_offset_mean_around_bar_jump(:,2), long_wind_offset_mean_around_bar_jump(:,1)));
+ SI = (mean_move_cue_offset_diff - mean_stay_cue_offset_diff)./(mean_move_cue_offset_diff + mean_stay_cue_offset_diff);
+ 
+ %Wind moves
+ mean_move_cue_offset_diff = abs(circ_dist(long_wind_offset_mean_around_wind_jump(:,2), long_wind_offset_mean_around_wind_jump(:,1)));
+ mean_stay_cue_offset_diff = abs(circ_dist(long_bar_offset_mean_around_wind_jump(:,2), long_bar_offset_mean_around_wind_jump(:,1)));
+ SI = [SI;(mean_move_cue_offset_diff - mean_stay_cue_offset_diff)./(mean_move_cue_offset_diff + mean_stay_cue_offset_diff)];
+ 
+%Plot preference indices                
+figure,
+boxplot([PI,PI_heading],'color','k')
+hold on
+yline(0);
+scatter(repmat([1:2],8,1),[PI,PI_heading],[],[.5 .5 .5],'filled')
+set(findobj(gca,'type','line'),'linew',2)
+ylabel('Preference index');
+ylim([-1 1]);
+xticks([1 2]);
+xticklabels({'Bump','Behavior'});
+saveas(gcf,[path,'\plots\preference_indices.png']);
+
+%Compute the mean preference index (proxy for which cue the bump and heading are focusing on)
     %the closer to -1, the more the bar is preferred
     %the closer to 1, the more the wind is preferred
-pref_index = (mean([long_bar_offset_mean_diff_around_bar_jumps;long_bar_offset_mean_diff_around_wind_jumps])-mean([long_wind_offset_mean_diff_around_bar_jumps;long_wind_offset_mean_diff_around_wind_jumps]))/(mean([long_bar_offset_mean_diff_around_bar_jumps;long_bar_offset_mean_diff_around_wind_jumps]) + mean([long_wind_offset_mean_diff_around_bar_jumps;long_wind_offset_mean_diff_around_wind_jumps]));
+pref_index = mean(PI);
+heading_pref_index = mean(PI_heading);
 
-title(['Preference index = ',num2str(round(pref_index,2))]);
+%Plot and save stickiness index
+figure,
+boxplot(SI,'color','k')
+hold on
+yline(0);
+scatter(repelem(1,8,1),SI,[],[.5 .5 .5],'filled')
+set(findobj(gca,'type','line'),'linew',2)
+ylabel('Stickiness index');
+ylim([-1 1]);
+saveas(gcf,[path,'\plots\stickiness_index.png']);
 
-saveas(gcf,[path,'\plots\change_in_mean_offset.png']);
+stick_index = mean(SI);
+
+%% Look at offset variance vs time: how does average variance change over time after a jump?
+
+%I will analyze offset variability by computing a rolling window of circular
+%standard deviation of offset
+fcn = @(x) circ_std(x);
+%Compute the offset variability over different window sizes, from ~1s to
+%100s
+window_sizes = [10,50,75,100,150,500];
+for window = 1:length(window_sizes)
+    bar_offset_variability(:,window) = matlab.tall.movingWindow(fcn,window_sizes(window),bar_offset);
+    wind_offset_variability(:,window) = matlab.tall.movingWindow(fcn,window_sizes(window),wind_offset');    
+end
+
+%% Plotting it in various ways
+
+%Regular line plots
+for window = 1:length(window_sizes)
+    
+    figure,
+    subplot(2,1,1)
+    plot(bar_offset_variability(:,window),'k')
+    hold on
+    for jump = 1:length(real_bar_jump_frames)
+        line([real_bar_jump_frames(jump) real_bar_jump_frames(jump)],[0 1.5],'color','r')
+    end
+    for jump = 1:length(real_wind_jump_frames)
+        line([real_wind_jump_frames(jump) real_wind_jump_frames(jump)],[0 1.5],'color','b')
+    end
+    title('Bar offset variability');
+    set(gca,'xticklabel',{[]})
+        
+    subplot(2,1,2)
+    plot(wind_offset_variability(:,window),'k')
+    hold on
+    for jump = 1:length(real_bar_jump_frames)
+        line([real_bar_jump_frames(jump) real_bar_jump_frames(jump)],[0 1.5],'color','r')
+    end
+    for jump = 1:length(real_wind_jump_frames)
+        line([real_wind_jump_frames(jump) real_wind_jump_frames(jump)],[0 1.5],'color','b')
+    end
+    title('Wind offset variability');
+    set(gca,'xticklabel',{[]})
+    xlabel('Time');    
+    
+    suptitle(['Window size = ',num2str(window_sizes(window)),' frames']);
+
+end
+
+%% Averaged offset variability around jumps
+
+for window = 1:length(window_sizes)
+figure('Position',[100 100 1400 1000]),
+
+%bar offset variability around bar jumps
+subplot(2,2,1)
+for jump = 1:length(real_bar_jump_frames)
+    bar_offset_variability_abj(jump,:) = bar_offset_variability(real_bar_jump_frames(jump)-120*sec_to_frames:real_bar_jump_frames(jump)+120*sec_to_frames,window);
+end
+plot(mean(bar_offset_variability_abj),'k','linewidth',2)
+title('Bar offset variability around bar jumps');
+hold on
+line([length(bar_offset_variability_abj)/2 length(bar_offset_variability_abj)/2],[0 1.5],'color','r','linewidth',3);
+xlim([0 length(bar_offset_variability_abj)]);
+xticks([0 length(bar_offset_variability_abj)/4 length(bar_offset_variability_abj)/2 length(bar_offset_variability_abj)*(3/4) length(bar_offset_variability_abj)]);
+xticklabels({'-120','-60','0','60','120'});
+xlabel('Time around jumps (s)');
+
+%bar offset variability around wind jumps
+subplot(2,2,2)
+for jump = 1:length(real_wind_jump_frames)
+    bar_offset_variability_awj(jump,:) = bar_offset_variability(real_wind_jump_frames(jump)-120*sec_to_frames:real_wind_jump_frames(jump)+120*sec_to_frames,window);
+end
+plot(mean(bar_offset_variability_awj),'k','linewidth',2)
+title('Bar offset variability around wind jumps');
+hold on
+line([length(bar_offset_variability_abj)/2 length(bar_offset_variability_abj)/2],[0 1.5],'color','b','linewidth',3);
+xlim([0 length(bar_offset_variability_abj)]);
+xticks([0 length(bar_offset_variability_abj)/4 length(bar_offset_variability_abj)/2 length(bar_offset_variability_abj)*(3/4) length(bar_offset_variability_abj)]);
+xticklabels({'-120','-60','0','60','120'});
+xlabel('Time around jumps (s)');
+
+%wind offset variability around bar jumps
+subplot(2,2,3)
+for jump = 1:length(real_bar_jump_frames)
+    wind_offset_variability_abj(jump,:) = wind_offset_variability(real_bar_jump_frames(jump)-120*sec_to_frames:real_bar_jump_frames(jump)+120*sec_to_frames,window);
+end
+plot(mean(wind_offset_variability_abj),'k','linewidth',2)
+title('Wind offset variability around bar jumps');
+hold on
+line([length(bar_offset_variability_abj)/2 length(bar_offset_variability_abj)/2],[0 1.5],'color','r','linewidth',3);
+xlim([0 length(bar_offset_variability_abj)]);
+xticks([0 length(bar_offset_variability_abj)/4 length(bar_offset_variability_abj)/2 length(bar_offset_variability_abj)*(3/4) length(bar_offset_variability_abj)]);
+xticklabels({'-120','-60','0','60','120'});
+xlabel('Time around jumps (s)');
+
+%wind offset variability around wind jumps
+subplot(2,2,4)
+for jump = 1:length(real_wind_jump_frames)
+    wind_offset_variability_awj(jump,:) = wind_offset_variability(real_wind_jump_frames(jump)-120*sec_to_frames:real_wind_jump_frames(jump)+120*sec_to_frames,window);
+end
+plot(mean(wind_offset_variability_awj),'k','linewidth',2)
+title('Wind offset variability around wind jumps');
+hold on
+line([length(wind_offset_variability_awj)/2 length(wind_offset_variability_awj)/2],[0 1.5],'color','b','linewidth',3);
+xlim([0 length(wind_offset_variability_awj)]);
+xticks([0 length(wind_offset_variability_awj)/4 length(wind_offset_variability_awj)/2 length(wind_offset_variability_awj)*(3/4) length(wind_offset_variability_awj)])
+xticklabels({'-120','-60','0','60','120'});
+xlabel('Time around jumps (s)');
+
+suptitle(['Window size = ',num2str(window_sizes(window)),' frames']);
+
+saveas(gcf,[path,'\plots\average_offset_var_window',num2str(window),'.png']);
+
+
+%store the offset variability values I want
+if window == 3
+   bar_offset_variability_abj_75 = bar_offset_variability_abj; 
+   wind_offset_variability_abj_75 = wind_offset_variability_abj; 
+   bar_offset_variability_awj_75 = bar_offset_variability_awj; 
+   wind_offset_variability_awj_75 = wind_offset_variability_awj;    
+elseif window == 4
+   bar_offset_variability_abj_100 = bar_offset_variability_abj; 
+   wind_offset_variability_abj_100 = wind_offset_variability_abj; 
+   bar_offset_variability_awj_100 = bar_offset_variability_awj; 
+   wind_offset_variability_awj_100 = wind_offset_variability_awj;
+end
+
+end
+
+
+%% Raster plots 
+
+figure('Position',[100 100 1600 1000])
+for window = 1:length(window_sizes)
+   subplot(length(window_sizes),1,window)
+   imagesc(bar_offset_variability(:,window)')   
+   colormap(flipud(gray))
+   title(['Window size = ',num2str(window_sizes(window)),' frames']);
+   hold on
+    for jump = 1:length(real_bar_jump_frames)
+        line([real_bar_jump_frames(jump) real_bar_jump_frames(jump)],[0.5 1.5],'color','r','linewidth',3) 
+    end
+    for jump = 1:length(real_wind_jump_frames)
+        line([real_wind_jump_frames(jump) real_wind_jump_frames(jump)],[0.5 1.5],'color','b','linewidth',3) 
+    end
+    set(gca,'xticklabel',{[]})
+    set(gca,'yticklabel',{[]})
+end
+suptitle('Bar offset variability');
+saveas(gcf,[path,'\plots\raster_plot_bar_offset_var.png']);
+
+
+figure('Position',[100 100 1600 1000])
+for window = 1:length(window_sizes)
+   subplot(length(window_sizes),1,window)
+   imagesc(wind_offset_variability(:,window)')   
+   colormap(flipud(gray))
+   title(['Window size = ',num2str(window_sizes(window)),' frames']);
+   hold on
+    for jump = 1:length(real_bar_jump_frames)
+        line([real_bar_jump_frames(jump) real_bar_jump_frames(jump)],[0.5 1.5],'color','r','linewidth',3) 
+    end
+    for jump = 1:length(real_wind_jump_frames)
+        line([real_wind_jump_frames(jump) real_wind_jump_frames(jump)],[0.5 1.5],'color','b','linewidth',3) 
+    end
+    set(gca,'xticklabel',{[]})
+    set(gca,'yticklabel',{[]})
+end
+suptitle('Wind offset variability');
+saveas(gcf,[path,'\plots\raster_plot_bar_offset_var.png']);
+
+    
+%% Scatterplot bump amplitude vs offset variance: is there a negative relationship? how strong/significant?
+   
+for window = 1:length(window_sizes)
+    
+    figure,
+    subplot(1,2,1)
+    scatter(bar_offset_variability(moving&good_fit,window),continuous_data.bump_magnitude(moving&good_fit))
+    title('Bump magnitude');
+    ylabel('Bump magnitude'); xlabel('Bar offset variability');
+    
+    subplot(1,2,2)
+    scatter(bar_offset_variability(moving&good_fit,window),continuous_data.bump_width(moving&good_fit))
+    title('Bump width');
+    ylabel('Bump width'); xlabel('Bar offset variability');
+    
+    
+    
+    figure,
+    
+    %Define bins
+    nbins = 15;
+    max_bin = prctile(bar_offset_variability(:,window),99,'all');
+    min_bin = prctile(bar_offset_variability(:,window),5,'all');
+    binWidth = (max_bin-min_bin)/nbins;
+    Bins = [min_bin:binWidth:max_bin];
+    
+    %Create axes for plot
+    mvtAxes = Bins - binWidth;
+    mvtAxes = mvtAxes(2:end);
+    
+    subplot(1,2,1)
+    for bin = 1:length(Bins)-1
+        meanBin(bin) = nanmean(continuous_data.bump_magnitude(bar_offset_variability(moving & good_fit,window) > Bins(bin) & (bar_offset_variability(moving & good_fit,window)) < Bins(bin+1)));
+    end
+    plot(mvtAxes,meanBin,'color',[.5 .5 .5])
+    hold on
+    ylabel('Bump magnitude'); xlabel('Bar offset variability');
+    ylim([0 max(max(meanBin))+0.5]);
+    xlim([mvtAxes(1) mvtAxes(end)]);
+    title('Bump magnitude');
+    
+    subplot(1,2,2)
+    for bin = 1:length(Bins)-1
+        meanBinw(bin) = nanmean(continuous_data.bump_width(bar_offset_variability(moving & good_fit,window) > Bins(bin) & (bar_offset_variability(moving & good_fit,window)) < Bins(bin+1)));
+    end
+    plot(mvtAxes,meanBinw,'color',[.5 .5 .5])
+    hold on
+    ylabel('Bump half width'); xlabel('Bar offset variability');
+    ylim([0 max(max(meanBinw))+0.5]);
+    xlim([mvtAxes(1) mvtAxes(end)]);
+    title('Bump half width');
+    
+    suptitle(['Window size = ',num2str(window_sizes(window)),' frames']);
+    saveas(gcf,[path,'\plots\bumps_pars_vs_bar_offset_var_',num2str(window),'.png']);
+
+      
+end
+
+%% Look at cross-correlation between bump parameters and offset variance: what is the time of the peak?
+
+for window = 1:length(window_sizes)
+    
+    figure('Position',[100 100 1600 600]),
+    subplot(1,2,1)
+    [c,lags] = xcorr(bar_offset_variability(moving&good_fit,window),continuous_data.bump_magnitude(moving&good_fit));
+    stem(lags,c)
+    corr_val = corrcoef(bar_offset_variability(moving&good_fit,window),continuous_data.bump_magnitude(moving&good_fit));
+    title(['Bump magnitude, corr = ',num2str(corr_val(2,1))]);
+    
+    subplot(1,2,2)
+    [c,lags] = xcorr(bar_offset_variability(moving&good_fit,window),continuous_data.bump_width(moving&good_fit));
+    stem(lags,c)
+    corr_val2 =  corrcoef(bar_offset_variability(moving&good_fit,window),continuous_data.bump_width(moving&good_fit));
+    title(['Bump width, corr = ',num2str(corr_val2(2,1))]);
+    
+    suptitle(['Window size = ',num2str(window_sizes(window)),' frames']);
+    saveas(gcf,[path,'\plots\cross_corr_',num2str(window),'.png']);
+    
+end
 
 %% Save data
 
 %save PI, and bump parameters behavior around the jumps
-save([path,'\data.mat'],'short_bm_bar_jump','short_bw_bar_jump','short_bm_wind_jump','short_bw_wind_jump','long_bm_bar_jump','long_bw_bar_jump','long_bm_wind_jump','long_bw_wind_jump','pref_index')
+save([path,'\data.mat'],'short_bm_bar_jump','short_bw_bar_jump','short_bm_wind_jump','short_bw_wind_jump','pref_index','heading_pref_index','stick_index','initial_bar_bm','initial_wind_bm','initial_bar_bw','initial_wind_bw','initial_bar_offset','initial_wind_offset','PI','PI_heading','SI','wind_offset_variability_awj_75','wind_offset_variability_abj_75','bar_offset_variability_abj_75','bar_offset_variability_awj_75','wind_offset_variability_awj_100','wind_offset_variability_abj_100','bar_offset_variability_abj_100','bar_offset_variability_awj_100','configuration')
 
 %% Clear space
 
