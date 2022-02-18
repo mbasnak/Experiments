@@ -6,7 +6,7 @@ clear all; close all;
 %% Import data
 
 %Define main directory
-exp_dir = 'Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp34\data';
+exp_dir = 'Z:\Wilson Lab\Mel\Experiments\Uncertainty\GCaMP_control\data';
 
 %List all the folders
 folderNames = dir(exp_dir);
@@ -78,7 +78,7 @@ plot(mean_bm_data.stim_vel,mean_bm_data.mean_nanmean_bump_mag,'-ko','linewidth',
 ylim([0 2.5]);
 title('Bump magnitude');
 xlabel('Stimulus velocity (deg/s)');
-ylabel('Bump magnitude (from von Mises fit)');
+ylabel('Bump magnitude');
 
 subplot(1,4,3)
 plot(mean_bw_data.stim_vel,mean_bw_data.mean_nanmean_bump_width,'-ko','linewidth',2)
@@ -95,3 +95,4 @@ xlabel('Stimulus velocity (deg/s)');
 ylabel('Total fly movement (deg/s)');
 
 saveas(gcf,[exp_dir,'\groupPlots\parameters_vs_stim_speed.png'])
+saveas('C:\Users\Melanie\Dropbox (HMS)\Manuscript-Basnak\GCaMP-control\parameters_vs_stim_speed.svg')

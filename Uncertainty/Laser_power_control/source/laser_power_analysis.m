@@ -40,7 +40,7 @@ data = data(~cellfun(@isempty, data(:,1)), :);
 
 %% Get bump parameters per laser power
 
-figure,
+figure('Position',[100 100 1200 800]),
 
 %bump magnitude
 for fly = 1:length(data)
@@ -52,7 +52,7 @@ end
 subplot(1,3,1)
 plot(BM','-o','color',[.5 .5 .5])
 hold on
-errorbar(1:3,mean(BM),std(BM)/sqrt(length(BM)),'-ko');
+errorbar(1:3,mean(BM),std(BM)/sqrt(length(BM)),'-ko','linewidth',2);
 xlim([0 4]);
 xticks([1 2 3]);
 xticklabels({'5','10','15'});
@@ -98,7 +98,7 @@ end
 subplot(1,3,2)
 plot(BW','-o','color',[.5 .5 .5])
 hold on
-errorbar(1:3,mean(BW),std(BW)/sqrt(length(BW)),'-ko');
+errorbar(1:3,mean(BW),std(BW)/sqrt(length(BW)),'-ko','linewidth',2);
 xlim([0 4]);
 xticks([1 2 3]);
 xticklabels({'5','10','15'});
@@ -115,7 +115,7 @@ end
 subplot(1,3,3)
 plot(total_mvt','-o','color',[.5 .5 .5])
 hold on
-errorbar(1:3,mean(total_mvt),std(total_mvt)/sqrt(length(total_mvt)),'-ko');
+errorbar(1:3,mean(total_mvt),std(total_mvt)/sqrt(length(total_mvt)),'-ko','linewidth',2);
 xlim([0 4]);
 xticks([1 2 3]);
 xticklabels({'5','10','15'});
@@ -123,7 +123,7 @@ xlabel('Laser power (%)');
 ylabel('Total movement (deg/s)');
 
 saveas(gcf,[path,'\groupPlots\laser_control.png']);
-
+saveas(gcf,'C:\Users\Melanie\Dropbox (HMS)\Manuscript-Basnak\LaserPower-Control\laser_control.svg');
 
 %% Bin the data into different bump magnitude values and compute bump variability for each laser power, making one plot for each window size
 

@@ -193,9 +193,9 @@ motor_pos_ds = motor_pos(round(linspace(1, length(motor_pos), volumes)));
 
 %With this convention, a positive change in flyPosRad_ds implies a
 %clockwise change in heading.
-% flyPosRad_ds = flyPosRad(round(linspace(1, length(flyPosRad), volumes)));
-% flyPosRad_ds = wrapToPi(flyPosRad_ds);
-flyPosRad_ds = resample(wrapToPi(flyPosRad),volumes,length(flyPosRad));
+flyPosRad_ds = flyPosRad(round(linspace(1, length(flyPosRad), volumes)));
+flyPosRad_ds = wrapToPi(flyPosRad_ds);
+%flyPosRad_ds = resample(wrapToPi(flyPosRad),volumes,length(flyPosRad));
 
 
 %% Offset calculation

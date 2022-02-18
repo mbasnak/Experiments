@@ -27,7 +27,7 @@ flyNames = flyNames(~cellfun(@isempty,{flyNames.name}));
 %Assign fly number
 for fly = 1:length(flyNames)
     %if strcmp(flyNames(fly).name,path(54:end))
-    if strcmp(flyNames(fly).name,path(70:end)) %70 for low reliability/71 for high reliability (code this)
+    if strcmp(flyNames(fly).name,path(71:end)) %70 for low reliability/71 for high reliability (code this)
         fly_ID = fly;
     end
 end

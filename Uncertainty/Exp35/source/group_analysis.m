@@ -163,7 +163,7 @@ plot(offset_var_r','-o','color',[.5 .5 .5]);
 xlim([0 6]);
 hold on
 plot(nanmedian(offset_var_r),'-ko','linewidth',3,'MarkerFaceColor','k')
-ylabel('Offset variability (circular std)','fontweight','bold','fontsize',16);
+ylabel('Offset variability (rad)','fontweight','bold','fontsize',16);
 xticks([1 2 3 4 5]);
 xticklabels({'single cue','single cue','cue combination','single cue','single cue'})
 a = get(gca,'XTickLabel');  
@@ -173,6 +173,7 @@ set(gca,'XTickLabel',a,'fontsize',16,'FontWeight','bold')
 %used the number of frames of the shorter block
 
 saveas(gcf,[path,'\groupPlots\offset_var.png']);
+saveas(gcf,'C:\Users\Melanie\Dropbox (HMS)\Manuscript-Basnak\Block-Experiment\offset_var.svg');
 
 
 %% Offset variability in 60 sec bouts across sessions
@@ -282,6 +283,7 @@ xticks([1 2 3 4 5]);
 ylabel([{'Absolute difference in offset mean'};{'with respect to previous block (deg)'}],'fontweight','bold');
 
 saveas(gcf,[path,'\groupPlots\diff_offset.png']);
+saveas(gcf,'C:\Users\Melanie\Dropbox (HMS)\Manuscript-Basnak\Block-Experiment\diff_offset_with_respect_to_previous_block.svg');
 
 %% Focusing on the last 120 sec of each bout to determine the offset mean
 
@@ -365,7 +367,7 @@ saveas(gcf,[path,'\groupPlots\all_offset_differences_final.png']);
 
 %% Plot thresholded bump parameters
 
-figure,
+figure('Position',[100 100 1200 1000]),
 subplot(1,2,1)
 plot(thresh_BM_mean','-o','color',[.5 .5 .5]);
 xlim([0 6]);
@@ -385,6 +387,7 @@ xticklabels({'single cue','single cue','cue combination','single cue','single cu
 ylabel('Mean bump width','fontweight','bold');
 
 saveas(gcf,[path,'\groupPlots\thresh_bump_parameters_evolution.png']);
+saveas(gcf,'C:\Users\Melanie\Dropbox (HMS)\Manuscript-Basnak\Block-Experiment\thresh_bump_parameters_evolution.svg');
 
 %% Plot thresholded bump parameters focusing on last part of bouts
 
@@ -414,7 +417,7 @@ saveas(gcf,[path,'\groupPlots\final_bump_parameters_evolution.png']);
 zscored_BM = zscore(thresh_BM_mean,[],2);
 zscored_BW = zscore(thresh_BW_mean,[],2);
 
-figure,
+figure('Position',[100 100 1200 1000]),,
 subplot(1,2,1)
 plot(zscored_BM','-o','color',[.5 .5 .5]);
 xlim([0 6]); xticks([1 2 3 4 5]);
@@ -438,6 +441,7 @@ set(gca,'XTickLabel',a,'fontsize',14,'FontWeight','bold')
 title('Bump width','fontsize',16);
 
 saveas(gcf,[path,'\groupPlots\zscored_bump_parameters_evolution.png']);
+saveas(gcf,'C:\Users\Melanie\Dropbox (HMS)\Manuscript-Basnak\Block-Experiment\zscored_bump_parameters_evolution.svg');
 
 %% Repeat zscoring data for last 120 sec of each bout
 
@@ -479,6 +483,7 @@ a = get(gca,'XTickLabel');
 set(gca,'XTickLabel',a,'fontsize',14,'FontWeight','bold')
 
 saveas(gcf,[path,'\groupPlots\total_mvt.png']);
+saveas(gcf,'C:\Users\Melanie\Dropbox (HMS)\Manuscript-Basnak\Block-Experiment\total_mvt.svg');
 
 %% Repeat zscoring
 
@@ -1419,6 +1424,216 @@ saveas(gcf,[path,'\groupPlots\single_cue_w_diff_vs_cue_combination_plasticity_in
 
 %% Offset variability in 60-sec bouts
 
+
+%% Plots taken from pizza talk
+
+for fly = 1:length(data)
+    single_cue_cc_diff_1(fly) = rad2deg(circ_dist(offset_mean(fly,3),offset_mean(fly,1)));
+    single_cue_cc_diff_2(fly) = rad2deg(circ_dist(offset_mean(fly,3),offset_mean(fly,2)));
+end
+
+figure('Position',[100 100 1600 400]),
+subplot(1,3,1)
+plot(abs(initial_cue_diff),abs(single_cue_cc_diff_1),'ko', 'MarkerFaceColor','k','MarkerSize',8)
+hold on
+plot(abs(initial_cue_diff),abs(single_cue_cc_diff_2),'ro', 'MarkerFaceColor','r','MarkerSize',8)
+ylabel({'Cue combination and initial single cue','offset difference (deg)'},'fontweight','bold');
+xlabel('Initial wind and visual offset difference (deg)','fontweight','bold');
+xticks([0 30 60 90 120 150 180]);
+xticklabels({'0','30','60','90','120','150','180'});
+yticks([0 30 60 90 120 150 180]);
+yticklabels({'0','30','60','90','120','150','180'});
+legend('First cue','Second cue');
+[correlation,pval] = corrcoef([abs(initial_cue_diff),abs(initial_cue_diff)],[abs(single_cue_cc_diff_1),abs(single_cue_cc_diff_2)]);
+title([['Corr = ',num2str(round(correlation(1,2),2))],['    Pval = ',num2str(round(pval(1,2),2))]]);
+
+subplot(1,3,2)
+plot(abs(initial_cue_diff),abs(single_cue_cc_diff_1),'ko', 'MarkerFaceColor','k','MarkerSize',8)
+xlabel('Initial wind and visual offset difference (deg)','fontweight','bold');
+xticks([0 30 60 90 120 150 180]);
+xticklabels({'0','30','60','90','120','150','180'});
+yticks([0 30 60 90 120 150 180]);
+yticklabels({'0','30','60','90','120','150','180'});
+[correlation,pval] = corrcoef(abs(initial_cue_diff),abs(single_cue_cc_diff_1));
+title([['Corr = ',num2str(round(correlation(1,2),2))],['    Pval = ',num2str(round(pval(1,2),2))]]);
+
+subplot(1,3,3)
+plot(abs(initial_cue_diff),abs(single_cue_cc_diff_2),'ro', 'MarkerFaceColor','r','MarkerSize',8)
+xlabel('Initial wind and visual offset difference (deg)','fontweight','bold');
+xticks([0 30 60 90 120 150 180]);
+xticklabels({'0','30','60','90','120','150','180'});
+yticks([0 30 60 90 120 150 180]);
+yticklabels({'0','30','60','90','120','150','180'});
+[correlation,pval] = corrcoef(abs(initial_cue_diff),abs(single_cue_cc_diff_2));
+title([['Corr = ',num2str(round(correlation(1,2),2))],['    Pval = ',num2str(round(pval(1,2),2))]]);
+
+
+%% Get only plots 2 and 3
+
+figure('Position',[100 100 1000 400]),
+
+subplot(1,2,1)
+plot(abs(initial_cue_diff),abs(single_cue_cc_diff_1),'ko', 'MarkerFaceColor','k','MarkerSize',8)
+hold on
+refline(1,0);
+xlabel('Initial wind and visual offset difference (deg)','fontweight','bold');
+xticks([0 30 60 90 120 150 180]);
+xticklabels({'0','30','60','90','120','150','180'});
+yticks([0 30 60 90 120 150 180]);
+yticklabels({'0','30','60','90','120','150','180'});
+ylabel({'Cue combination and initial single cue','offset difference (deg)'},'fontweight','bold');
+xlim([0 180]); ylim([0 180]);
+
+subplot(1,2,2)
+plot(abs(initial_cue_diff),abs(single_cue_cc_diff_2),'ro', 'MarkerFaceColor','r','MarkerSize',8)
+xlabel('Initial wind and visual offset difference (deg)','fontweight','bold');
+xticks([0 30 60 90 120 150 180]);
+xticklabels({'0','30','60','90','120','150','180'});
+yticks([0 30 60 90 120 150 180]);
+yticklabels({'0','30','60','90','120','150','180'});
+xlim([0 180]); ylim([0 180]);
+refline(1,0);
+
+
+%% Plot the distribution of cue offset differences with respect to the cue combination offset instead
+
+%As box plot
+figure,
+cue_order = [repelem(1,length(single_cue_cc_diff_1)),repelem(2,length(single_cue_cc_diff_2))];
+boxplot([abs(single_cue_cc_diff_1),abs(single_cue_cc_diff_2)],cue_order,'color','k');
+hold on
+scatter(cue_order,[abs(single_cue_cc_diff_1),abs(single_cue_cc_diff_2)],[],[.5 .5 .5],'filled')
+set(findobj(gca,'type','line'),'linew',2)
+ylabel('Cue combination offset - single cue offset','fontsize',12);
+xticklabels({'First cue','Second cue'});
+a = get(gca,'YTickLabel');
+set(gca,'YTickLabel',a,'fontsize',12);
+ylim([0 180]);
+
+
+%As line plot
+figure,
+plot([abs(single_cue_cc_diff_1);abs(single_cue_cc_diff_2)],'-o','color',[.5 .5 .5])
+hold on
+plot([mean(abs(single_cue_cc_diff_1));mean(abs(single_cue_cc_diff_2))],'-ko','MarkerFaceColor','k','linewidth',2)
+xlim([0 3]);
+xticks([1 2]);
+xticklabels({'First cue','Second cue'});
+ylabel('Cue combination offset - single cue offset (deg)','fontsize',12);
+a = get(gca,'YTickLabel');
+set(gca,'YTickLabel',a,'fontsize',12);
+
+saveas(gcf,'C:\Users\Melanie\Dropbox (HMS)\Manuscript-Basnak\Block-Experiment\single_cue_cc_offset_diff.svg');
+
+
+%Color coding by the type of cue that came first
+figure,
+offset_diff = [abs(single_cue_cc_diff_1);abs(single_cue_cc_diff_2)]';
+wind_color = [255 36 85]/256;
+plot(offset_diff(configuration == 1,:)','-o','color','b')
+hold on
+plot(offset_diff(configuration == 2,:)','-o','color',wind_color)
+plot([mean(abs(single_cue_cc_diff_1));mean(abs(single_cue_cc_diff_2))],'-ko','MarkerFaceColor','k','linewidth',2)
+xlim([0 3]);
+xticks([1 2]);
+xticklabels({'First cue','Second cue'});
+ylabel('Cue combination offset - single cue offset','fontsize',12);
+a = get(gca,'YTickLabel');
+set(gca,'YTickLabel',a,'fontsize',12);
+
+
+%% Cue plasticity vs cc pull (exp 35)
+
+figure('Position',[100 100 1600 400]),
+subplot(1,3,1)
+plot(abs(single_cue_cc_diff_1),abs(single_cue_diff_1),'ko', 'MarkerFaceColor','k','MarkerSize',8)
+hold on
+plot(abs(single_cue_cc_diff_2),abs(single_cue_diff_2),'ro', 'MarkerFaceColor','r','MarkerSize',8)
+ylabel({'Single cue offset difference', '(post vs pre cue combination)'},'fontweight','bold');
+xlabel({'Cue combination and initial single cue','offset difference (deg)'},'fontweight','bold');
+xticks([0 30 60 90 120 150 180]);
+xticklabels({'0','30','60','90','120','150','180'});
+yticks([0 30 60 90 120 150 180]);
+yticklabels({'0','30','60','90','120','150','180'});
+legend('First cue','Second cue');
+[correlation,pval] = corrcoef([abs(single_cue_cc_diff_1),abs(single_cue_cc_diff_2)],[abs(single_cue_diff_1),abs(single_cue_diff_2)]);
+title([['Corr = ',num2str(round(correlation(1,2),2))],['    Pval = ',num2str(round(pval(1,2),2))]]);
+
+subplot(1,3,2)
+plot(abs(single_cue_cc_diff_1),abs(single_cue_diff_1),'ko', 'MarkerFaceColor','k','MarkerSize',8)
+xlabel({'Cue combination and initial single cue','offset difference (deg)'},'fontweight','bold');
+xticks([0 30 60 90 120 150 180]);
+xticklabels({'0','30','60','90','120','150','180'});
+yticks([0 30 60 90 120 150 180]);
+yticklabels({'0','30','60','90','120','150','180'});
+[correlation,pval] = corrcoef(abs(single_cue_cc_diff_1),abs(single_cue_diff_1));
+title([['Corr = ',num2str(round(correlation(1,2),2))],['    Pval = ',num2str(round(pval(1,2),2))]]);
+
+subplot(1,3,3)
+plot(abs(single_cue_cc_diff_2),abs(single_cue_diff_2),'ro', 'MarkerFaceColor','r','MarkerSize',8)
+xlabel({'Cue combination and initial single cue','offset difference (deg)'},'fontweight','bold');
+xticks([0 30 60 90 120 150 180]);
+xticklabels({'0','30','60','90','120','150','180'});
+yticks([0 30 60 90 120 150 180]);
+yticklabels({'0','30','60','90','120','150','180'});
+[correlation,pval] = corrcoef(abs(single_cue_cc_diff_2),abs(single_cue_diff_2));
+title([['Corr = ',num2str(round(correlation(1,2),2))],['    Pval = ',num2str(round(pval(1,2),2))]]);
+
+
+
+
+%% Combine cues, single color
+
+figure,
+plot(abs(single_cue_cc_diff_1),abs(single_cue_diff_1),'ko', 'MarkerFaceColor','k','MarkerSize',8)
+hold on
+plot(abs(single_cue_cc_diff_2),abs(single_cue_diff_2),'ko', 'MarkerFaceColor','k','MarkerSize',8)
+ylabel({'Single cue offset difference', '(post vs pre cue combination)'},'fontweight','bold');
+xlabel({'Cue combination and initial single cue','offset difference (deg)'},'fontweight','bold');
+xticks([0 30 60 90 120 150 180]);
+xticklabels({'0','30','60','90','120','150','180'});
+yticks([0 30 60 90 120 150 180]);
+yticklabels({'0','30','60','90','120','150','180'});
+xlim([0 180]); ylim([0 180]);
+refline(1,0);
+
+%signed, doubled
+figure('Position',[100 100 1000 1000]),
+plot(single_cue_cc_diff_1,single_cue_diff_1,'ko', 'MarkerFaceColor','k','MarkerSize',8)
+hold on
+plot(single_cue_cc_diff_1,single_cue_diff_1+360,'ko', 'MarkerFaceColor','k','MarkerSize',8)
+plot(single_cue_cc_diff_2,single_cue_diff_2,'ko', 'MarkerFaceColor','k','MarkerSize',8)
+plot(single_cue_cc_diff_2,single_cue_diff_2+360,'ko', 'MarkerFaceColor','k','MarkerSize',8)
+ylabel({'Post - pre (deg)'},'fontweight','bold','fontsize',14);
+xlabel({'Training - pre (deg)'},'fontweight','bold','fontsize',14);
+xticks([-180 -90 0 90 180]);
+xticklabels({'-180','-90','0','90','180'});
+yticks([-180 0 180 360 540]);
+yticklabels({'-180','0','180','360','540'});
+xlim([-180 180]); ylim([-180 540]);
+refline(1,0);
+refline(1,360);
+a = get(gca,'YTickLabel');
+set(gca,'YTickLabel',a,'fontsize',12);
+
+saveas(gcf,'C:\Users\Melanie\Dropbox (HMS)\Manuscript-Basnak\Block-Experiment\plasticity_scales_with_conflict.svg');
+
+
+%signed
+figure,
+plot(single_cue_cc_diff_1,single_cue_diff_1,'ko', 'MarkerFaceColor','k','MarkerSize',8)
+hold on
+plot(single_cue_cc_diff_2,single_cue_diff_2,'ko', 'MarkerFaceColor','k','MarkerSize',8)
+ylabel({'Post - pre (deg)'},'fontweight','bold','fontsize',12);
+xlabel({'Training - pre (deg)'},'fontweight','bold','fontsize',12);
+xticks([-180 -90 0 90 180]);
+xticklabels({'-180','-90','0','90','180'});
+yticks([-180 -90 0 90 180]);
+yticklabels({'-180','-90','0','90','180'});
+xlim([-180 180]); ylim([-180 180]);
+refline(1,0);
+a = get(gca,'YTickLabel');
+set(gca,'YTickLabel',a,'fontsize',12);
 
 %%
 close all; clear all;
