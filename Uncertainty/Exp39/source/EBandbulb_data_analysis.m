@@ -35,7 +35,7 @@ load(['2p' slash 'sid_' num2str(sid) '_tid_' num2str(tid) slash 'rigid_sid_' num
 
 T = struct2table(roi); % convert the struct array to a table
 sortedT = sortrows(T, 'name'); % sort the table by 'DOB'
-sorted_roi = table2struct(sortedT) % change it back to struct array if necessary
+sorted_roi = table2struct(sortedT); % change it back to struct array if necessary
 
 
 %% Get the summed GCaMP7f data
@@ -67,7 +67,7 @@ for i = 1:length(sorted_roi)
         title('Right bulb');
     end
 end
-
+saveas(gcf,[path,'\analysis\activity_in_all_neuropiles.png'])
 
 %% Load the ball data
 
@@ -99,8 +99,8 @@ total_mvt = smoothed.total_mvt;
 %If you want to check what the movement data looks like, uncomment the
 %following line
 %plot_mvt_parameters(vel_for_deg,vel_side_deg,vel_yaw,total_mvt)
-
-panel_y = downsample(bdata_raw(:,6), floor(4000/50));
+panel_y = downsample(bdata_raw(:,7), floor(4000/50));
+wind_valve = downsample(bdata_raw(:,6), floor(4000/50));
 
 % 4)Subsample all the variables to have the length of the number of
 %volumes scanned:
@@ -112,6 +112,7 @@ vel_for_deg_ds = vel_for_deg(round(linspace(1, length(vel_for_deg), volumes)));
 vel_side_deg_ds = vel_side_deg(round(linspace(1, length(vel_side_deg), volumes)));
 total_mvt_ds = total_mvt(round(linspace(1, length(total_mvt), volumes)));
 panel_y_ds = panel_y(round(linspace(1, length(panel_y), volumes)));
+wind_valve_ds = wind_valve(round(linspace(1, length(wind_valve), volumes)));
 
 %With this convention, a positive change in panel_angle_ds implies a
 %clockwise change in bar position.
@@ -120,7 +121,8 @@ motor_pos_ds = motor_pos(round(linspace(1, length(motor_pos), volumes)));
 
 %With this convention, a positive change in flyPosRad_ds implies a
 %clockwise change in heading.
-flyPosRad_ds = resample(wrapToPi(flyPosRad),volumes,length(flyPosRad));
+%flyPosRad_ds = resample(wrapToPi(flyPosRad),volumes,length(flyPosRad));
+flyPosRad_ds = wrapToPi(flyPosRad(round(linspace(1, length(flyPosRad), volumes))));
 
 
 %%
@@ -132,6 +134,7 @@ ylabel('EB-DAN activity (dff)');
 yyaxis right
 plot(total_mvt_ds)
 ylabel('Total movement (deg/s)');
+saveas(gcf,[path,'\analysis\activity_and_movement.png'])
 
 
 %% Save the data into the analysis folder
@@ -159,6 +162,7 @@ data.heading_deg = rad2deg(flyPosRad_ds);
 %Devices
 data.panel_angle = panel_angle_ds;
 data.motor_pos = motor_pos_ds;
+data.wind_valve = wind_valve_ds;
 
 % Imaging data
 data.volumes = volumes;
