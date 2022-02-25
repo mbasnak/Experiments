@@ -47,6 +47,8 @@ for timepoint = 1:length(dff_data)
     bump_pos(timepoint) = mod(u,2*pi);
     bump_mag(timepoint) = a * ( exp(k) - exp(-k) );
     bump_width(timepoint) = 2 * abs( acos( 1/k * log( 1/2 *( exp(k) + exp(-k) ))));
+    %The above math gives you back the bump width in radians. You need a
+    %factor conversion to change to EB wedges or tiles
      
     
 %     %7) Uncomment to plot the original data and the fit

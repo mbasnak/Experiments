@@ -1,4 +1,7 @@
-function continuous_PB_data_analysis(path,sid,tid)
+%Code to analyze the imaging and behavior data, with the imaging data
+%analyzed using the new 'continuous' method
+
+function continuous_PB_data_analysis(path,sid)
 
 %Code to analyze the imaging and behavior data, with the imaging data
 %analyzed using the new 'continuous' method
@@ -6,18 +9,20 @@ function continuous_PB_data_analysis(path,sid,tid)
 %INPUT
 %path = name of the main folder for this fly's data
 %sid = session id 
-%tid = trial id
 %note: this will only work if your data is saved with the structure that
 %mine has: one main data folder per fly, with '2p' and 'ball' subfolders,
 %and subfolders for each session*trial id inside the 2p folder. If not, the
 %code or the data structure will have to be adapted
 
-%% Create the data analysis folder (where the output of this code will be saved at the end)
+tid = 0; %I only ever run 1 trial per session
 
-data_analysis_dir = [path,'\analysis\'];
-if(~exist(data_analysis_dir, 'dir'))
-    mkdir(data_analysis_dir);
+global slash;
+if isunix() == 1 %if running in Linux or mac
+    slash = '/'; %define the slash this way
+else %if running in windows
+    slash = '\'; %define the other way
 end
+set(0,'DefaultTextInterpreter','none');
 
 %% Load the imaging data
 
@@ -25,9 +30,9 @@ end
 cd(path)
 
 %Load the roi data 
-load(['2p/ROI/ROI_midline_sid_',num2str(sid),'_tid_',num2str(tid),'.mat']);
+load(['2p' slash 'ROI' slash 'ROI_midline_sid_' num2str(sid) '_tid_' num2str(tid) '.mat']);
 %Load the registered imaging stack
-load(['2p/sid_',num2str(sid),'_tid_',num2str(tid),'/rigid_sid_',num2str(sid),'_tid_',num2str(tid),'_Chan_1_sessionFile.mat']);
+load(['2p' slash 'sid_' num2str(sid) '_tid_' num2str(tid) slash 'rigid_sid_' num2str(sid) '_tid_' num2str(tid) '_Chan_1_sessionFile.mat']);
 
 %% Get the summed GCaMP7f data
 
@@ -43,7 +48,7 @@ for row = 1:length(roi)
     end
 end
 
-%2) Pull up the coordinate values that make up the mid line along the PB
+%2) Pull up the coordinates that make up the midline along the PB
 midline_coordinates = [roi(roi_mid).xi,roi(roi_mid).yi];
 
 %3) Get the 'vector lengths' for each section of the line, to know how much
@@ -66,7 +71,6 @@ PB_coverage = logical(PB_mask);
 
 %% Get the normal line across each small segment of the PB midline
 
-%Initialize variables
 midV = cell(1,length(midline_coordinates)-1);
 normal1 = cell(1,length(midline_coordinates)-1);
 normal2 = cell(1,length(midline_coordinates)-1);
@@ -86,7 +90,7 @@ for segment = 1:length(midline_coordinates)-1
     point2{segment} = [midV{segment}(1) + normal1{segment}(1), midV{segment}(2) + normal1{segment}(2)];
 end
 
-%%Uncomment to plot the normals and the DF/F for an example timepoint
+ %%Uncomment to plot the normals and the DF/F for an example timepoint
 
 % figure('Position',[200 50 600 800]);
 % subplot(3,1,1)
@@ -136,8 +140,7 @@ end
 % 
 % saveas(gcf,'ExampleTimepoint.png');
 
-% 
-%% Calculate the distance to each midline normal for each pixel in the PB mask and assign to the closest midline segment
+%% Assign fluorescence across the PB to the corresponding closest point in the midline
 
 %Initialize variables
 midline_ff = zeros(length(midline_coordinates)-1,size(summedData,3)); %start empty midline brightness vector
@@ -169,8 +172,7 @@ for timepoint = 1:size(summedData,3)
         
 end
 
-
-%% Compute DF/F for each midline segment
+%% Get baseline and compute DF/F
 
 %1) Get the baseline fluorescence
 baseline_f = zeros(1,length(midline_coordinates)-1);
@@ -178,8 +180,8 @@ baseline_f = zeros(1,length(midline_coordinates)-1);
 for segment = 1:length(midline_coordinates)-1
     
     sorted_f = sort(midline_ff(segment,:));
-    %Get baseline as the tenth percentile of activity
-    baseline_f(segment) = prctile(sorted_f,10);
+    %Get baseline as the tenth percentile
+    baseline_f(segment) = prctile(sorted_f,10);  
     
 end
 
@@ -192,7 +194,6 @@ dff = (midline_ff'-baseline_f)./baseline_f;
 % colormap(flipud(gray));
 % title('Dff using new method');
 % saveas(gcf,'epg_activity_heatmap.png');
-
 
 %% Compute bump parameters
 
@@ -216,20 +217,24 @@ dff = (midline_ff'-baseline_f)./baseline_f;
 % xlim([1 length(bump_width)]);
 
 
-%% Get stimulus position and compute animal's velocities
+%% Load the ball data
 
-% 1)Import behavior file
-ball_dir = [path,'\ball\'];
-expression = ['*sid_' num2str(sid) '_tid_' num2str(tid) '*.mat'];
+ball_dir = [path slash 'ball' slash];
+expression = ['bdata' '*sid_' num2str(sid) '_tid_' num2str(tid) '*.mat'];
 ball_file = dir(fullfile(ball_dir, expression));
 ballData = load(fullfile(ball_dir, ball_file.name)); %load ballData
-runobjFile = dir(fullfile([ball_dir,'\runobj\'], ['*_sid_' num2str(sid) '_*']));
-load(fullfile([ball_dir,'\runobj\'], runobjFile.name)); %load run_obj
+runobjFile = dir(fullfile([ball_dir 'runobj' slash], ['*_sid_' num2str(sid) '_*']));
+load(fullfile([ball_dir 'runobj' slash], runobjFile.name)); %load run_obj
+
+
+%% Convert the ball data panel position into an angle, bar position; fictrac position/velocities
+
+% 1)Import behavior file
 bdata_raw = ballData.trial_bdata; %get the ball data
 bdata_time = ballData.trial_time; %get the trial time
 
 % 2)Use an auxiliary function to get the different components of the behavior data
-[smoothed, bdata_time_out, visual_stim_pos, fly_pos_rad] = get_data_360(bdata_time, bdata_raw, run_obj.number_frames);
+[smoothed, bdata_time_out,visual_stim_pos, fly_pos_rad] = get_data_360(bdata_time, bdata_raw, run_obj.number_frames);
 
 % 3)Recover relevant movement parameters
 vel_for = smoothed.xVel';
@@ -253,14 +258,8 @@ vel_side_deg_ds = vel_side_deg(round(linspace(1, length(vel_side_deg), volumes))
 total_mvt_ds = total_mvt(round(linspace(1, length(total_mvt), volumes)));
 panel_y_ds = panel_y(round(linspace(1, length(panel_y), volumes)));
 visual_stim_pos_ds = visual_stim_pos(round(linspace(1, length(visual_stim_pos), volumes)));
-fly_pos_rad_ds = resample(wrapToPi(fly_pos_rad),volumes,length(fly_pos_rad));
+fly_pos_rad_ds = fly_pos_rad(round(linspace(1, length(fly_pos_rad), volumes)));
 
-
-%% Offset calculation
-
-%we will compute and define the offset as the
-%circular distance between the bump's position and the fly's heading
-offset = wrapTo180(rad2deg(circ_dist(bump_pos',-fly_pos_rad_ds)));
 
 %% Save the data into the analysis folder
 
@@ -271,7 +270,6 @@ continuous_data.tid = tid;
 continuous_data.time = time_ds;
 continuous_data.run_obj = run_obj;
 continuous_data.trial_dur = run_obj.trial_t;
-continuous_data.fr_y_ds = panel_y_ds;
 
 % Movement parameters
 continuous_data.vel_for = vel_for;
@@ -283,7 +281,10 @@ continuous_data.vel_for_deg_ds = vel_for_deg_ds;
 continuous_data.total_mvt_ds = total_mvt_ds;
 continuous_data.heading = fly_pos_rad_ds;
 continuous_data.heading_deg = rad2deg(fly_pos_rad_ds);
-continuous_data.panel_angle = visual_stim_pos_ds;
+
+% Devices
+continuous_data.visual_stim_pos = visual_stim_pos_ds;
+continuous_data.fr_y_ds = panel_y_ds;
 
 % Imaging data
 continuous_data.volumes = volumes;
@@ -292,11 +293,9 @@ continuous_data.bump_magnitude = bump_mag;
 continuous_data.bump_width = bump_width;
 continuous_data.adj_rs = adj_rs;
 continuous_data.bump_pos = wrapToPi(bump_pos);
-continuous_data.offset = offset;
-
 
 % Write file
-filename = [path, '\analysis\continuous_analysis_sid_' num2str(sid) '_tid_' num2str(tid) '.mat'];
+filename = [path slash 'analysis' slash 'continuous_analysis_sid_' num2str(sid) '_tid_' num2str(tid) '.mat'];
 save(filename, 'continuous_data');
 
 end

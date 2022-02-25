@@ -7,12 +7,13 @@ clear all; close all;
 %Get directory you're interested in
 path = uigetdir('Z:\Wilson Lab\Mel\Experiments\Uncertainty\Exp25\data\Experimental\two_ND_filters_3_contrasts');
 
-%I will create a .txt file for each fly with the session numbers
+%I have a .txt file for each fly with the open-loop session numbers
 %Read the .txt file containing the ID of the open loop sessions.
 fileID = fopen([path,'\2p\open_loop_sessions.txt'],'r');
 formatSpec = '%d';
 open_loop_sessions = fscanf(fileID,formatSpec);
 
+%Load the data
 for session = 1:length(open_loop_sessions)
    data{session} = load([path,'\analysis\continuous_analysis_sid_',num2str(open_loop_sessions(session)),'_tid_0.mat']);    
 end
@@ -30,12 +31,12 @@ for session = 1:length(open_loop_sessions)
     dff_matrix = data{1,session}.continuous_data.dff_matrix';
     imagesc(flip(dff_matrix))
     colormap(flipud(gray))
-    ylabel('PB glomerulus')
+    ylabel('PB glomerulus','fontsize',12)
     set(gca,'xticklabel',{[]});
     set(gca,'XTick',[]);
     set(gca,'yticklabel',{[]});
     set(gca,'YTick',[]);
-    title('EPG activity in the PB');
+    title('EPG activity in the PB','fontsize',12);
     
     %Stimulus position
     subplot(3,5,[6 9])
@@ -61,9 +62,9 @@ for session = 1:length(open_loop_sessions)
         xlim([0, x_out_phase(end-1)]);
     end
     ylim([-180 180]);
-    ylabel('Degrees');
+    ylabel('Angular position (deg)','fontsize',12);
     set(gca,'xticklabel',{[]})
-    title('Stimulus position');
+    title('Stimulus position','fontsize',12);
     
     %Stim offset
     %Calculate stim offset as the circular distance between EPG activity
@@ -80,8 +81,8 @@ for session = 1:length(open_loop_sessions)
     end  
     xlim([0, data{1,session}.continuous_data.time(end)]);
     ylim([-180 180]);
-    xlabel('Time (sec)'); ylabel('Degrees');
-    title('Stimulus offset');
+    xlabel('Time (sec)','fontsize',12); ylabel('Degrees','fontsize',12);
+    title('Stimulus offset','fontsize',12);
     
     %Plot stimulus offset distribution
     subplot(3,5,15)
@@ -102,49 +103,46 @@ for session = 1:length(open_loop_sessions)
     end
     
     %Save figures
-    saveas(gcf,[path,'\analysis\continuous_plots\openLoopHeatmapAndOffset_session',num2str(session),'.png']);
+    saveas(gcf,[path,'\analysis\continuous_plots\open_loop_heatmap_and_stim_offset_sid',num2str(open_loop_sessions(session)),'.png']);
 end
 
 
 %% Summarize relevant data in table
 
 close all;
+
 %Calculate offset variation as the circular standard deviation of the
 %'stimulus offset'
 for session = 1:length(open_loop_sessions)
    [~,stim_offset_var(session)] = circ_std(deg2rad(stim_offset{session}),[],[],1);  
 end
 
-%Define stimulus velocity conditions-which panel functions were used?
-low_stim_vel = [50,51];
-medium_stim_vel = [52,53];
-high_stim_vel = [54,55];
+%Define stimulus velocity conditions according to which panel functions were used
+low_stim_vel = [50,51]; %20 deg/s
+medium_stim_vel = [52,53]; %30 deg/s
+high_stim_vel = [54,55]; %60 deg/s
 
-%Define stimulus contrasts-which panel patterns were used?
-low_stim_contrast = 56;
-high_stim_contrast = 57;
+%Define stimulus contrasts according to which panel pattern was used
+low_stim_contrast = 56; %1/15
+high_stim_contrast = 57; %15/15
 
-%Compute bump magnitude as max-min
+%Get bump parameters and compute the mean
 for session = 1:length(open_loop_sessions)
+    
     BumpMagnitude{session} = data{1,session}.continuous_data.bump_magnitude;
     meanBM(session) = mean(BumpMagnitude{session});   
+    
+    bump_width{session} = data{1,session}.continuous_data.bump_width;        
+    meanBW(session) = mean(bump_width{session}); 
 end
 
-%compute bump width at half max
-for session = 1:length(open_loop_sessions)    
-    half_max_width{session} = data{1,session}.continuous_data.bump_width;        
-    meanHW(session) = mean(half_max_width{session});  
-end
-
-
-%Obtain for each session a table with their offset var, their median bump magnitude their stim
-%velocity, and their contrast
-summarydata = array2table(zeros(0,5), 'VariableNames',{'offset_var','bump_mag','half_width','contrast_level','stim_vel'});
+%Create a table with relevant variables for each session
+summarydata = array2table(zeros(0,5), 'VariableNames',{'stim_offset_var','bump_mag','bump_width','contrast_level','stim_vel'});
 warning('off');
 for session = 1:length(open_loop_sessions)
-    summarydata{session,'offset_var'} = stim_offset_var(session);
+    summarydata{session,'stim_offset_var'} = stim_offset_var(session);
     summarydata{session,'bump_mag'} = meanBM(session);
-    summarydata{session,'half_width'} = meanHW(session);
+    summarydata{session,'bump_width'} = meanBW(session);
     summarydata{session,'contrast_level'} = data{1,session}.continuous_data.run_obj.pattern_number;
     if (data{1,session}.continuous_data.run_obj.function_number == 50 | data{1,session}.continuous_data.run_obj.function_number == 51)
         summarydata{session,'stim_vel'} = 1; 
@@ -155,23 +153,23 @@ for session = 1:length(open_loop_sessions)
     end
 end
 
-%% Compare the offset variation for each speed between contrasts
+%% Compare the offset variability for each speed between contrasts
 
-%Average relevant information
-mean_data = varfun(@mean,summarydata,'InputVariables','offset_var',...
+%Average offset variability, grouped by stimulus contrast and velocity
+mean_stim_offset_var_data = varfun(@mean,summarydata,'InputVariables','stim_offset_var',...
        'GroupingVariables',{'contrast_level','stim_vel'});
    
 %Plot
 figure('Position',[200 200 800 800]),
-colorID = cell(size(mean_data,1),1); 
-for contrast = 1:length(mean_data.contrast_level)
-    if mean_data.contrast_level(contrast) == 57
+colorID = cell(size(mean_stim_offset_var_data,1),1); 
+for contrast = 1:length(mean_stim_offset_var_data.contrast_level)
+    if mean_stim_offset_var_data.contrast_level(contrast) == 57
         colorID{contrast} = [ 0.5 0.8 0.9]; 
     else
         colorID{contrast} = [ 0 0 0.6]; 
     end
 end
-scatter(mean_data.stim_vel,mean_data.mean_offset_var,60,cell2mat(colorID),'filled')
+scatter(mean_stim_offset_var_data.stim_vel,mean_stim_offset_var_data.mean_stim_offset_var,60,cell2mat(colorID),'filled')
 %Add custom legend
 hold on
 h = zeros(2, 1);
@@ -179,18 +177,17 @@ h(1) = plot(NaN,NaN,'ko','MarkerFaceColor',[ 0 0 0.6]);
 h(2) = plot(NaN,NaN,'ko','MarkerFaceColor',[ 0.5 0.8 0.9]);
 legend(h, 'Low contrast','High Contrast');
 xlim([0, 4]);
-ylim([min(mean_data.mean_offset_var) - 0.2, max(mean_data.mean_offset_var) + 0.2]);
+ylim([min(mean_stim_offset_var_data.mean_stim_offset_var) - 0.2, max(mean_stim_offset_var_data.mean_stim_offset_var) + 0.2]);
 xticks(1:3);
-set(gca,'xticklabel',{'20 deg/s','30 deg/s','60 deg/s'});
+set(gca,'xticklabel',{'20','30','60'});
 a = get(gca,'XTickLabel');  
 set(gca,'XTickLabel',a,'fontsize',10,'FontWeight','bold');
-[ax,h2]=suplabel('Stimulus angular velocity','x');
+[~,h2] = suplabel('Stimulus angular velocity (deg/s)','x');
 set(h2,'FontSize',12,'FontWeight','bold')
-ylabel('Offset variation (circ std)','FontSize',12);
+ylabel('Offset variability (rad)','FontSize',12);
 
 %save
 saveas(gcf,[path,'\analysis\continuous_plots\open_loop_offset_var.png']);
-
 
 %% Compare the bump magnitude for each speed between contrasts
 
@@ -218,34 +215,33 @@ legend(h, 'Low contrast','High Contrast');
 xlim([0, 4]);
 ylim([min(mean_bump_data.mean_bump_mag) - 0.2, max(mean_bump_data.mean_bump_mag) + 0.2]);
 xticks(1:3);
-set(gca,'xticklabel',{'20 deg/s','30 deg/s','60 deg/s'});
+set(gca,'xticklabel',{'20','30','60'});
 a = get(gca,'XTickLabel');  
 set(gca,'XTickLabel',a,'fontsize',10,'FontWeight','bold');
-[ax,h2]=suplabel('Stimulus angular velocity','x');
+[~,h2]=suplabel('Stimulus angular velocity (deg/s)','x');
 set(h2,'FontSize',12,'FontWeight','bold')
-ylabel({'Bump magnitude';'(amplitude of Fourier component)'});
+ylabel('Bump magnitude (DF/F)');
 
 %save
 saveas(gcf,[path,'\analysis\continuous_plots\mean_bump_mag.png']);
 
-
 %% Compare the width at half max for each speed between contrasts
 
 %Average relevant information
-mean_hw_data = varfun(@mean,summarydata,'InputVariables','half_width',...
+mean_bw_data = varfun(@mean,summarydata,'InputVariables','bump_width',...
        'GroupingVariables',{'contrast_level','stim_vel'});
    
 %Plot
 figure('Position',[200 200 800 800]),
-colorID = cell(size(mean_hw_data,1),1); 
-for contrast = 1:length(mean_hw_data.contrast_level)
-    if mean_hw_data.contrast_level(contrast) == 57
+colorID = cell(size(mean_bw_data,1),1); 
+for contrast = 1:length(mean_bw_data.contrast_level)
+    if mean_bw_data.contrast_level(contrast) == 57
         colorID{contrast} = [ 0.5 0.8 0.9]; 
     else
         colorID{contrast} = [ 0 0 0.6]; 
     end
 end
-scatter(mean_hw_data.stim_vel,mean_hw_data.mean_half_width,60,cell2mat(colorID),'filled')
+scatter(mean_bw_data.stim_vel,mean_bw_data.mean_bump_width,60,cell2mat(colorID),'filled')
 %Add custom legend
 hold on
 h = zeros(2, 1);
@@ -253,17 +249,17 @@ h(1) = plot(NaN,NaN,'ko','MarkerFaceColor',[ 0 0 0.6]);
 h(2) = plot(NaN,NaN,'ko','MarkerFaceColor',[ 0.5 0.8 0.9]);
 legend(h, 'Low contrast','High Contrast');
 xlim([0, 4]);
-ylim([min(mean_hw_data.mean_half_width) - 0.2, max(mean_hw_data.mean_half_width) + 0.2]);
+ylim([min(mean_bw_data.mean_bump_width) - 0.2, max(mean_bw_data.mean_bump_width) + 0.2]);
 xticks(1:3);
-set(gca,'xticklabel',{'20 deg/s','30 deg/s','60 deg/s'});
+set(gca,'xticklabel',{'20','30','60'});
 a = get(gca,'XTickLabel');  
 set(gca,'XTickLabel',a,'fontsize',10,'FontWeight','bold');
-[ax,h2]=suplabel('Stimulus angular velocity','x');
+[~,h2]=suplabel('Stimulus angular velocity (deg/s)','x');
 set(h2,'FontSize',12,'FontWeight','bold')
-ylabel('Bump width at half max');
+ylabel('Bump width at half max (rad)');
 
 %save
-saveas(gcf,[path,'\analysis\continuous_plots\mean_bump_hw.png']);
+saveas(gcf,[path,'\analysis\continuous_plots\mean_bump_bw.png']);
 
 
 %% Heatmap with offset vs movement
@@ -274,15 +270,16 @@ for session = 1:length(open_loop_sessions)
     
     %PB heatmap
     subplot(3,5,[1 4])
+    dff_matrix = data{1,session}.continuous_data.dff_matrix';
     %I will now flip the matrix to match the fly's heading
     imagesc(flip(dff_matrix))
     colormap(flipud(gray))
-    ylabel('PB glomerulus')
+    ylabel('PB glomerulus','fontsize',12)
     set(gca,'xticklabel',{[]});
     set(gca,'XTick',[]);
     set(gca,'yticklabel',{[]});
     set(gca,'YTick',[]);
-    title('EPG activity in the PB');
+    title('EPG activity in the PB','fontsize',12);
     
     %Fly heading
     subplot(3,5,[6 9])
@@ -299,22 +296,24 @@ for session = 1:length(open_loop_sessions)
     %Phase
     %I'm negating the phase because it should go against the heading
     phase = -wrapTo180(rad2deg(data{1,session}.continuous_data.bump_pos'));
-    [x_out_phase,phase_to_plot] = removeWrappedLines(data{1,session}.continuous_data.time,phase);  
+    [x_out_phase,phase_to_plot] = removeWrappedLines(data{1,session}.continuous_data.time,phase);
     plot(x_out_phase,phase_to_plot,'color',[0.9 0.3 0.4],'LineWidth',1.5)
-    legend('Fly heading','EPG phase');
+    axP = get(gca,'Position');
+    legend('Fly heading','EPG phase','Location','EastOutside');
+    set(gca, 'Position', axP);
     if ~isnan(x_out_phase(end))
         xlim([0, x_out_phase(end)]);
     else
         xlim([0, x_out_phase(end-1)]);
     end
     ylim([-180 180]);
-    ylabel('Degrees');
+    ylabel('Angular position (deg)','fontsize',12);
     set(gca,'xticklabel',{[]})
-    title('Fly heading');
+    title('Fly heading','fontsize',12);
     
     %Mvt offset
-    offset{session} = wrapTo180(data{1,session}.continuous_data.offset);
-    [x_out_offset,offsetToPlot] = removeWrappedLines(data{1,session}.continuous_data.time,offset{session});
+    mvt_offset{session} = wrapTo180(rad2deg(circ_dist(data{1,session}.continuous_data.bump_pos',-data{1,session}.continuous_data.heading)));
+    [x_out_offset,offsetToPlot] = removeWrappedLines(data{1,session}.continuous_data.time,mvt_offset{session});
     subplot(3,5,[11 14])
     %Plot using different colors if the stimulus was low or high contrast
     if data{1,session}.continuous_data.run_obj.pattern_number == 57
@@ -328,20 +327,20 @@ for session = 1:length(open_loop_sessions)
         xlim([0, x_out_offset(end-1)]);
     end
     ylim([-180 180]);
-    xlabel('Time (sec)'); ylabel('Degrees');
-    title('Movement offset');
+    xlabel('Time (sec)','fontsize',12); ylabel('Degrees','fontsize',12);
+    title('Movement offset','fontsize',12);
     
     %Plot stimulus offset distribution
     subplot(3,5,15)
     if data{1,session}.continuous_data.run_obj.pattern_number == 57
-        polarhistogram(deg2rad(offset{session}),20,'FaceColor',[ 0.5 0.8 0.9])
+        polarhistogram(deg2rad(mvt_offset{session}),20,'FaceColor',[ 0.5 0.8 0.9])
         set(gca,'ThetaZeroLocation','top');
         title({'Offset distribution','High contrast'});
         Ax = gca;
         Ax.RGrid = 'off';
         Ax.RTickLabel = [];
     else
-        polarhistogram(deg2rad(offset{session}),20,'FaceColor',[ 0 0 0.6])
+        polarhistogram(deg2rad(mvt_offset{session}),20,'FaceColor',[ 0 0 0.6])
         set(gca,'ThetaZeroLocation','top');
         title({'Offset distribution','Low contrast'});
         Ax = gca; 
@@ -351,7 +350,7 @@ for session = 1:length(open_loop_sessions)
 
     
    %save figures
-   saveas(gcf,[path,'\analysis\continuous_plots\openLoopHeatmapAndMovement_session',num2str(session),'.png']);
+   saveas(gcf,[path,'\analysis\continuous_plots\open_loop_heatmap_and_mvt_offset_sid',num2str(open_loop_sessions(session)),'.png']);
 end
 
 %% Get movement offset variation 
@@ -359,30 +358,34 @@ end
 close all;
 warning('off');
 
+mvt_offset_var = zeros(1,length(open_loop_sessions));
 for session = 1:length(open_loop_sessions)
-    [~, mvt_offset_var(session)] = circ_std(offset{session},[],[],1);
+    [~, mvt_offset_var(session)] = circ_std(mvt_offset{session},[],[],1);
 end
 
 mvt_offset_var = mvt_offset_var';
-summarydata = addvars(summarydata,mvt_offset_var);
+%add variable to existing table
+if sum(strcmpi(summarydata.Properties.VariableNames,'mvt_offset_var')) == 0
+    summarydata = addvars(summarydata,mvt_offset_var); 
+end
 
 %% Compare the movement offset variation for each speed between contrasts
 
 %Average relevant information
-mean_mvt_offset = varfun(@mean,summarydata,'InputVariables','mvt_offset_var',...
+mean_mvt_offset_var_data = varfun(@mean,summarydata,'InputVariables','mvt_offset_var',...
        'GroupingVariables',{'contrast_level','stim_vel'});
    
 %Plot
 figure('Position',[200 200 800 800]),
-colorID = cell(size(mean_mvt_offset,1),1); 
-for contrast = 1:length(mean_mvt_offset.contrast_level)
-    if mean_mvt_offset.contrast_level(contrast) == 57
+colorID = cell(size(mean_mvt_offset_var_data,1),1); 
+for contrast = 1:length(mean_mvt_offset_var_data.contrast_level)
+    if mean_mvt_offset_var_data.contrast_level(contrast) == 57
         colorID{contrast} = [ 0.5 0.8 0.9]; 
     else
         colorID{contrast} = [ 0 0 0.6]; 
     end
 end
-scatter(mean_mvt_offset.stim_vel,mean_mvt_offset.mean_mvt_offset_var,60,cell2mat(colorID),'filled')
+scatter(mean_mvt_offset_var_data.stim_vel,mean_mvt_offset_var_data.mean_mvt_offset_var,60,cell2mat(colorID),'filled')
 %Add custom legend
 hold on
 h = zeros(2, 1);
@@ -390,14 +393,14 @@ h(1) = plot(NaN,NaN,'ko','MarkerFaceColor',[ 0 0 0.6]);
 h(2) = plot(NaN,NaN,'ko','MarkerFaceColor',[ 0.5 0.8 0.9]);
 legend(h, 'Low contrast','High Contrast');
 xlim([0, 4]);
-ylim([min(mean_mvt_offset.mean_mvt_offset_var) - 0.2, max(mean_mvt_offset.mean_mvt_offset_var) + 0.2]);
+ylim([min(mean_mvt_offset_var_data.mean_mvt_offset_var) - 0.2, max(mean_mvt_offset_var_data.mean_mvt_offset_var) + 0.2]);
 xticks(1:3);
-set(gca,'xticklabel',{'20 deg/s','30 deg/s','60 deg/s'});
+set(gca,'xticklabel',{'20','30','60'});
 a = get(gca,'XTickLabel');  
 set(gca,'XTickLabel',a,'fontsize',10,'FontWeight','bold');
-[ax,h2]=suplabel('Stimulus angular velocity','x');
+[ax,h2] = suplabel('Stimulus angular velocity (deg/s)','x');
 set(h2,'FontSize',12,'FontWeight','bold')
-ylabel('Movement offset variation (circ std)');
+ylabel('Movement offset variability (rad)');
 
 %Save
 saveas(gcf,[path,'\analysis\continuous_plots\open_loop_mvt_offset_var.png']);
@@ -410,6 +413,7 @@ for session = 1:length(open_loop_sessions)
     
     %PB heatmap
     subplot(5,4,[1 3])
+    dff_matrix = data{1,session}.continuous_data.dff_matrix';
     imagesc(flip(dff_matrix))
     colormap(flipud(gray))
     ylabel('PB glomerulus')
@@ -441,7 +445,7 @@ for session = 1:length(open_loop_sessions)
         xlim([0, x_out_phase(end-1)]);
     end
     ylim([-180 180]);
-    ylabel('Degrees');
+    ylabel('Angular position (deg)');
     set(gca,'xticklabel',{[]})
     title('Stimulus position');
     
@@ -503,13 +507,13 @@ for session = 1:length(open_loop_sessions)
         xlim([0, x_out_heading(end-1)]);
     end
     ylim([-180 180]);
-    ylabel('Degrees');
+    ylabel('Angular position (deg)');
     set(gca,'xticklabel',{[]})
     title('Fly heading');
     
     %Mvt offset
-    offset{session} = wrapTo180(data{1,session}.continuous_data.offset);
-    [x_out_offset,offsetToPlot] = removeWrappedLines(data{1,session}.continuous_data.time,offset{session});
+    mvt_offset{session} = wrapTo180(rad2deg(circ_dist(data{1,session}.continuous_data.bump_pos',-data{1,session}.continuous_data.heading)));
+    [x_out_offset,offsetToPlot] = removeWrappedLines(data{1,session}.continuous_data.time,mvt_offset{session});
     subplot(5,4,[17 19])
     %Plot using different colors if the stimulus was low or high contrast
     if data{1,session}.continuous_data.run_obj.pattern_number == 57
@@ -529,14 +533,14 @@ for session = 1:length(open_loop_sessions)
     %Plot stimulus offset distribution
     subplot(5,4,20)
     if data{1,session}.continuous_data.run_obj.pattern_number == 57
-        polarhistogram(deg2rad(offset{session}),20,'FaceColor',[ 0.5 0.8 0.9])
+        polarhistogram(deg2rad(mvt_offset{session}),20,'FaceColor',[ 0.5 0.8 0.9])
         set(gca,'ThetaZeroLocation','top');
         title({'Offset distribution','High contrast'});
         Ax = gca;
         Ax.RGrid = 'off';
         Ax.RTickLabel = [];
     else
-        polarhistogram(deg2rad(offset{session}),20,'FaceColor',[ 0 0 0.6])
+        polarhistogram(deg2rad(mvt_offset{session}),20,'FaceColor',[ 0 0 0.6])
         set(gca,'ThetaZeroLocation','top');
         title({'Offset distribution','Low contrast'});
         Ax = gca; 
@@ -545,173 +549,140 @@ for session = 1:length(open_loop_sessions)
     end  
     
     %save figures
-    saveas(gcf,[path,'\analysis\continuous_plots\openLoopCombinedHeatmap_session',num2str(session),'.png']);
+    saveas(gcf,[path,'\analysis\continuous_plots\open_loop_combined_heatmap_sid',num2str(open_loop_sessions(session)),'.png']);
 end
-
-%% Model BM and HW as a function of total movement, time and contrast level
-
-close all;
-%create table with relevant variables
-allBumpMag = [];
-allHalfWidth = [];
-allTotalMvt = [];
-allZscoredMvt = [];
-allTime = [];
-contrastLevel = [];
-for session = 1:length(open_loop_sessions)
-   allBumpMag = [allBumpMag,BumpMagnitude{1,session}];
-   allHalfWidth = [allHalfWidth,half_max_width{1,session}]; 
-   allTotalMvt = [allTotalMvt,fillmissing(data{1,session}.continuous_data.total_mvt_ds,'linear')];
-   allZscoredMvt = [allZscoredMvt,zscore(fillmissing(data{1,session}.continuous_data.total_mvt_ds,'linear'))];
-   allTime = [allTime,data{1,session}.continuous_data.time'];
-   if data{1,session}.continuous_data.run_obj.pattern_number == 57
-       contrastLevel = [contrastLevel,repelem(2,length(data{1,session}.continuous_data.time))];
-   else
-       contrastLevel = [contrastLevel,repelem(1,length(data{1,session}.continuous_data.time))];
-   end
-end
-bump_mag_data = table(nominal(contrastLevel)',allTime',allTotalMvt',allZscoredMvt',allBumpMag','VariableNames',{'ContrastLevel','Time','TotalMovement','ZscoredMvt','BumpMagnitude'});
-half_width_data = table(nominal(contrastLevel)',allTime',allTotalMvt',allZscoredMvt',allHalfWidth','VariableNames',{'ContrastLevel','Time','TotalMovement','ZscoredMvt','HalfWidth'});
-
-mdl_BM = fitlm(bump_mag_data,'BumpMagnitude ~ ContrastLevel+ZscoredMvt')
-mdl_HW = fitlm(half_width_data,'HalfWidth ~ ContrastLevel+ZscoredMvt')
-
 
 %% Plot BM as function of contrast
 
 %Average relevant information
-mean_BM = varfun(@mean,bump_mag_data,'InputVariables','BumpMagnitude',...
-       'GroupingVariables',{'ContrastLevel'});
+mean_bm_data = varfun(@mean,summarydata,'InputVariables','bump_mag',...
+       'GroupingVariables',{'contrast_level'});
    
-figure,
-plot(1,mean_BM.mean_BumpMagnitude(1),'o','color',[0 0 0.6],'MarkerFaceColor',[0 0 0.6],'MarkerSize',8)
+%Plot
+figure('Position',[200 200 800 800]),
+colorID = cell(size(mean_bm_data,1),1); 
+for contrast = 1:length(mean_bm_data.contrast_level)
+    if mean_bm_data.contrast_level(contrast) == 57
+        colorID{contrast} = [ 0.5 0.8 0.9]; 
+    else
+        colorID{contrast} = [ 0 0 0.6]; 
+    end
+end
+scatter(mean_bm_data.contrast_level,mean_bm_data.mean_bump_mag,60,cell2mat(colorID),'filled')
+%Add custom legend
 hold on
-plot(2,mean_BM.mean_BumpMagnitude(2),'o','color',[ 0.5 0.8 0.9],'MarkerFaceColor',[ 0.5 0.8 0.9],'MarkerSize',8)
-xticks(1:2);
+h = zeros(2, 1);
+h(1) = plot(NaN,NaN,'ko','MarkerFaceColor',[ 0 0 0.6]);
+h(2) = plot(NaN,NaN,'ko','MarkerFaceColor',[ 0.5 0.8 0.9]);
+legend(h, 'Low contrast','High Contrast');
+xlim([55 58]);
+ylim([min(mean_bm_data.mean_bump_mag) - 0.2, max(mean_bm_data.mean_bump_mag) + 0.2]);
+xticks(56:57);
 xticklabels({'Low contrast','High contrast'});
-xlim([0 3]);
-ylabel({'Bump magnitude';'(amplitude of Fourier component)'});
-ylim([0 max(mean_BM.mean_BumpMagnitude)+0.4]);
+ylabel('Bump magntiude (DF/F)');
 
 %Save figure
-saveas(gcf,[path,'\analysis\continuous_plots\openLoopMeanBMvsContrast.png']);
+saveas(gcf,[path,'\analysis\continuous_plots\open_loop_mean_bm_vs_contrast.png']);
 
-%% Plot HW as function of contrast
+%% Plot bw as function of contrast
 
 %Average relevant information
-mean_HW = varfun(@mean,half_width_data,'InputVariables','HalfWidth',...
-       'GroupingVariables',{'ContrastLevel'});
+mean_bw_data = varfun(@mean,summarydata,'InputVariables','bump_width',...
+       'GroupingVariables',{'contrast_level'});
    
-figure,
-plot(1,mean_HW.mean_HalfWidth(1),'o','color',[0 0 0.6],'MarkerFaceColor',[0 0 0.6],'MarkerSize',8)
+%Plot
+figure('Position',[200 200 800 800]),
+colorID = cell(size(mean_bw_data,1),1); 
+for contrast = 1:length(mean_bw_data.contrast_level)
+    if mean_bw_data.contrast_level(contrast) == 57
+        colorID{contrast} = [ 0.5 0.8 0.9]; 
+    else
+        colorID{contrast} = [ 0 0 0.6]; 
+    end
+end
+scatter(mean_bw_data.contrast_level,mean_bw_data.mean_bump_width,60,cell2mat(colorID),'filled')
+%Add custom legend
 hold on
-plot(2,mean_HW.mean_HalfWidth(2),'o','color',[ 0.5 0.8 0.9],'MarkerFaceColor',[ 0.5 0.8 0.9],'MarkerSize',8)
-xticks(1:2);
+h = zeros(2, 1);
+h(1) = plot(NaN,NaN,'ko','MarkerFaceColor',[ 0 0 0.6]);
+h(2) = plot(NaN,NaN,'ko','MarkerFaceColor',[ 0.5 0.8 0.9]);
+legend(h, 'Low contrast','High Contrast');
+xlim([55 58]);
+ylim([min(mean_bw_data.mean_bump_width) - 0.2, max(mean_bw_data.mean_bump_width) + 0.2]);
+xticks(56:57);
 xticklabels({'Low contrast','High contrast'});
-xlim([0 3]);
-ylabel('Mean bump width at half max');
-ylim([0 max(mean_HW.mean_HalfWidth)+0.4]);
+ylabel('Bump width (rad)');
 
 %Save figure
-saveas(gcf,[path,'\analysis\continuous_plots\openLoopMeanHWvsContrast.png']);
+saveas(gcf,[path,'\analysis\continuous_plots\open_loop_mean_bw_vs_contrast.png']);
 
 %% Model bump velocity as a function of visual and proprioceptive cues
 
-all_bump_vel_HC = [];
-all_fly_vel_HC = [];
-all_bump_estimate_HC = [];
-all_stim_position_HC = [];
-
-all_bump_vel_LC = [];
-all_fly_vel_LC = [];
-all_bump_estimate_LC = [];
-all_stim_position_LC = [];
+all_bump_vel = [];
+all_fly_vel = [];
+all_bump_estimate = [];
+all_stim_position = [];
+all_stim_contrast = [];
 
 for session = 1:length(open_loop_sessions)
     
-    %Get bump velocity
+    %Compute bump velocity
     bump_pos = data{1,session}.continuous_data.bump_pos';
     unwrapped_bump_pos = unwrap(bump_pos);
     smooth_bump_pos = smooth(rad2deg(unwrapped_bump_pos));
     bump_vel = diff(smooth_bump_pos).*(length(data{1,session}.continuous_data.time)/data{1,session}.continuous_data.time(end));
     smooth_bump_vel = smooth(bump_vel);
-    %Save in the corresponding array
-    if data{1,session}.continuous_data.run_obj.pattern_number == 57
-        all_bump_vel_HC = [all_bump_vel_HC;smooth_bump_vel];
-    else
-        all_bump_vel_LC = [all_bump_vel_LC;smooth_bump_vel];
-    end
-    
-    %Get fly angular velocity
+    all_bump_vel = [all_bump_vel;smooth_bump_vel];
+ 
+    %Compute fly angular velocity
     fly_heading = -data{1,session}.continuous_data.heading;
     unwrapped_fly_heading = unwrap(fly_heading);
     smooth_fly_heading = smooth(rad2deg(unwrapped_fly_heading));
     fly_vel = diff(smooth_fly_heading).*(length(data{1,session}.continuous_data.time)/data{1,session}.continuous_data.time(end));
     smooth_fly_vel = smooth(fly_vel);
-    %Save in the corresponding array
-    if data{1,session}.continuous_data.run_obj.pattern_number == 57
-        all_fly_vel_HC = [all_fly_vel_HC;smooth_fly_vel];
-    else
-        all_fly_vel_LC = [all_fly_vel_LC;smooth_fly_vel];
-    end
-    
-    %Import reference offset
-    load([path,'\analysis\continuous_summary_data.mat']);
-        
-    %Compute bump estimate using the offset
+    all_fly_vel = [all_fly_vel;smooth_fly_vel];
+
+    %Compute bump estimate of the stimulus' position (this will be a
+    %differnce between the bump's position and this fly's offset, which we
+    %have stored from the closed-loop session
+        %1) Import reference offset
+    load([path,'\analysis\continuous_summary_data.mat']);       
+        %2) Compute bump estimate using the offset
     bump_estimate = wrapTo180(rad2deg(circ_dist(data{1,session}.continuous_data.bump_pos', deg2rad(mean_reference_offset))));
-    
-    %Save in the corresponding array
-    if data{1,session}.continuous_data.run_obj.pattern_number == 57
-        all_bump_estimate_HC = [all_bump_estimate_HC;bump_estimate(2:end)];
-    else
-        all_bump_estimate_LC = [all_bump_estimate_LC;bump_estimate(2:end)];
-    end
+    all_bump_estimate = [all_bump_estimate;bump_estimate(2:end)];
 
     %Get stimulus position
     stim_position = wrapTo180(data{1,session}.continuous_data.panel_angle);
-        %Save in the corresponding array
-    if data{1,session}.continuous_data.run_obj.pattern_number == 57
-        all_stim_position_HC = [all_stim_position_HC;stim_position(2:end)];
-    else
-        all_stim_position_LC = [all_stim_position_LC;stim_position(2:end)];
-    end
+    all_stim_position = [all_stim_position;stim_position(2:end)];
     
+    %Get contrast
+    if data{1,session}.continuous_data.run_obj.pattern_number == 57
+        stim_contrast = repelem(2,length(bump_estimate),1);
+    else
+        stim_contrast = repelem(1,length(bump_estimate),1);
+    end
+    all_stim_contrast = [all_stim_contrast;stim_contrast(2:end)];
 end
 
-all_stim_difference_HC = [wrapTo180(rad2deg(circ_dist(deg2rad(all_stim_position_HC),deg2rad(all_bump_estimate_HC))))];
-all_stim_difference_LC = [wrapTo180(rad2deg(circ_dist(deg2rad(all_stim_position_LC),deg2rad(all_bump_estimate_LC))))];
+%Make stim contrast a categorical variable
+all_stim_contrast = categorical(all_stim_contrast);
+
+%Compute the visual cue drive (this is the difference between the
+%stimulus position and the bump's estimate of it
+all_visual_cue_drive = [wrapTo180(rad2deg(circ_dist(deg2rad(all_stim_position),deg2rad(all_bump_estimate))))];
 
 %Combine variables in table
-bump_vel_data_HC = table(all_fly_vel_HC,all_stim_difference_HC,all_bump_vel_HC,'VariableNames',{'FlyAngVel','VisualCueDrive','BumpAngVel'});
-bump_vel_data_LC = table(all_fly_vel_LC,all_stim_difference_LC,all_bump_vel_LC,'VariableNames',{'FlyAngVel','VisualCueDrive','BumpAngVel'});
+bump_vel_model_data = table(all_fly_vel,all_visual_cue_drive,all_stim_contrast,all_bump_vel,'VariableNames',{'FlyAngVel','VisualCueDrive','contrast','BumpAngVel'});
 
 %Fit models
-bump_vel_model_HC = fitlm(bump_vel_data_HC,'Intercept',false)
-bump_vel_model_LC = fitlm(bump_vel_data_LC,'Intercept',false)
-
-
-%% Fit single model for both
-
-high_contrast = repelem(2,size(bump_vel_data_HC,1),1);
-bump_vel_data_HC = addvars(bump_vel_data_HC,nominal(high_contrast),'NewVariableName','contrast');
-
-low_contrast = repelem(1,size(bump_vel_data_LC,1),1);
-bump_vel_data_LC = addvars(bump_vel_data_LC,nominal(low_contrast),'NewVariableName','contrast');
-
-%combine both tables
-bump_vel_data = [bump_vel_data_LC;bump_vel_data_HC];
-
-%Fit models
-bump_vel_model = fitlm(bump_vel_data,'BumpAngVel ~ VisualCueDrive:contrast + FlyAngVel:contrast','Intercept',false)
-bump_vel_model2 = fitlm(bump_vel_data,'BumpAngVel ~ VisualCueDrive:contrast + FlyAngVel','Intercept',false)
-bump_vel_model3 = fitlm(bump_vel_data,'BumpAngVel ~ VisualCueDrive*contrast + FlyAngVel*contrast','Intercept',false)
-bump_vel_model4 = fitlm(bump_vel_data,'BumpAngVel ~ VisualCueDrive*contrast + FlyAngVel','Intercept',false)
-bump_vel_model5 = fitlm(bump_vel_data,'BumpAngVel ~ VisualCueDrive:contrast + FlyAngVel:contrast + VisualCueDrive + FlyAngVel','Intercept',false)
-
+bump_vel_model = fitlm(bump_vel_model_data,'BumpAngVel ~ VisualCueDrive:contrast + FlyAngVel:contrast','Intercept',false)
+bump_vel_model2 = fitlm(bump_vel_model_data,'BumpAngVel ~ VisualCueDrive:contrast + FlyAngVel','Intercept',false)
+bump_vel_model3 = fitlm(bump_vel_model_data,'BumpAngVel ~ VisualCueDrive*contrast + FlyAngVel*contrast','Intercept',false)
+bump_vel_model4 = fitlm(bump_vel_model_data,'BumpAngVel ~ VisualCueDrive*contrast + FlyAngVel','Intercept',false)
+bump_vel_model5 = fitlm(bump_vel_model_data,'BumpAngVel ~ VisualCueDrive:contrast + FlyAngVel:contrast + VisualCueDrive + FlyAngVel','Intercept',false)
 
 %% Save relevant data
 
-save([path,'\analysis\continuous_open_loop_data.mat'],'bump_mag_data','half_width_data','mean_BM','summarydata','mean_data','bump_vel_model_HC','bump_vel_model_LC','mean_bump_data','bump_vel_data_HC','bump_vel_data_LC');
+save([path,'\analysis\continuous_open_loop_data.mat'],'summarydata','bump_vel_model_data');
 
 clear all; close all; clc
