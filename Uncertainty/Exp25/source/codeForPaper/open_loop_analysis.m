@@ -129,20 +129,27 @@ high_stim_contrast = 57; %15/15
 %Get bump parameters and compute the mean
 for session = 1:length(open_loop_sessions)
     
+    moving = data{1,session}.continuous_data.total_mvt_ds > 20;
+    good_fit = data{1,session}.continuous_data.adj_rs >= 0.5;    
+    
     BumpMagnitude{session} = data{1,session}.continuous_data.bump_magnitude;
-    meanBM(session) = mean(BumpMagnitude{session});   
+    meanBM(session) = mean(BumpMagnitude{session});  
+    meanBM_thresh(session) = mean(BumpMagnitude{session}(moving & good_fit));
     
     bump_width{session} = data{1,session}.continuous_data.bump_width;        
     meanBW(session) = mean(bump_width{session}); 
+    meanBW_thresh(session) = mean(bump_width{session}(moving & good_fit));    
 end
 
 %Create a table with relevant variables for each session
-summarydata = array2table(zeros(0,5), 'VariableNames',{'stim_offset_var','bump_mag','bump_width','contrast_level','stim_vel'});
+summarydata = array2table(zeros(0,7), 'VariableNames',{'stim_offset_var','bump_mag','bump_width','bump_mag_thresh','bump_width_thresh','contrast_level','stim_vel'});
 warning('off');
 for session = 1:length(open_loop_sessions)
     summarydata{session,'stim_offset_var'} = stim_offset_var(session);
     summarydata{session,'bump_mag'} = meanBM(session);
     summarydata{session,'bump_width'} = meanBW(session);
+    summarydata{session,'bump_mag_thresh'} = meanBM_thresh(session);
+    summarydata{session,'bump_width_thresh'} = meanBW_thresh(session);
     summarydata{session,'contrast_level'} = data{1,session}.continuous_data.run_obj.pattern_number;
     if (data{1,session}.continuous_data.run_obj.function_number == 50 | data{1,session}.continuous_data.run_obj.function_number == 51)
         summarydata{session,'stim_vel'} = 1; 
@@ -412,7 +419,7 @@ for session = 1:length(open_loop_sessions)
     figure('Position',[100, 100, 1000, 800]),
     
     %PB heatmap
-    subplot(5,4,[1 3])
+    subplot(5,1,1)
     dff_matrix = data{1,session}.continuous_data.dff_matrix';
     imagesc(flip(dff_matrix))
     colormap(flipud(gray))
@@ -424,7 +431,7 @@ for session = 1:length(open_loop_sessions)
     title('EPG activity in the PB');
     
     %Stimulus position
-    subplot(5,4,[5 7])
+    subplot(5,1,2)
     bar_position = wrapTo180(data{1,session}.continuous_data.panel_angle);
     [x_out_bar,bar_position_to_plot] = removeWrappedLines(data{1,session}.continuous_data.time,bar_position);
     %Get EPG phase to plot
@@ -454,7 +461,7 @@ for session = 1:length(open_loop_sessions)
     %phase and the stimulus posotion
     stim_offset{session} = rad2deg(circ_dist(data{1,session}.continuous_data.bump_pos',deg2rad(data{1,session}.continuous_data.panel_angle)));
     [x_out_stimoffset,stimOffsetToPlot] = removeWrappedLines(data{1,session}.continuous_data.time,stim_offset{session});
-    subplot(5,4,[9 11])
+    subplot(5,1,3)
     %Plot using different colors if the stimulus was low or high contrast
     if data{1,session}.continuous_data.run_obj.pattern_number == 57
         plot(x_out_stimoffset,stimOffsetToPlot,'color',[ 0.5 0.8 0.9],'lineWidth',1.5)
@@ -471,27 +478,10 @@ for session = 1:length(open_loop_sessions)
     ylabel('Degrees');
     title('Stimulus offset');
     
-    %Plot stimulus offset distribution
-    subplot(5,4,12)
-    if data{1,session}.continuous_data.run_obj.pattern_number == 57
-        polarhistogram(deg2rad(stim_offset{session}),20,'FaceColor',[ 0.5 0.8 0.9])
-        set(gca,'ThetaZeroLocation','top');
-        title({'Offset distribution','High contrast'});
-        Ax = gca;
-        Ax.RGrid = 'off';
-        Ax.RTickLabel = [];
-    else
-        polarhistogram(deg2rad(stim_offset{session}),20,'FaceColor',[ 0 0 0.6])
-        set(gca,'ThetaZeroLocation','top');
-        title({'Offset distribution','Low contrast'});
-        Ax = gca; 
-        Ax.RGrid = 'off';
-        Ax.RTickLabel = [];
-    end
-    
+     
     %add movement plots
     %Fly heading
-    subplot(5,4,[13 15])
+    subplot(5,1,4)
     %Heading
     heading = wrapTo180(-data{1,session}.continuous_data.heading_deg);
     [x_out_heading,heading_to_plot] = removeWrappedLines(data{1,session}.continuous_data.time,heading); 
@@ -514,7 +504,7 @@ for session = 1:length(open_loop_sessions)
     %Mvt offset
     mvt_offset{session} = wrapTo180(rad2deg(circ_dist(data{1,session}.continuous_data.bump_pos',-data{1,session}.continuous_data.heading)));
     [x_out_offset,offsetToPlot] = removeWrappedLines(data{1,session}.continuous_data.time,mvt_offset{session});
-    subplot(5,4,[17 19])
+    subplot(5,1,5)
     %Plot using different colors if the stimulus was low or high contrast
     if data{1,session}.continuous_data.run_obj.pattern_number == 57
         plot(x_out_offset,offsetToPlot,'color',[ 0.5 0.8 0.9],'lineWidth',1.5)
@@ -529,25 +519,7 @@ for session = 1:length(open_loop_sessions)
     ylim([-180 180]);
     xlabel('Time (sec)'); ylabel('Degrees');
     title('Movement offset');
-    
-    %Plot stimulus offset distribution
-    subplot(5,4,20)
-    if data{1,session}.continuous_data.run_obj.pattern_number == 57
-        polarhistogram(deg2rad(mvt_offset{session}),20,'FaceColor',[ 0.5 0.8 0.9])
-        set(gca,'ThetaZeroLocation','top');
-        title({'Offset distribution','High contrast'});
-        Ax = gca;
-        Ax.RGrid = 'off';
-        Ax.RTickLabel = [];
-    else
-        polarhistogram(deg2rad(mvt_offset{session}),20,'FaceColor',[ 0 0 0.6])
-        set(gca,'ThetaZeroLocation','top');
-        title({'Offset distribution','Low contrast'});
-        Ax = gca; 
-        Ax.RGrid = 'off';
-        Ax.RTickLabel = [];
-    end  
-    
+       
     %save figures
     saveas(gcf,[path,'\analysis\continuous_plots\open_loop_combined_heatmap_sid',num2str(open_loop_sessions(session)),'.png']);
 end

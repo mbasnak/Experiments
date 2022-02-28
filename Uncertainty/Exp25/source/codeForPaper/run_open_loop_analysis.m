@@ -122,7 +122,6 @@ for fly = 1:length(data_dirs)
         saveas(gcf,[path,'\analysis\continuous_plots\open_loop_heatmap_and_stim_offset_sid',num2str(open_loop_sessions(session)),'.png']);
     end
     
-    
     %% Summarize relevant data in table
     
     close all;
@@ -145,20 +144,27 @@ for fly = 1:length(data_dirs)
     %Get bump parameters and compute the mean
     for session = 1:length(open_loop_sessions)
         
+        moving = data{1,session}.continuous_data.total_mvt_ds > 20;
+        good_fit = data{1,session}.continuous_data.adj_rs >= 0.5;
+        
         BumpMagnitude{session} = data{1,session}.continuous_data.bump_magnitude;
         meanBM(session) = mean(BumpMagnitude{session});
+        meanBM_thresh(session) = mean(BumpMagnitude{session}(moving & good_fit));
         
         bump_width{session} = data{1,session}.continuous_data.bump_width;
         meanBW(session) = mean(bump_width{session});
+        meanBW_thresh(session) = mean(bump_width{session}(moving & good_fit));
     end
     
     %Create a table with relevant variables for each session
-    summarydata = array2table(zeros(0,5), 'VariableNames',{'stim_offset_var','bump_mag','bump_width','contrast_level','stim_vel'});
+    summarydata = array2table(zeros(0,7), 'VariableNames',{'stim_offset_var','bump_mag','bump_width','bump_mag_thresh','bump_width_thresh','contrast_level','stim_vel'});
     warning('off');
     for session = 1:length(open_loop_sessions)
         summarydata{session,'stim_offset_var'} = stim_offset_var(session);
         summarydata{session,'bump_mag'} = meanBM(session);
         summarydata{session,'bump_width'} = meanBW(session);
+        summarydata{session,'bump_mag_thresh'} = meanBM_thresh(session);
+        summarydata{session,'bump_width_thresh'} = meanBW_thresh(session);
         summarydata{session,'contrast_level'} = data{1,session}.continuous_data.run_obj.pattern_number;
         if (data{1,session}.continuous_data.run_obj.function_number == 50 | data{1,session}.continuous_data.run_obj.function_number == 51)
             summarydata{session,'stim_vel'} = 1;

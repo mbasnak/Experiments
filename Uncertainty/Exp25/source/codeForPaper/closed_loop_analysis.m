@@ -16,10 +16,8 @@ load([path,'\analysis\continuous_analysis_sid_',num2str(sid),'_tid_0.mat'])
 
 %% Make directory to save plots
 
-%Move to the analysis folder
-cd([path,'\analysis\'])
 %List the contents
-contents = dir();
+contents = dir([path,'\analysis\']);
 %if there isn't a 'plots' folder already, create one
 if (contains([contents.name],'continuous_plots') == 0)
    mkdir(path,'\analysis\continuous_plots'); 
@@ -284,6 +282,15 @@ visual_offset2 = circ_dist(-continuous_data.bump_pos',-deg2rad(continuous_data.v
 %bout
 mean_reference_offset = rad2deg(circ_mean(visual_offset(blockLimits{last_high_contrast}(1):blockLimits{last_high_contrast}(2)),[],1));
 mean_reference_offset2 = rad2deg(circ_mean(visual_offset2(blockLimits{last_high_contrast}(1):blockLimits{last_high_contrast}(2)),[],1));
+
+%% Get relevant thresholds
+
+%get timepoints when the adjusted Rsq was above our goodness of fit
+%threshold (0.5)
+good_fit = continuous_data.adj_rs > 0.5;
+
+%get timepoints when the fly is above our movement threshold
+moving = continuous_data.total_mvt_ds > 20;
 
 %% Calculate and plot bump magnitude in time
 
