@@ -76,7 +76,7 @@ wind_change = abs(diff(wind_on));
 wind_change_frames = find(wind_change>0.5);
 
 %Conversion factors
-sec_to_frames = length(data.dff{ROI})/data.time(end);
+sec_to_frames = length(data.dff{1})/data.time(end);
 frames_to_sec = data.time(end)/length(data.dff{1});
 
 
@@ -432,6 +432,7 @@ for ROI = 1:length(data.dff)
     suptitle('One second post jump');
     
     saveas(gcf,[path,'plots\predicted_vs_real_',roi_name,'_activity_1_sec.png']);
+    
     
     
 end

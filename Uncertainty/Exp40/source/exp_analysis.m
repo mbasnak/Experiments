@@ -101,15 +101,19 @@ figure,
 subplot(1,3,1)
 polarhistogram(deg2rad(offset_empty))
 title('Empty trial');
+rticklabels({})
 
 subplot(1,3,2)
 polarhistogram(deg2rad(offset_wind))
 title('Wind trial');
+rticklabels({})
 
 subplot(1,3,3)
 polarhistogram(deg2rad(offset_bar))
 title('Bar trial');
+rticklabels({})
 
+saveas(gcf,[path,'\analysis\plots\offset_distribution.png'])
 
 %% Get and plot offset variability 
 
@@ -127,4 +131,9 @@ xticks([1:3]);
 xticklabels({'Empty trial','Wind trial','Bar trial'});
 ylabel('Offset variability (rad)');
 
+%save figure and data
 saveas(gcf,[path,'\analysis\plots\offset_var.png'])
+save([path,'\analysis\offset_var_data.mat'],'offset_var_empty','offset_var_wind','offset_var_bar')
+
+%%
+clear all; close all;
