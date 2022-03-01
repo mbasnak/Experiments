@@ -20,7 +20,7 @@ end
 data = data(all(~cellfun(@isempty,struct2cell(data))));
 
 %combine the tables into one
-allSummaryData = array2table(zeros(0,6),'VariableNames', {'stim_offset_var','bump_mag','bump_width','contrast_level','stim_vel','mvt_offset_var'});
+allSummaryData = array2table(zeros(0,8),'VariableNames', {'stim_offset_var','bump_mag','bump_width','bump_mag_thresh','bump_width_thresh','contrast_level','stim_vel','mvt_offset_var'});
 flyNumber= [];
 for fly = 1:length(data)
     flyNumber = [flyNumber,repelem(fly,length(data(fly).summarydata.contrast_level))];
@@ -28,7 +28,7 @@ for fly = 1:length(data)
 end
 
 allSummaryData = addvars(allSummaryData,flyNumber');
-allSummaryData.Properties.VariableNames{'Var7'} = 'Fly';
+allSummaryData.Properties.VariableNames{'Var9'} = 'Fly';
 
 %% Compute model for offset variation
 
@@ -48,7 +48,7 @@ for fly = 1:length(data)
 end
 plot(56:57,allFlies','-o','color',[0.6 0.6 0.6],'MarkerFaceColor',[0.6 0.6 0.6])
 hold on
-plot(56:57,mean(allFlies),'-ko','LineWidth',2,'MarkerFaceColor','k','MarkerSize',8)
+errorbar(56:57,mean(allFlies),std(allFlies)/sqrt(length(allFlies)),'-ko','LineWidth',2,'MarkerFaceColor','k','MarkerSize',8)
 % if (mdl_offset.Coefficients.pValue(2)<0.05 & mdl_offset.Coefficients.pValue(2)>=0.01)
 %     text(56.4,1.8,'*','fontsize',26);
 % elseif (mdl_offset.Coefficients.pValue(2)<0.01 & mdl_offset.Coefficients.pValue(2)>=0.001)
@@ -70,7 +70,7 @@ ylim([min(mean_stim_offset_data_per_fly.mean_stim_offset_var)-0.3 max(mean_stim_
 
 %save figure
 saveas(gcf,[path,'\continuousGroupPlots\mean_open_loop_stim_offset_var.png']);
-saveas(gcf,'C:\Users\Melanie\Dropbox (HMS)\Manuscript-Basnak\CueBrightness-Experiment.svg');
+saveas(gcf,'C:\Users\Melanie\Dropbox (HMS)\Manuscript-Basnak\CueBrightness-Experiment\open_loop_offset_variability.svg');
 
 %% Offset variation per speed per contrast
 
@@ -112,32 +112,32 @@ saveas(gcf,[path,'\continuousGroupPlots\open_loop_offset_var_per_speed.png']);
 
 %% Compute model for bump magnitude
 
-%combine the tables into one
-allModelData = array2table(zeros(0,5),'VariableNames', {'ContrastLevel','Time','TotalMovement','ZscoredMvt','BumpMagnitude'});
-allModelData.ContrastLevel = nominal(allModelData.ContrastLevel);
-Fly = [];
-for fly = 1:length(data)
-    Fly = [Fly,nominal(repelem(fly,length(data(fly).bump_mag_data.Time)))];
-    allModelData = [allModelData;data(fly).bump_mag_data]; 
-end
-allModelData = addvars(allModelData,Fly');
-allModelData.Properties.VariableNames{'Var6'} = 'Fly';
-
-%Fit mixed linear model using fly number as a random variable
-mdl_BM = fitlme(allModelData,'BumpMagnitude~ContrastLevel+TotalMovement+(1|Fly)')
+% %combine the tables into one
+% allModelData = array2table(zeros(0,5),'VariableNames', {'ContrastLevel','Time','TotalMovement','ZscoredMvt','BumpMagnitude'});
+% allModelData.ContrastLevel = nominal(allModelData.ContrastLevel);
+% Fly = [];
+% for fly = 1:length(data)
+%     Fly = [Fly,nominal(repelem(fly,length(data(fly).bump_mag_data.Time)))];
+%     allModelData = [allModelData;data(fly).bump_mag_data]; 
+% end
+% allModelData = addvars(allModelData,Fly');
+% allModelData.Properties.VariableNames{'Var6'} = 'Fly';
+% 
+% %Fit mixed linear model using fly number as a random variable
+% mdl_BM = fitlme(allModelData,'BumpMagnitude~ContrastLevel+TotalMovement+(1|Fly)')
 
 %% Get and plot mean bump magnitude
 
 figure('Position',[200 200 1000 800]),
 %Get mean bump mag by contrast per fly
-mean_bump_data_per_fly = varfun(@mean,allSummaryData,'InputVariables','bump_mag',...
+mean_bump_data_per_fly = varfun(@mean,allSummaryData,'InputVariables','bump_mag_thresh',...
        'GroupingVariables',{'contrast_level','Fly'});
 %Plot
 %plot(mean_bump_data_per_fly.contrast_level,mean_bump_data_per_fly.mean_bump_mag,'o','color',[0.6 0.6 0.6],'MarkerFaceColor',[0.6 0.6 0.6])
 %change the code above to be able to get lines per fly
 AllFlies = [];
 for fly = 1:length(data)
-    bump_data{fly} = [mean_bump_data_per_fly.mean_bump_mag(fly),mean_bump_data_per_fly.mean_bump_mag(fly+length(data))];
+    bump_data{fly} = [mean_bump_data_per_fly.mean_bump_mag_thresh(fly),mean_bump_data_per_fly.mean_bump_mag_thresh(fly+length(data))];
     AllFlies = [AllFlies;bump_data{fly}];
 end
 plot(56:57,AllFlies','-o','color',[0.6 0.6 0.6],'MarkerFaceColor',[0.6 0.6 0.6])
@@ -159,21 +159,21 @@ a = get(gca,'XTickLabel');
 set(gca,'XTickLabel',a,'fontsize',12,'FontWeight','bold')
 ylabel({'Mean bump magnitude';'(DF/F)'},'FontSize',12);
 %ylim([min(mean_bump_data_per_fly.mean_bump_mag)-0.3 max(mean_bump_data_per_fly.mean_bump_mag)+0.3]);
-ylim([0 max(mean_bump_data_per_fly.mean_bump_mag)+0.3]);
+ylim([0.5 max(mean_bump_data_per_fly.mean_bump_mag_thresh)+0.3]);
 
 %save figure
 saveas(gcf,[path,'\continuousGroupPlots\mean_open_loop_bump_mag.png']);
-
+saveas(gcf,'C:\Users\Melanie\Dropbox (HMS)\Manuscript-Basnak\CueBrightness-Experiment\open_loop_mean_bump_mag.svg');
 
 %% Bump magnitude per speed per contrast
 
 figure('Position',[200 200 1000 800]),
 %Get mean offset var by contrast per stim speed
-mean_bump_mag_data_per_speed = varfun(@mean,allSummaryData,'InputVariables','bump_mag',...
+mean_bump_mag_data_per_speed = varfun(@mean,allSummaryData,'InputVariables','bump_mag_thresh',...
        'GroupingVariables',{'contrast_level','stim_vel'});
-plot(mean_bump_mag_data_per_speed.stim_vel(mean_bump_mag_data_per_speed.contrast_level==56),mean_bump_mag_data_per_speed.mean_bump_mag(mean_bump_mag_data_per_speed.contrast_level==56),'-o','lineWidth',2,'color',[0 0 0.6],'MarkerFaceColor',[0 0 0.6],'MarkerSize',8)
+plot(mean_bump_mag_data_per_speed.stim_vel(mean_bump_mag_data_per_speed.contrast_level==56),mean_bump_mag_data_per_speed.mean_bump_mag_thresh(mean_bump_mag_data_per_speed.contrast_level==56),'-o','lineWidth',2,'color',[0 0 0.6],'MarkerFaceColor',[0 0 0.6],'MarkerSize',8)
 hold on
-plot(mean_bump_mag_data_per_speed.stim_vel(mean_bump_mag_data_per_speed.contrast_level==57),mean_bump_mag_data_per_speed.mean_bump_mag(mean_bump_mag_data_per_speed.contrast_level==57),'-o','lineWidth',2,'color',[ 0.5 0.8 0.9],'MarkerFaceColor',[ 0.5 0.8 0.9],'MarkerSize',8)
+plot(mean_bump_mag_data_per_speed.stim_vel(mean_bump_mag_data_per_speed.contrast_level==57),mean_bump_mag_data_per_speed.mean_bump_mag_thresh(mean_bump_mag_data_per_speed.contrast_level==57),'-o','lineWidth',2,'color',[ 0.5 0.8 0.9],'MarkerFaceColor',[ 0.5 0.8 0.9],'MarkerSize',8)
 xlim([0 4]);
 xticks(1:3);
 xticklabels({'20 deg/s','30 deg/s','60 deg/s'});
@@ -186,39 +186,39 @@ a = get(gca,'XTickLabel');
 [ax,h2]=suplabel('Stimulus angular velocity','x');
 set(h2,'FontSize',12,'FontWeight','bold')
 set(gca,'XTickLabel',a,'fontsize',12,'FontWeight','bold')
-ylabel({'Bump magnitude','(amplitude of Fourier component)'},'FontSize',12);
+ylabel({'Bump magnitude','(DF/F)'},'FontSize',12);
 %ylim([min(mean_bump_mag_data_per_speed.mean_bump_mag)-0.3 max(mean_bump_mag_data_per_speed.mean_bump_mag)+0.3]);
-ylim([0 max(mean_bump_mag_data_per_speed.mean_bump_mag)+0.3]);
+ylim([0 max(mean_bump_mag_data_per_speed.mean_bump_mag_thresh)+0.3]);
 saveas(gcf,[path,'\continuousGroupPlots\bump_mag_per_speed.png']);
 
 
 %% Compute model for half width
 
-%combine the tables into one
-allModelDataHW = array2table(zeros(0,5),'VariableNames', {'ContrastLevel','Time','TotalMovement','ZscoredMvt','HalfWidth'});
-allModelDataHW.ContrastLevel = nominal(allModelDataHW.ContrastLevel);
-Fly = [];
-for fly = 1:length(data)
-    Fly = [Fly,nominal(repelem(fly,length(data(fly).half_width_data.ContrastLevel)))];
-    allModelDataHW = [allModelDataHW;data(fly).half_width_data]; 
-end
-allModelDataHW = addvars(allModelDataHW,Fly');
-allModelDataHW.Properties.VariableNames{'Var6'} = 'Fly';
-
-%Fit mixed linear model using fly number as a random variable
-mdl_HW = fitlme(allModelDataHW,'HalfWidth~ContrastLevel+TotalMovement+(1|Fly)')
+% %combine the tables into one
+% allModelDataHW = array2table(zeros(0,5),'VariableNames', {'ContrastLevel','Time','TotalMovement','ZscoredMvt','HalfWidth'});
+% allModelDataHW.ContrastLevel = nominal(allModelDataHW.ContrastLevel);
+% Fly = [];
+% for fly = 1:length(data)
+%     Fly = [Fly,nominal(repelem(fly,length(data(fly).half_width_data.ContrastLevel)))];
+%     allModelDataHW = [allModelDataHW;data(fly).half_width_data]; 
+% end
+% allModelDataHW = addvars(allModelDataHW,Fly');
+% allModelDataHW.Properties.VariableNames{'Var6'} = 'Fly';
+% 
+% %Fit mixed linear model using fly number as a random variable
+% mdl_HW = fitlme(allModelDataHW,'HalfWidth~ContrastLevel+TotalMovement+(1|Fly)')
 
 %% Get and plot mean half width
 
 figure('Position',[200 200 1000 800]),
 %Get mean bump mag by contrast per fly
-mean_half_width_data_per_fly = varfun(@mean,allSummaryData,'InputVariables','half_width',...
+mean_bump_width_data_per_fly = varfun(@mean,allSummaryData,'InputVariables','bump_width_thresh',...
        'GroupingVariables',{'contrast_level','Fly'});
 %Plot
 AllFlies = [];
 for fly = 1:length(data)
-    half_width_data{fly} = [mean_half_width_data_per_fly.mean_half_width(fly),mean_half_width_data_per_fly.mean_half_width(fly+length(data))];
-    AllFlies = [AllFlies;half_width_data{fly}];
+    bump_width_data{fly} = [mean_bump_width_data_per_fly.mean_bump_width_thresh(fly),mean_bump_width_data_per_fly.mean_bump_width_thresh(fly+length(data))];
+    AllFlies = [AllFlies;bump_width_data{fly}];
 end
 plot(56:57,AllFlies','-o','color',[0.6 0.6 0.6],'MarkerFaceColor',[0.6 0.6 0.6])
 hold on
@@ -234,26 +234,26 @@ errorbar(56:57,mean(AllFlies),std(AllFlies)/sqrt(length(AllFlies)),'-ko','LineWi
 % end
 xlim([55 58]);
 xticks(56:57);
-xticklabels({'Low contrast','High contrast'});
+xticklabels({'Low brightness','High brigthness'});
 a = get(gca,'XTickLabel');  
 set(gca,'XTickLabel',a,'fontsize',12,'FontWeight','bold')
-ylabel('Mean half width','FontSize',12);
-%ylim([min(mean_half_width_data_per_fly.mean_half_width)-0.3 max(mean_half_width_data_per_fly.mean_half_width)+0.3]);
-ylim([0 max(mean_half_width_data_per_fly.mean_half_width)+0.3]);
+ylabel('Mean bump width (rad)','FontSize',12);
+%ylim([min(mean_bump_width_data_per_fly.mean_bump_width)-0.3 max(mean_bump_width_data_per_fly.mean_bump_width)+0.3]);
+ylim([1.2 2.2]);
 
 %save figure
-saveas(gcf,[path,'\continuousGroupPlots\mean_open_loop_half_width.png']);
-
+saveas(gcf,[path,'\continuousGroupPlots\mean_open_loop_bump_width.png']);
+saveas(gcf,'C:\Users\Melanie\Dropbox (HMS)\Manuscript-Basnak\CueBrightness-Experiment\open_loop_mean_bump_width.svg');
 
 %% Half width per speed per contrast
 
 figure('Position',[200 200 1000 800]),
 %Get mean offset var by contrast per stim speed
-mean_half_width_data_per_speed = varfun(@mean,allSummaryData,'InputVariables','half_width',...
+mean_bump_width_data_per_speed = varfun(@mean,allSummaryData,'InputVariables','bump_width_thresh',...
        'GroupingVariables',{'contrast_level','stim_vel'});
-plot(mean_half_width_data_per_speed.stim_vel(mean_half_width_data_per_speed.contrast_level==56),mean_half_width_data_per_speed.mean_half_width(mean_half_width_data_per_speed.contrast_level==56),'-o','lineWidth',2,'color',[0 0 0.6],'MarkerFaceColor',[0 0 0.6],'MarkerSize',8)
+plot(mean_bump_width_data_per_speed.stim_vel(mean_bump_width_data_per_speed.contrast_level==56),mean_bump_width_data_per_speed.mean_bump_width_thresh(mean_bump_width_data_per_speed.contrast_level==56),'-o','lineWidth',2,'color',[0 0 0.6],'MarkerFaceColor',[0 0 0.6],'MarkerSize',8)
 hold on
-plot(mean_half_width_data_per_speed.stim_vel(mean_half_width_data_per_speed.contrast_level==57),mean_half_width_data_per_speed.mean_half_width(mean_half_width_data_per_speed.contrast_level==57),'-o','lineWidth',2,'color',[ 0.5 0.8 0.9],'MarkerFaceColor',[ 0.5 0.8 0.9],'MarkerSize',8)
+plot(mean_bump_width_data_per_speed.stim_vel(mean_bump_width_data_per_speed.contrast_level==57),mean_bump_width_data_per_speed.mean_bump_width_thresh(mean_bump_width_data_per_speed.contrast_level==57),'-o','lineWidth',2,'color',[ 0.5 0.8 0.9],'MarkerFaceColor',[ 0.5 0.8 0.9],'MarkerSize',8)
 xlim([0 4]);
 xticks(1:3);
 xticklabels({'20 deg/s','30 deg/s','60 deg/s'});
@@ -267,38 +267,37 @@ a = get(gca,'XTickLabel');
 set(h2,'FontSize',12,'FontWeight','bold')
 set(gca,'XTickLabel',a,'fontsize',12,'FontWeight','bold')
 ylabel('Bump half width','FontSize',12);
-%ylim([min(mean_half_width_data_per_speed.mean_half_width)-0.3 max(mean_half_width_data_per_speed.mean_half_width)+0.3]);
-ylim([0 max(mean_half_width_data_per_speed.mean_half_width)+0.3]);
+ylim([0 max(mean_bump_width_data_per_speed.mean_bump_width_thresh)+0.3]);
 
-saveas(gcf,[path,'\continuousGroupPlots\half_width_per_speed.png']);
+saveas(gcf,[path,'\continuousGroupPlots\bump_width_per_speed.png']);
 
 %% Add total movement comparison
 
-figure('Position',[100 100 800 800]),
-
-%Get mean total mvt by contrast per fly
-mean_total_mvt_data_per_fly = varfun(@mean,allModelData,'InputVariables','TotalMovement',...
-       'GroupingVariables',{'ContrastLevel','Fly'});
-%Plot
-AllFliesTM = [];
-for fly = 1:length(data)
-    total_mvt_data{fly} = [mean_total_mvt_data_per_fly.mean_TotalMovement(fly),mean_total_mvt_data_per_fly.mean_TotalMovement(fly+length(data))];
-    AllFliesTM = [AllFliesTM;total_mvt_data{fly}];
-end
-plot(56:57,AllFliesTM','-o','color',[0.6 0.6 0.6],'MarkerFaceColor',[0.6 0.6 0.6])
-hold on
-errorbar(56:57,mean(AllFliesTM),std(AllFliesTM)/sqrt(length(AllFliesTM)),'-ko','LineWidth',2,'MarkerFaceColor','k','MarkerSize',8)
-xlim([55 58]);
-xticks(56:57);
-xticklabels({'Low contrast','High contrast'});
-a = get(gca,'XTickLabel');  
-set(gca,'XTickLabel',a,'fontsize',12,'FontWeight','bold')
-ylabel('Mean total movement (deg/s)','FontSize',12);
-ylim([0 max(mean_total_mvt_data_per_fly.mean_TotalMovement)+10]);
-
-
-%save figure
-saveas(gcf,[path,'\continuousGroupPlots\mean_open_loop_total_mvt.png']);
+% figure('Position',[100 100 800 800]),
+% 
+% %Get mean total mvt by contrast per fly
+% mean_total_mvt_data_per_fly = varfun(@mean,allModelData,'InputVariables','TotalMovement',...
+%        'GroupingVariables',{'ContrastLevel','Fly'});
+% %Plot
+% AllFliesTM = [];
+% for fly = 1:length(data)
+%     total_mvt_data{fly} = [mean_total_mvt_data_per_fly.mean_TotalMovement(fly),mean_total_mvt_data_per_fly.mean_TotalMovement(fly+length(data))];
+%     AllFliesTM = [AllFliesTM;total_mvt_data{fly}];
+% end
+% plot(56:57,AllFliesTM','-o','color',[0.6 0.6 0.6],'MarkerFaceColor',[0.6 0.6 0.6])
+% hold on
+% errorbar(56:57,mean(AllFliesTM),std(AllFliesTM)/sqrt(length(AllFliesTM)),'-ko','LineWidth',2,'MarkerFaceColor','k','MarkerSize',8)
+% xlim([55 58]);
+% xticks(56:57);
+% xticklabels({'Low contrast','High contrast'});
+% a = get(gca,'XTickLabel');  
+% set(gca,'XTickLabel',a,'fontsize',12,'FontWeight','bold')
+% ylabel('Mean total movement (deg/s)','FontSize',12);
+% ylim([0 max(mean_total_mvt_data_per_fly.mean_TotalMovement)+10]);
+% 
+% 
+% %save figure
+% saveas(gcf,[path,'\continuousGroupPlots\mean_open_loop_total_mvt.png']);
 
 %%
 clear all; close all;
