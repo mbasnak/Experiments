@@ -35,7 +35,7 @@ for fly = 1:length(data_dirs)
             %load the data
             load([fly_files(file).folder,'\',fly_files(file).name])
             
-            path = [fly_files(file).folder,'\'];
+            path = [fly_files(file).folder];
             
             %% Determine changes in gain
             
@@ -106,7 +106,7 @@ for fly = 1:length(data_dirs)
             xlabel('Time (sec)');
             
             %save figure
-            saveas(gcf,[path,'\analysis\continuous_plots\heading_offset_var.png']);
+            saveas(gcf,[path,'\continuous_plots\heading_offset_var.png']);
             
             %% Repeat for bar offset
             
@@ -149,7 +149,7 @@ for fly = 1:length(data_dirs)
             xlabel('Time (sec)');
             
             %save figure
-            saveas(gcf,[path,'\analysis\continuous_plots\bar_offset_var.png']);
+            saveas(gcf,[path,'\continuous_plots\bar_offset_var.png']);
             
             %% Determine the type of fly based on the ratio between bar and offset variability
             
@@ -171,7 +171,7 @@ for fly = 1:length(data_dirs)
             xticklabels({'ratio of means','ratio of medians'})
             ylabel('Bar offset variability / heading offset variability');
             %Save figure
-            saveas(gcf,[path,'\analysis\continuous_plots\fly_classification.png']);
+            saveas(gcf,[path,'\continuous_plots\fly_classification.png']);
             
             %Classify fly
             if mean(all_ratios) > 1
@@ -271,7 +271,7 @@ for fly = 1:length(data_dirs)
             xlim([0 continuous_data.time(end)]);
             
             %save figure
-            saveas(gcf,[path,'\analysis\continuous_plots\heading_offset_with_bump_parameters.png']);
+            saveas(gcf,[path,'\continuous_plots\heading_offset_with_bump_parameters.png']);
             
             %% Repeat for bar offset variability
             
@@ -344,7 +344,7 @@ for fly = 1:length(data_dirs)
             xlim([0 continuous_data.time(end)]);
             
             %Save figure
-            saveas(gcf,[path,'\analysis\continuous_plots\bar_offset_with_bump_parameters.png']);
+            saveas(gcf,[path,'\continuous_plots\bar_offset_with_bump_parameters.png']);
             
             %% Heading variability
             
@@ -378,7 +378,7 @@ for fly = 1:length(data_dirs)
             title('Smoothed heading variability');
             
             %save figure
-            saveas(gcf,[path,'\analysis\continuous_plots\heading_variability.png']);
+            saveas(gcf,[path,'\continuous_plots\heading_variability.png']);
             
             %% Correlate BM and HW with heading offset variability during the inverted gain portion
             
@@ -418,7 +418,7 @@ for fly = 1:length(data_dirs)
             subplot(1,2,1)
             plot(mvtAxes,meanBin)
             ylabel('Bump magnitude (DF/F)'); xlabel('Heading offset variability');
-            ylim([0 2]);
+            ylim([0 3]);
             xlim([mvtAxes(1) mvtAxes(end)]);
             legend({'10 frames','30','50','100','500','1000'},'location','best');
             title('Bump magnitude');
@@ -441,7 +441,7 @@ for fly = 1:length(data_dirs)
             
             
             %save figure
-            saveas(gcf,[path,'\analysis\continuous_plots\heading_offset_vs_mean_bump_pars_IG.png']);
+            saveas(gcf,[path,'\continuous_plots\heading_offset_vs_mean_bump_pars_IG.png']);
             
             %% Repeat for bar offset variability
             
@@ -470,7 +470,7 @@ for fly = 1:length(data_dirs)
             subplot(1,2,1)
             plot(mvtAxes,meanBin)
             ylabel('Bump magnitude (DF/F)'); xlabel('Bar offset variability');
-            ylim([0 2]);
+            ylim([0 3]);
             xlim([mvtAxes(1) mvtAxes(end)]);
             legend({'10 frames','30','50','100','500','1000'},'location','best');
             title('Bump magnitude');
@@ -492,7 +492,7 @@ for fly = 1:length(data_dirs)
             title('Bump width');
             
             %save figure
-            saveas(gcf,[path,'\analysis\continuous_plots\bar_offset_vs_mean_bump_pars_IG.png']);
+            saveas(gcf,[path,'\continuous_plots\bar_offset_vs_mean_bump_pars_IG.png']);
             
             %% Models of bump parameters
             
@@ -548,7 +548,7 @@ for fly = 1:length(data_dirs)
             title('Bump width');
             xlabel('window #');
             
-            saveas(gcf,[path,'\analysis\continuous_plots\model_fit.png']);
+            saveas(gcf,[path,'\continuous_plots\model_fit.png']);
             
             %% Correlate BM and BW with offset variability during the normal gain portion
             %heading and bar offset are the same in the normal gain bouts, so we only
@@ -607,7 +607,7 @@ for fly = 1:length(data_dirs)
             title('Bump width');
             
             %Save figure
-            saveas(gcf,[path,'\analysis\continuous_plots\offset_vs_mean_bump_pars_NG.png']);
+            saveas(gcf,[path,'\continuous_plots\offset_vs_mean_bump_pars_NG.png']);
             
             %% Run models for the normal gain portion
             
@@ -637,12 +637,12 @@ for fly = 1:length(data_dirs)
             ylabel('Rsquared');
             xlabel('window #');
             
-            saveas(gcf,[path,'\analysis\continuous_plots\model_fit_NG.png']);
+            saveas(gcf,[path,'\continuous_plots\model_fit_NG.png']);
             
             
             %% Save relevant data
             
-            save([path,'\analysis\gain_change_data.mat'],'modelTable','modelTableNG','type_of_fly');
+            save([path,'\gain_change_data.mat'],'modelTable','modelTableNG','type_of_fly');
             
             close all;
             

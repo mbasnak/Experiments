@@ -418,7 +418,7 @@ end
 subplot(1,2,1)
 plot(mvtAxes,meanBin)
 ylabel('Bump magnitude (DF/F)'); xlabel('Heading offset variability');
-ylim([0 2]);
+ylim([0 3]);
 xlim([mvtAxes(1) mvtAxes(end)]);
 legend({'10 frames','30','50','100','500','1000'},'location','best');
 title('Bump magnitude');
@@ -470,7 +470,7 @@ end
 subplot(1,2,1)
 plot(mvtAxes,meanBin)
 ylabel('Bump magnitude (DF/F)'); xlabel('Bar offset variability');
-ylim([0 2]);
+ylim([0 3]);
 xlim([mvtAxes(1) mvtAxes(end)]);
 legend({'10 frames','30','50','100','500','1000'},'location','best');
 title('Bump magnitude');
@@ -644,4 +644,5 @@ saveas(gcf,[path,'\analysis\continuous_plots\model_fit_NG.png']);
 
 save([path,'\analysis\gain_change_data.mat'],'modelTable','modelTableNG','type_of_fly');
 
+%%
 close all; clear all;

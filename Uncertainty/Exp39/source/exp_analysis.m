@@ -170,7 +170,7 @@ xlim([1 data.time(end)]);
 
 saveas(gcf,[path,'\plots\full_experiment.png']);
 
-%% Plot EB-DAN activity around the jumps
+%% Plot stim position around the jumps
 
 all_jump_frames = sort([real_bar_jump_frames,real_wind_jump_frames]);
 
@@ -289,6 +289,7 @@ for ROI = 1:length(data.dff)
         legend('predicted','real');
         ylabel('DF/F');
         title(['Rsquared = ',num2str(adj_rs(jump))]);
+        saveas(gcf,[path,'plots\predicted_vs_real_jump',num2str(jump),'_activity_10_sec.png']);
         
     end
     
@@ -433,6 +434,6 @@ for ROI = 1:length(data.dff)
     
     saveas(gcf,[path,'plots\predicted_vs_real_',roi_name,'_activity_1_sec.png']);
     
-    
-    
 end
+
+close all; clear all;
