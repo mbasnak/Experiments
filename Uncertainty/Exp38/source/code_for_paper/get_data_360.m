@@ -6,11 +6,11 @@ function [smoothed, t, visual_stim, fly_pos_rad, motor_pos] = get_data_360(trial
 settings = sensor_settings;
 settings.fictrac_yaw_gain_DAQ_AI = 4;
 settings.fictrac_x_DAQ_AI = 1;
-settings.fictrac_yaw_DAQ_AI = 3;
 settings.fictrac_y_DAQ_AI = 2;
 settings.panels_DAQ_AI = 5;
-settings.panels_DAQ_AI_Y = 6;
-settings.motor = 8;
+settings.panels_DAQ_AI_Y = 7;
+settings.wind_valve = 6;
+settings.motor = 9;
 
 % Assign fictrac positions on the three directions, and stimulus position,
 % based on the channels' nature
