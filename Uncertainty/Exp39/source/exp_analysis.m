@@ -324,6 +324,61 @@ for ROI = 1:length(data.dff)
     
     saveas(gcf,[path,'plots\predicted_vs_real_',roi_name,'_activity_10_sec.png']);
     
+    %% Use a test period of 10 sec before the 3 min used for the model to compare to the 10 sec following the jump
+  
+    for jump = 1:length(all_jump_frames)
+       
+        test_total_mvt = data.total_mvt_ds(all_jump_frames(jump)+max_corr_diff-190*sec_to_frames:all_jump_frames(jump)+max_corr_diff-180*sec_to_frames);
+        test_mvt = abs(data.vel_yaw_ds(all_jump_frames(jump)+max_corr_diff-190*sec_to_frames:all_jump_frames(jump)+max_corr_diff-180*sec_to_frames));
+        test_moving = test_total_mvt > 20;
+        predicted_test_dff = intercept(jump) + movement_coef(jump)*test_mvt + moving_true(jump)*test_moving;
+        mean_predicted_test_dff(jump) = mean(predicted_test_dff);
+        real_test_dff = data.dff{ROI}(all_jump_frames(jump)-190*sec_to_frames:all_jump_frames(jump)-180*sec_to_frames);
+        mean_real_test_dff(jump) = mean(real_test_dff);
+        
+        %Plot to compare
+        figure,
+        plot(predicted_test_dff)
+        hold on
+        plot(real_test_dff)
+        legend('predicted','real');
+        ylabel('DF/F');
+        ylim([-0.25 1]);
+        saveas(gcf,[path,'plots\predicted_vs_real_jump',num2str(jump),'_test_activity_10_sec.png']);
+        
+    end
+    
+    %combine the data
+    mean_test_activity = [mean_predicted_test_dff;mean_real_test_dff];
+    test_activity = [predicted_test_dff,real_test_dff];
+    
+    %Plot
+    figure('Position',[100 100 1000 800]),
+    subplot(1,2,1)
+    plot(mean_test_activity,'-o','color',[.5 .5 .5])
+    hold on
+    plot(mean(mean_test_activity,2),'-ko','linewidth',2)
+    xlim([0 3]);
+    xticks([1 2]);
+    xticklabels({'predicted','real'});
+    title('Post jump EB-DAN activity');
+    ylabel('DF/F');
+    
+    subplot(1,2,2)
+    group = [repelem(1,1,length(predicted_test_dff)),repelem(2,1,length(real_test_dff))];
+    boxplot(test_activity,group)
+    hold on
+    plot([1 2],[mean(predicted_test_dff),mean(real_test_dff)], 'dk') %this seems to be wrong, as it isn't stored per jump? see for loop above
+    xlim([0 3]);
+    xticks([1 2]);
+    ylim([-0.25 1]);
+    xticklabels({'predicted','real'});
+    title('Post jump EB-DAN activity');
+    ylabel('DF/F');
+    
+    suptitle('Ten seconds test period');
+    
+    saveas(gcf,[path,'plots\predicted_vs_real_',roi_name,'_test_activity_10_sec.png']);
     
     %% Repeat using 2 sec as a window
     

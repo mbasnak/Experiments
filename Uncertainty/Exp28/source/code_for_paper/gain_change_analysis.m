@@ -196,8 +196,15 @@ for block = 1:length(blockLimits)
    allBumpWidth = [allBumpWidth,bump_width{block}];
 end
 
-%% Heatmap plot with heading offset var including bump magnitude
+%% Get goodness of fit
 
+all_adj_rs = [];
+for block = 1:length(blockLimits)
+   adj_rs{block} = continuous_data.adj_rs(blockLimits{block}(1):blockLimits{block}(2)); 
+   all_adj_rs = [all_adj_rs,adj_rs{block}];
+end
+
+%% Heatmap plot with heading offset var including bump magnitude
 
 % Plot the heatmap of EPG activity
 figure('Position',[100 100 1400 800]),
@@ -387,6 +394,7 @@ mvt_thresh = 20;
 
 BumpMagIG = bump_mag{2};
 HalfWidthIG = bump_width{2};
+adj_rsIG = adj_rs{2};
 heading_offset_variabilityIG = heading_offset_variability(gain_changes(1):gain_changes(2),:);
 bar_offset_variabilityIG = bar_offset_variability(gain_changes(1):gain_changes(2),:);
 total_mvtIG = continuous_data.total_mvt_ds(gain_changes(1):gain_changes(2));
@@ -410,7 +418,7 @@ mvtAxes = mvtAxes(2:end);
 %Getting binned means for the different windowSizes
 for bin = 1:length(Bins)-1
     for window = 1:length(window_sizes)
-        meanBin(bin,window) = nanmean(BumpMagIG((heading_offset_variabilityIG(:,window) > Bins(bin)) & (heading_offset_variabilityIG(:,window) < Bins(bin+1)) & (total_mvtIG' > mvt_thresh)));
+        meanBin(bin,window) = nanmean(BumpMagIG((heading_offset_variabilityIG(:,window) > Bins(bin)) & (heading_offset_variabilityIG(:,window) < Bins(bin+1)) & (total_mvtIG' > mvt_thresh) & (adj_rsIG' > 0.5) ));
     end
 end
 
@@ -426,7 +434,7 @@ title('Bump magnitude');
 %Getting binned means
 for bin = 1:length(Bins)-1
     for window = 1:length(window_sizes)
-        meanBin(bin,window) = nanmean(HalfWidthIG((heading_offset_variabilityIG(:,window) > Bins(bin)) & (total_mvtIG' > mvt_thresh) &(heading_offset_variabilityIG(:,window) < Bins(bin+1))));
+        meanBin(bin,window) = nanmean(HalfWidthIG((heading_offset_variabilityIG(:,window) > Bins(bin)) & (total_mvtIG' > mvt_thresh) &(heading_offset_variabilityIG(:,window) < Bins(bin+1)) & (adj_rsIG' > 0.5) ));
     end
 end
 
@@ -462,7 +470,7 @@ mvtAxes = mvtAxes(2:end);
 %Getting binned means for the different windowSizes
 for bin = 1:length(Bins)-1
     for window = 1:length(window_sizes)
-        meanBin(bin,window) = nanmean(BumpMagIG((bar_offset_variabilityIG(:,window) > Bins(bin)) & (bar_offset_variabilityIG(:,window) < Bins(bin+1)) & (total_mvtIG' > mvt_thresh)));
+        meanBin(bin,window) = nanmean(BumpMagIG((bar_offset_variabilityIG(:,window) > Bins(bin)) & (bar_offset_variabilityIG(:,window) < Bins(bin+1)) & (total_mvtIG' > mvt_thresh) & (adj_rsIG' > 0.5) ));
     end
 end
 
@@ -478,7 +486,7 @@ title('Bump magnitude');
 %Getting binned means
 for bin = 1:length(Bins)-1
     for window = 1:length(window_sizes)
-        meanBin(bin,window) = nanmean(HalfWidthIG((bar_offset_variabilityIG(:,window) > Bins(bin)) & (total_mvtIG' > mvt_thresh) &(bar_offset_variabilityIG(:,window) < Bins(bin+1))));
+        meanBin(bin,window) = nanmean(HalfWidthIG((bar_offset_variabilityIG(:,window) > Bins(bin)) & (total_mvtIG' > mvt_thresh) &(bar_offset_variabilityIG(:,window) < Bins(bin+1)) & (adj_rsIG' > 0.5) ));
     end
 end
 
@@ -502,10 +510,11 @@ saveas(gcf,[path,'\analysis\continuous_plots\bar_offset_vs_mean_bump_pars_IG.png
 %Create binary movement variable
 moving = nominal(total_mvtIG > mvt_thresh);
 
-%Create table with the model's variables
+%Create table with the model's variables (only for the timepoints where the
+%goodness of fit is above .5
 for window = 1:length(window_sizes)
     
-    modelTable{window} = table(bar_offset_variabilityIG(:,window),heading_offset_variabilityIG(:,window),total_mvtIG',moving',yaw_speedIG',BumpMagIG',HalfWidthIG','VariableNames',{'BarOffsetVariability','HeadingOffsetVariability','TotalMovement','Moving','YawSpeed','BumpMagnitude','BumpWidth'});
+    modelTable{window} = table(bar_offset_variabilityIG(adj_rsIG > 0.5,window),heading_offset_variabilityIG(adj_rsIG > 0.5,window),total_mvtIG(adj_rsIG > 0.5)',moving(adj_rsIG > 0.5)',yaw_speedIG(adj_rsIG > 0.5)',BumpMagIG(adj_rsIG > 0.5)',HalfWidthIG(adj_rsIG > 0.5)','VariableNames',{'BarOffsetVariability','HeadingOffsetVariability','TotalMovement','Moving','YawSpeed','BumpMagnitude','BumpWidth'});
     
     %heading offset var
     mdl_BM_heading{window} = fitlm(modelTable{window},'BumpMagnitude~HeadingOffsetVariability+TotalMovement');
@@ -557,6 +566,7 @@ saveas(gcf,[path,'\analysis\continuous_plots\model_fit.png']);
 BumpMagNG = allBumpMag([1:gain_changes(1),gain_changes(2):end]);
 HalfWidthNG = allBumpWidth([1:gain_changes(1),gain_changes(2):end]);
 heading_offset_variabilityNG = heading_offset_variability([1:gain_changes(1),gain_changes(2):end],:);
+adj_rsNG = all_adj_rs([1:gain_changes(1),gain_changes(2):end]);
 total_mvtNG = continuous_data.total_mvt_ds([1:gain_changes(1),gain_changes(2):end]);
 heading_variabilityNG = heading_variability([1:gain_changes(1),gain_changes(2):end]);
 
@@ -577,7 +587,7 @@ mvtAxes = mvtAxes(2:end);
 %Getting binned means for the different windowSizes
 for bin = 1:length(Bins)-1
     for window = 1:length(window_sizes)
-        meanBin(bin,window) = nanmean(BumpMagNG((heading_offset_variabilityNG(:,window) > Bins(bin)) & (heading_offset_variabilityNG(:,window) < Bins(bin+1)) & (total_mvtNG' > mvt_thresh)));
+        meanBin(bin,window) = nanmean(BumpMagNG((heading_offset_variabilityNG(:,window) > Bins(bin)) & (heading_offset_variabilityNG(:,window) < Bins(bin+1)) & (total_mvtNG' > mvt_thresh) & (adj_rsNG' > 0.5) ));
     end
 end
 
@@ -593,7 +603,7 @@ title('Bump magnitude');
 %Getting binned means
 for bin = 1:length(Bins)-1
     for window = 1:length(window_sizes)
-        meanBin(bin,window) = nanmean(HalfWidthNG((heading_offset_variabilityNG(:,window) > Bins(bin)) & (total_mvtNG' > mvt_thresh) &(heading_offset_variabilityNG(:,window) < Bins(bin+1))));
+        meanBin(bin,window) = nanmean(HalfWidthNG((heading_offset_variabilityNG(:,window) > Bins(bin)) & (total_mvtNG' > mvt_thresh) &(heading_offset_variabilityNG(:,window) < Bins(bin+1)) & (adj_rsNG' > 0.5) ));
     end
 end
 
@@ -614,7 +624,7 @@ saveas(gcf,[path,'\analysis\continuous_plots\offset_vs_mean_bump_pars_NG.png']);
 %Create table with the model's variables
 for window = 1:length(window_sizes)
     
-    modelTableNG{window} = table(heading_offset_variabilityNG(:,window),total_mvtNG',BumpMagNG',HalfWidthNG',heading_variabilityNG,'VariableNames',{'HeadingOffsetVariability','TotalMovement','BumpMagnitude','BumpWidth','HeadingVariability'});
+    modelTableNG{window} = table(heading_offset_variabilityNG(adj_rsNG > 0.5,window),total_mvtNG(adj_rsNG > 0.5)',BumpMagNG(adj_rsNG > 0.5)',HalfWidthNG(adj_rsNG > 0.5)',heading_variabilityNG(adj_rsNG > 0.5),'VariableNames',{'HeadingOffsetVariability','TotalMovement','BumpMagnitude','BumpWidth','HeadingVariability'});
     mdl_BM_NG{window} = fitlm(modelTableNG{window},'BumpMagnitude~HeadingOffsetVariability+TotalMovement');
     mdl_BW_NG{window} = fitlm(modelTableNG{window},'BumpWidth~HeadingOffsetVariability+TotalMovement');
     %Model Rsquared

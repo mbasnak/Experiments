@@ -73,7 +73,7 @@ end
 
 figure,
 plot(Rsquared_BM_type1,'-o')
-title('Bump magnitude');
+title('Bump magnitude model fit with total mvt');
 ylabel('Rsquared');
 xlabel('window #');
 
@@ -92,7 +92,7 @@ end
 
 figure,
 plot(Rsquared_BM_type1,'-o')
-title('Bump magnitude');
+title('Bump magnitude model fit with yaw speed');
 ylabel('Rsquared');
 xlabel('window #');
 
@@ -111,7 +111,7 @@ end
 
 figure,
 plot(Rsquared_BW_type1,'-o')
-title('Bump width');
+title('Bump width model fit with total mvt');
 ylabel('Rsquared');
 xlabel('window #');
 
@@ -131,7 +131,7 @@ end
 
 figure,
 plot(Rsquared_BW_type1,'-o')
-title('Bump width');
+title('Bump width model fit with yaw speed');
 ylabel('Rsquared');
 xlabel('window #');
 
