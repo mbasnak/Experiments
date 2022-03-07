@@ -68,8 +68,8 @@ for fly = 1:length(data_dirs)
             %I will analyze offset variability by computing a rolling window of circular
             %standard deviation of offset and taking the inverse
             fcn = @(x) adapted_circ_std(x);
-            %Compute the offset variability over different window sizes, from 1 s to
-            %10 s
+            %Compute the offset variability over different window sizes, from ~ 1 s to
+            %100 s
             window_sizes = [10,30,50,100,500,1000];
             for window = 1:length(window_sizes)
                 heading_offset_variability(:,window) = matlab.tall.movingWindow(fcn,window_sizes(window),deg2rad(heading_offset));

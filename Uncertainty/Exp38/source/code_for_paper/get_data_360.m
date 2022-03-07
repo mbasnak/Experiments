@@ -18,7 +18,7 @@ panels = trial_data( :, settings.panels_DAQ_AI );
 motor = trial_data( :, settings.motor );
 data.ficTracIntx = trial_data( :, settings.fictrac_x_DAQ_AI );
 data.ficTracInty = trial_data( :, settings.fictrac_y_DAQ_AI );
-data.ficTracAngularPosition = trial_data( :, settings.fictrac_yaw_DAQ_AI );
+data.ficTracAngularPosition = trial_data( :, settings.fictrac_yaw_gain_DAQ_AI );
 
 % Run auxiliary function to compute the velocity
 smoothed = singleTrialVelocityAnalysis9mm(data,settings.sampRate);
