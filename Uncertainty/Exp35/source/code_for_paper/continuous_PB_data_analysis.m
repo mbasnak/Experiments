@@ -235,7 +235,7 @@ bdata_time = ballData.trial_time; %get the trial time
 
 % 2)Use an auxiliary function to get the different components of the behavior data
 number_x = 96;
-[smoothed, bdata_time_out,visual_stim_pos, fly_pos_rad, motor_pos] = get_data_360(bdata_time, bdata_raw, number_x);
+[smoothed, bdata_time_out, panel_angle, flyPosRad, motor_pos] = get_data_360(bdata_time, bdata_raw, number_x);
 
 % 3)Recover relevant movement parameters
 vel_for = smoothed.xVel';
@@ -244,9 +244,9 @@ vel_for_deg = smoothed.xVelDeg';
 vel_side_deg = smoothed.yVelDeg';
 total_mvt = smoothed.total_mvt;
 
-% Get stim data
-panel_y = downsample(bdata_raw(:,7), floor(4000/50));
-wind_valve = downsample(bdata_raw(:,6), floor(4000/50));
+% Get stim y dimension
+panel_y = downsample(bdata_raw(:,6), floor(4000/50));
+motor_pos_ds = motor_pos(round(linspace(1, length(motor_pos), volumes)));
 
 % 4)Subsample all the variables to have the length of the number of
 %volumes scanned (i.e. downsample the behavior data to match the imaging
@@ -261,8 +261,6 @@ total_mvt_ds = total_mvt(round(linspace(1, length(total_mvt), volumes)));
 panel_y_ds = panel_y(round(linspace(1, length(panel_y), volumes)));
 visual_stim_pos_ds = visual_stim_pos(round(linspace(1, length(visual_stim_pos), volumes)));
 fly_pos_rad_ds = fly_pos_rad(round(linspace(1, length(fly_pos_rad), volumes)));
-motor_pos_ds = motor_pos(round(linspace(1, length(motor_pos), volumes)));
-wind_valve_ds = wind_valve(round(linspace(1, length(wind_valve), volumes)));
 
 
 %% Save the data into the analysis folder
@@ -290,7 +288,6 @@ continuous_data.heading_deg = rad2deg(fly_pos_rad_ds);
 continuous_data.visual_stim_pos = visual_stim_pos_ds;
 continuous_data.fr_y_ds = panel_y_ds;
 continuous_data.motor_pos = motor_pos_ds;
-continuous_data.wind_valve = wind_valve_ds;
 
 % Imaging data
 continuous_data.volumes = volumes;

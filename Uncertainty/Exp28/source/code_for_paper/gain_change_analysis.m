@@ -23,23 +23,7 @@ end
 
 %% Determine changes in gain
 
-%Get hdf5 file from this session
-file_names = dir(fullfile([path,'\ball\'],'*hdf5'));
-for file = 1:length(file_names)
-    if contains(file_names(file).name,[num2str(sid),'_'])
-        hdf5_file_to_read = fullfile(file_names(file).folder,file_names(file).name);
-    end
-end
-%Read the gain yaw variable
-gain_yaw = double(h5read(hdf5_file_to_read,'/gain_yaw'));
-%Downsample to match data length
-gain_yaw_ds = resample(gain_yaw,length(continuous_data.time),length(gain_yaw));
-gain_yaw_ds(gain_yaw_ds<0) = -1;
-gain_yaw_ds(gain_yaw_ds>0) = 1;
-
-%Determine frames where the gain changes
-gain_changes = find(abs(diff(gain_yaw_ds))>0.5);
-gain_changes = gain_changes(1:2);
+gain_changes = [1837,9183]; %the gain changes occurred always in those frames
 
 %% Set block limits
 
@@ -69,8 +53,8 @@ heading_offset = wrapTo180(rad2deg(circ_dist(continuous_data.bump_pos',-continuo
 %standard deviation of offset and taking the inverse
 fcn = @(x) adapted_circ_std(x);
 %Compute the offset variability over different window sizes, from 1 s to
-%10 s
-window_sizes = [10,30,50,100,500,1000];
+%50 s
+window_sizes = [10,30,50,100,200,500];
 for window = 1:length(window_sizes)
     heading_offset_variability(:,window) = matlab.tall.movingWindow(fcn,window_sizes(window),deg2rad(heading_offset));
 end
@@ -150,35 +134,6 @@ xlabel('Time (sec)');
 
 %save figure
 saveas(gcf,[path,'\analysis\continuous_plots\bar_offset_var.png']);
-
-%% Determine the type of fly based on the ratio between bar and offset variability
-
-%Compute the variability ratios during the inverted gain period
-ratio_means = mean(bar_offset_variability(blockLimits{1,2}(1):blockLimits{1,2}(2),3))/mean(heading_offset_variability(blockLimits{1,2}(1):blockLimits{1,2}(2),3));
-ratio_medians = median(bar_offset_variability(blockLimits{1,2}(1):blockLimits{1,2}(2),3))/median(heading_offset_variability(blockLimits{1,2}(1):blockLimits{1,2}(2),3));
-
-all_ratios = [ratio_means,ratio_medians];
-
-figure,
-plot(all_ratios,'-ko','linewidth',2)
-hold on
-yline(1,'r','linewidth',2)
-text(0.2,1.2,'Type 1');
-text(0.2,0.8,'Type 2');
-ylim([0 4]);
-xlim([0 3]);
-xticks([1 2])
-xticklabels({'ratio of means','ratio of medians'})
-ylabel('Bar offset variability / heading offset variability');
-%Save figure
-saveas(gcf,[path,'\analysis\continuous_plots\fly_classification.png']);
-
-%Classify fly
-if mean(all_ratios) > 1
-    type_of_fly = 1; %fly that learns the new mapping (and where heading offset is more stable)
-else
-    type_of_fly = 2; %fly that ignores proprioceptive cues (and where bar offset is more stable)
-end
     
 %% Obtain bump parameters
 
@@ -353,6 +308,118 @@ xlim([0 continuous_data.time(end)]);
 %Save figure
 saveas(gcf,[path,'\analysis\continuous_plots\bar_offset_with_bump_parameters.png']);
 
+
+%% Determine the type of fly based on the ratio between bar and offset variability
+
+%Compute the variability ratios during the inverted gain period
+for window = 1:length(window_sizes)
+    ratio_means(window) = mean(bar_offset_variability(blockLimits{1,2}(1):blockLimits{1,2}(2),window))/mean(heading_offset_variability(blockLimits{1,2}(1):blockLimits{1,2}(2),window));
+    ratio_medians(window) = median(bar_offset_variability(blockLimits{1,2}(1):blockLimits{1,2}(2),window))/median(heading_offset_variability(blockLimits{1,2}(1):blockLimits{1,2}(2),window));
+end
+
+all_ratios = [ratio_means;ratio_medians];
+
+figure,
+plot(all_ratios,'-o','linewidth',2)
+hold on
+yline(1,'r','linewidth',2)
+text(0.2,1.2,'Type 1');
+text(0.2,0.8,'Type 2');
+ylim([0 4]);
+xlim([0 3]);
+xticks([1 2])
+legend({'10 frames','30','50','100','200','500'},'location','best');
+xticklabels({'ratio of means','ratio of medians'})
+ylabel('Bar offset variability / heading offset variability');
+%Save figure
+saveas(gcf,[path,'\analysis\continuous_plots\fly_classification.png']);
+
+%Classify fly
+if mean(all_ratios) > 1
+    type_of_fly = 1; %fly that learns the new mapping (and where heading offset is more stable)
+else
+    type_of_fly = 2; %fly that ignores proprioceptive cues (and where bar offset is more stable)
+end
+
+%% Plot the h and b offset + the ratio of mean offset variabilities + the pre-post for heading offset var in the same plot
+
+figure('Position',[100 100 1600 600]),
+%heading offset
+subplot(3,3,[1 3])
+plot(x_out_heading_offset,heading_offset_to_plot,'LineWidth',1.5,'color','k')
+%Add the changes in stim
+for change = 1:length(gain_changes)
+    line([continuous_data.time(gain_changes(change)) continuous_data.time(gain_changes(change))], [-180 180], 'LineWidth', 2, 'color',  [0, 0.5, 0]);
+end
+ylim([-180 180]);
+ylabel('Deg','fontweight','bold','fontsize',10);
+set(gca,'XTickLabel',[]);
+title('Heading offset','fontweight','bold','fontsize',12);
+
+%bar offset
+subplot(3,3,[4 6])
+plot(x_out_offset,offset_to_plot,'LineWidth',1.5,'color','k')
+%Add the changes in stim
+for change = 1:length(gain_changes)
+    line([continuous_data.time(gain_changes(change)) continuous_data.time(gain_changes(change))], [-180 180], 'LineWidth', 2, 'color', [0,0.5,0]);
+end
+ylim([-180 180]);
+title('Bar offset','fontweight','bold','fontsize',12);
+ylabel('Deg','fontweight','bold','fontsize',10);
+
+%ratio of b to h offset var
+subplot(3,3,7)
+plot(all_ratios,'-o','linewidth',2)
+hold on
+yline(1,'r','linewidth',2)
+text(0.2,1.2,'Type 1');
+text(0.2,0.8,'Type 2');
+ylim([0 4]);
+xlim([0 3]);
+xticks([1 2])
+legend({'10 frames','30','50','100','200','500'},'location','best');
+xticklabels({'ratio of means','ratio of medians'})
+title('Bar offset variability / heading offset variability');
+
+%ratio of first to sec heading offset var
+for window = 1:length(window_sizes)
+    learning_ratio_of_means(window) = mean(heading_offset_variability(blockLimits{1,2}(1):floor(blockLimits{1,2}(2)/2),window))/mean(heading_offset_variability(floor(blockLimits{1,2}(2)/2):blockLimits{1,2}(2),window));
+    learning_ratio_of_medians(window) = median(heading_offset_variability(blockLimits{1,2}(1):floor(blockLimits{1,2}(2)/2),window))/median(heading_offset_variability(floor(blockLimits{1,2}(2)/2):blockLimits{1,2}(2),window));
+end
+all_learning_ratios = [learning_ratio_of_means;learning_ratio_of_medians];
+
+subplot(3,3,8)
+plot(all_learning_ratios,'-o','linewidth',2)
+hold on
+yline(1,'r','linewidth',2)
+legend({'10 frames','30','50','100','200','500'},'location','best');
+ylim([0 4]);
+xlim([0 3]);
+xticks([1 2])
+xticklabels({'ratio of means','ratio of medians'})
+title('1st half heading offset var / 2nd half heading offset var');
+
+%ratio of first to sec heading offset var
+for window = 1:length(window_sizes)
+    learning_ratio_of_means_quarters(window) = mean(heading_offset_variability(blockLimits{1,2}(1):floor(blockLimits{1,2}(2)/4),window))/mean(heading_offset_variability(blockLimits{1,2}(2)-floor(blockLimits{1,2}(2)/4):blockLimits{1,2}(2),window));
+    learning_ratio_of_medians_quarters(window) = median(heading_offset_variability(blockLimits{1,2}(1):floor(blockLimits{1,2}(2)/4),window))/median(heading_offset_variability(blockLimits{1,2}(2)-floor(blockLimits{1,2}(2)/4):blockLimits{1,2}(2),window));
+end
+all_learning_ratios_quarters = [learning_ratio_of_means_quarters;learning_ratio_of_medians_quarters];
+
+subplot(3,3,9)
+plot(all_learning_ratios_quarters,'-o','linewidth',2)
+hold on
+yline(1,'r','linewidth',2)
+legend({'10 frames','30','50','100','200','500'},'location','best');
+ylim([0 4]);
+xlim([0 3]);
+xticks([1 2])
+xticklabels({'ratio of means','ratio of medians'})
+title('1st quarter heading offset var / 4th quarter heading offset var');
+
+%Save figure
+saveas(gcf,[path,'\analysis\continuous_plots\fly_classification_analysis.png']);
+
 %% Heading variability
 
 heading_variability = matlab.tall.movingWindow(fcn,50,deg2rad(heading));
@@ -390,7 +457,7 @@ saveas(gcf,[path,'\analysis\continuous_plots\heading_variability.png']);
 %% Correlate BM and HW with heading offset variability during the inverted gain portion
 
 %Set a mvt threshold
-mvt_thresh = 20;
+mvt_thresh = 25;
 
 BumpMagIG = bump_mag{2};
 HalfWidthIG = bump_width{2};
@@ -399,6 +466,8 @@ heading_offset_variabilityIG = heading_offset_variability(gain_changes(1):gain_c
 bar_offset_variabilityIG = bar_offset_variability(gain_changes(1):gain_changes(2),:);
 total_mvtIG = continuous_data.total_mvt_ds(gain_changes(1):gain_changes(2));
 yaw_speedIG = abs(continuous_data.vel_yaw_ds(gain_changes(1):gain_changes(2)));
+heading_offsetIG = heading_offset(gain_changes(1):gain_changes(2));
+bar_offsetIG = bar_offset(gain_changes(1):gain_changes(2));
 
    
 figure,
@@ -428,7 +497,7 @@ plot(mvtAxes,meanBin)
 ylabel('Bump magnitude (DF/F)'); xlabel('Heading offset variability');
 ylim([0 3]);
 xlim([mvtAxes(1) mvtAxes(end)]);
-legend({'10 frames','30','50','100','500','1000'},'location','best');
+legend({'10 frames','30','50','100','200','500'},'location','best');
 title('Bump magnitude');
 
 %Getting binned means
@@ -444,7 +513,7 @@ plot(mvtAxes,meanBin)
 ylabel('Bump width (rad)'); xlabel('Heading offset variability');
 ylim([0 4]);
 xlim([mvtAxes(1) mvtAxes(end)]);
-legend({'10 frames','30','50','100','500','1000'},'location','best');
+legend({'10 frames','30','50','100','200','500'},'location','best');
 title('Bump width');
 
 
@@ -480,7 +549,7 @@ plot(mvtAxes,meanBin)
 ylabel('Bump magnitude (DF/F)'); xlabel('Bar offset variability');
 ylim([0 3]);
 xlim([mvtAxes(1) mvtAxes(end)]);
-legend({'10 frames','30','50','100','500','1000'},'location','best');
+legend({'10 frames','30','50','100','200','500'},'location','best');
 title('Bump magnitude');
 
 %Getting binned means
@@ -496,7 +565,7 @@ plot(mvtAxes,meanBin)
 ylabel('Bump width (rad)'); xlabel('Bar offset variability');
 ylim([0 4]);
 xlim([mvtAxes(1) mvtAxes(end)]);
-legend({'10 frames','30','50','100','500','1000'},'location','best');
+legend({'10 frames','30','50','100','200','500'},'location','best');
 title('Bump width');
 
 %save figure
@@ -508,13 +577,13 @@ saveas(gcf,[path,'\analysis\continuous_plots\bar_offset_vs_mean_bump_pars_IG.png
 %offset variability 
 
 %Create binary movement variable
-moving = nominal(total_mvtIG > mvt_thresh);
+moving = total_mvtIG > mvt_thresh;
 
 %Create table with the model's variables (only for the timepoints where the
 %goodness of fit is above .5
 for window = 1:length(window_sizes)
     
-    modelTable{window} = table(bar_offset_variabilityIG(adj_rsIG > 0.5,window),heading_offset_variabilityIG(adj_rsIG > 0.5,window),total_mvtIG(adj_rsIG > 0.5)',moving(adj_rsIG > 0.5)',yaw_speedIG(adj_rsIG > 0.5)',BumpMagIG(adj_rsIG > 0.5)',HalfWidthIG(adj_rsIG > 0.5)','VariableNames',{'BarOffsetVariability','HeadingOffsetVariability','TotalMovement','Moving','YawSpeed','BumpMagnitude','BumpWidth'});
+    modelTable{window} = table(bar_offset_variabilityIG(:,window),heading_offset_variabilityIG(:,window),total_mvtIG',moving',yaw_speedIG',BumpMagIG',HalfWidthIG',adj_rsIG',heading_offsetIG,bar_offsetIG,'VariableNames',{'BarOffsetVariability','HeadingOffsetVariability','TotalMovement','Moving','YawSpeed','BumpMagnitude','BumpWidth','Rsq','HeadingOffset','BarOffset'});
     
     %heading offset var
     mdl_BM_heading{window} = fitlm(modelTable{window},'BumpMagnitude~HeadingOffsetVariability+TotalMovement');
@@ -569,6 +638,7 @@ heading_offset_variabilityNG = heading_offset_variability([1:gain_changes(1),gai
 adj_rsNG = all_adj_rs([1:gain_changes(1),gain_changes(2):end]);
 total_mvtNG = continuous_data.total_mvt_ds([1:gain_changes(1),gain_changes(2):end]);
 heading_variabilityNG = heading_variability([1:gain_changes(1),gain_changes(2):end]);
+offsetNG = heading_offset([1:gain_changes(1),gain_changes(2):end]);
 
 figure,
 
@@ -597,7 +667,7 @@ plot(mvtAxes,meanBin)
 ylabel('Bump magnitude (DF/F)'); xlabel('Heading offset variability');
 ylim([0 max(max(meanBin))+0.5]);
 xlim([mvtAxes(1) mvtAxes(end)]);
-legend({'10 frames','30','50','100','500','1000'},'location','best');
+legend({'10 frames','30','50','100','200','500'},'location','best');
 title('Bump magnitude');
 
 %Getting binned means
@@ -613,7 +683,7 @@ plot(mvtAxes,meanBin)
 ylabel('Bump width (rad)'); xlabel('Heading offset variability');
 ylim([0 max(max(meanBin))+0.5]);
 xlim([mvtAxes(1) mvtAxes(end)]);
-legend({'10 frames','30','50','100','500','1000'},'location','best');
+legend({'10 frames','30','50','100','200','500'},'location','best');
 title('Bump width');
 
 %Save figure
@@ -624,7 +694,7 @@ saveas(gcf,[path,'\analysis\continuous_plots\offset_vs_mean_bump_pars_NG.png']);
 %Create table with the model's variables
 for window = 1:length(window_sizes)
     
-    modelTableNG{window} = table(heading_offset_variabilityNG(adj_rsNG > 0.5,window),total_mvtNG(adj_rsNG > 0.5)',BumpMagNG(adj_rsNG > 0.5)',HalfWidthNG(adj_rsNG > 0.5)',heading_variabilityNG(adj_rsNG > 0.5),'VariableNames',{'HeadingOffsetVariability','TotalMovement','BumpMagnitude','BumpWidth','HeadingVariability'});
+    modelTableNG{window} = table(heading_offset_variabilityNG(:,window),total_mvtNG',BumpMagNG',HalfWidthNG',heading_variabilityNG,adj_rsNG',offsetNG,'VariableNames',{'HeadingOffsetVariability','TotalMovement','BumpMagnitude','BumpWidth','HeadingVariability','Rsq','Offset'});
     mdl_BM_NG{window} = fitlm(modelTableNG{window},'BumpMagnitude~HeadingOffsetVariability+TotalMovement');
     mdl_BW_NG{window} = fitlm(modelTableNG{window},'BumpWidth~HeadingOffsetVariability+TotalMovement');
     %Model Rsquared
